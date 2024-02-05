@@ -1,7 +1,9 @@
 from pulp import *
 import numpy as np
 
-def solve_shift_optimization(availability_matrix, equal_distribution_tolerance=0.1):
+def solve_shift_optimization(availability_matrix_raw, equal_distribution_tolerance=0.1):
+    availability_matrix = np.array(availability_matrix_raw)
+
     num_employees, num_shifts = availability_matrix.shape
 
     # Create a binary variable for each employee-shift assignment
@@ -68,8 +70,8 @@ def solve_shift_optimization(availability_matrix, equal_distribution_tolerance=0
     return result_matrix
 
 # Example usage
-availability_matrix = np.array([[1, 1, 1, 1], [1, 0, 1, 1]])
+# availability_matrix = np.array([[1, 1, 1, 1], [1, 0, 1, 1]])
 
-result = solve_shift_optimization(availability_matrix)
-print("Optimal Shift Assignment:")
-print(result)
+# result = solve_shift_optimization(availability_matrix)
+# print("Optimal Shift Assignment:")
+# print(result)
