@@ -14,15 +14,16 @@ def index():
 def get_optimized_Shift():
     print(f'request.json:{request.json}')
     availability_matrix = request.json.get('mat')
+    posts_amount = request.json.get('posts')
+
     print(f'start2')
     print(f'availability_matrix: {availability_matrix}')
-    result = shit_opt_service.solve_shift_optimization(availability_matrix)
-    array_as_list = result.tolist()
+    optim_result = shit_opt_service.solve_shift_optimization(availability_matrix, posts_amount)
 
     # Return the array as JSON in the response
-    print(f'result: {result}')
-    # return json.dumps(result)
-    return jsonify({'array': array_as_list})
+    print(f'optim_result: {optim_result.toJSON()}')
+
+    return optim_result.toJSON()
 
     
 

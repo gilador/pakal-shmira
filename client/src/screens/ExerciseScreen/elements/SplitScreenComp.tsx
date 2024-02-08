@@ -2,14 +2,14 @@ import {StyleSheet, View} from 'react-native';
 import React from "react";
 import {colors} from "../../../styles";
 
-export interface EXScreenProps{
+export interface SplitScreenCompProps{
   leftPanel: JSX.Element
   rightPanel: JSX.Element
 }
 
-export default function ExerciseComp({ leftPanel, rightPanel}: EXScreenProps): JSX.Element {
+export default function SplitScreenComp({ leftPanel, rightPanel}: SplitScreenCompProps): JSX.Element {
   const newRightPanel = React.cloneElement(rightPanel, {style: styles.rightPanel})
-  const newLeftPanel = React.cloneElement(leftPanel, {style: [leftPanel.props.style, styles.rightPanel]})
+  const newLeftPanel = React.cloneElement(leftPanel, {style: styles.leftPanel})
 
   return (
     <View style={styles.container}>
@@ -24,12 +24,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: 'white'
+    backgroundColor: 'white',
+    flexBasis: 'auto'
   },
   leftPanel:{
-    flexGrow: 500,
-    flexShrink: 500,
-    backgroundColor: 'white',
+    flexGrow: 300,
+    flexShrink: 100,
+    backgroundColor: 'pink',
 
   },
   separator: {

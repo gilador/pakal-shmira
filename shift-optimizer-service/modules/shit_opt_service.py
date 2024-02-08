@@ -1,7 +1,8 @@
 from pulp import *
 import numpy as np
+from modules.model.optim_result import OptimReult
 
-def solve_shift_optimization(availability_matrix_raw, equal_distribution_tolerance=0.1):
+def solve_shift_optimization(availability_matrix_raw, posts_amount, equal_distribution_tolerance=0.1) -> OptimReult :
     availability_matrix = np.array(availability_matrix_raw)
 
     num_employees, num_shifts = availability_matrix.shape
@@ -12,31 +13,24 @@ def solve_shift_optimization(availability_matrix_raw, equal_distribution_toleran
     # Create the linear programming problem
     prob = LpProblem("Shift_Optimization", LpMinimize)
 
-    # No cost as each employee has the same cost
-
     # Availability constraints
     for i in range(num_employees):
         for j in range(num_shifts):
             if not availability_matrix[i][j]:
                 prob += x[(i, j)] == 0, f"Availability_Constraint_{i}_{j}"
+                
+    # Consecutivity  constraints
+    num_abs_shifts = int(num_shifts / posts_amount)
+    for i in range(num_employees):
+        emp_constraints = []
+        for j in range(num_abs_shifts-1):
+            for k in range(posts_amount):
+                emp_constraints.append(x[(i, j+k)]+x[(i, j+k+1)] <= 1)
+        prob += lpSum(emp_constraints), f"Employee_Consecutivity_Constraint_{i}"
 
     # Shift coverage constraint 
     for j in range(num_shifts):
         prob += lpSum(x[(i, j)] for i in range(num_employees)) == 1, f"Shift_Coverage_Constraint_{j}"
-        
-        
-    # # Create binary variables for absolute values
-    # y = pulp.LpVariable.dicts("Absolute_Value_Variable", ((i, j) for i in range(num_employees) for j in range(num_shifts)), cat='Binary')
-
-    # # Objective function to minimize deviation from equal distribution
-    # target_avg_shifts = num_shifts / num_employees
-    # deviation_expr = pulp.LpAffineExpression()
-
-    # for i in range(num_employees):
-    #     for j in range(num_shifts):
-    #         deviation_expr += pulp.lpSum([y[(i, j)] - target_avg_shifts, target_avg_shifts - x[(i, j)]])
-
-    # prob += deviation_expr, "Minimize_Deviation_Objective"
     
     shift_of_employees_diff = LpVariable.dicts("Absolute_Value_Variable", ((i) for i in range(num_employees)), cat='Binary')
     target_avg_shifts = num_shifts / num_employees
@@ -61,13 +55,15 @@ def solve_shift_optimization(availability_matrix_raw, equal_distribution_toleran
     # Solve the problem
     prob.solve()
 
+    
+    print(f"prob.status: {prob.status}")
+
     # Extract and return the results
-    result_matrix = np.zeros((num_employees, num_shifts))
+    result_matrix = np.zeros((num_employees, num_shifts)).astype(int)
     for i in range(num_employees):
         for j in range(num_shifts):
             result_matrix[i][j] = x[(i, j)].varValue
-
-    return result_matrix
+    return OptimReult(result_matrix.tolist(), prob.status==1)
 
 # Example usage
 # availability_matrix = np.array([[1, 1, 1, 1], [1, 0, 1, 1]])
