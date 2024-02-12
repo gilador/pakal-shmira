@@ -1,9 +1,13 @@
+from flask import jsonify
 from pulp import *
 import numpy as np
 from modules.model.optim_result import OptimReult
 
 def solve_shift_optimization(availability_matrix_raw, posts_amount, equal_distribution_tolerance=0.1) -> OptimReult :
     availability_matrix = np.array(availability_matrix_raw)
+    print(f"availability_matrix_raw: {json.dumps(availability_matrix_raw)}")
+    print(f"availability_matrix: {json.dumps(availability_matrix.tolist())}")
+
 
     num_employees, num_shifts = availability_matrix.shape
 

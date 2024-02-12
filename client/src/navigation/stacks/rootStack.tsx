@@ -3,7 +3,7 @@ import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import NotFoundScreen from "../../screens/NotFoundScreen";
 import ModalScreen from "../../screens/ModalScreen";
 import {RootStackParamList} from "../../../types";
-import ShiftScreen from "../../screens/ExerciseScreen/ShiftScreen";
+import ShiftScreen from "../../screens/ShiftScreen/ShiftScreen";
 
 /**
  * A root stack navigator is often used for displaying modals on top of all other content.

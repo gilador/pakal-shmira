@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {FlatList, ListRenderItemInfo, StyleProp, StyleSheet, ViewStyle} from 'react-native';
 import {Text, View} from "../components/Themed";
-import {baseOP} from "../screens/ExerciseScreen/model/MathExercise";
+import {baseOP} from "../screens/ShiftScreen/model/MathExercise";
 import {Dictionary} from "../common/Dictionary";
 import {IconButton} from "react-native-paper";
 import Colors from "../constants/Colors";

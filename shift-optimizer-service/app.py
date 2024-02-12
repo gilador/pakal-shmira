@@ -1,16 +1,21 @@
 from flask import Flask, jsonify, request
 import json
 from modules import shit_opt_service
+from flask_cors import CORS, cross_origin
+
 
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 
 
 @app.route('/')
 def index():
     return 'Web App with Python Flask!'
 
-@app.route('/getOptimizedShift', methods=['POST'])
+@app.route('/api/getOptimizedShift', methods=['POST'])
 def get_optimized_Shift():
     print(f'request.json:{request.json}')
     availability_matrix = request.json.get('mat')
@@ -27,4 +32,5 @@ def get_optimized_Shift():
 
     
 
-app.run(host='0.0.0.0', port=81)
+app.run(host='0.0.0.0', port=8190)
+# app.run(host='127.0.0.1', port=8190)

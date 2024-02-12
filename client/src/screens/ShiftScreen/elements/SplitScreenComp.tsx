@@ -22,14 +22,15 @@ export default function SplitScreenComp({ leftPanel, rightPanel}: SplitScreenCom
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    height: '100%',
     flexDirection: 'row',
     backgroundColor: 'white',
     flexBasis: 'auto'
   },
   leftPanel:{
     flexGrow: 300,
-    flexShrink: 100,
+    flexShrink: 300,
+    flexBasis: 300,
     backgroundColor: 'pink',
 
   },
@@ -43,5 +44,7 @@ const styles = StyleSheet.create({
   rightPanel:{
     flexGrow: 500,
     flexShrink: 500,
+    flexBasis: 500,
+
   },
 });
