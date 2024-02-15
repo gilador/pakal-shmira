@@ -9,6 +9,7 @@ import ApiService from "../services/api/ApiService";
 
 interface EditableListProps {
   list: string[],
+  optimizeCB: ()=>void
 }
 
 export function EditableList(props: EditableListProps) {
@@ -20,7 +21,7 @@ export function EditableList(props: EditableListProps) {
   );
 
   return <View style={styles.container}>
-    <Button style={styles.comp} onPress={()=>ApiService.optimizeShift()}>optimize</Button>
+    <Button style={styles.comp} onPress={props.optimizeCB}>optimize</Button>
     <FlatList
       style={styles.comp2}
       data={props.list}

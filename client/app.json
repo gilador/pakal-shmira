@@ -1,19 +1,15 @@
 {
   "expo": {
-    "name": "expo-test",
-    "slug": "expo-test",
+    "name": "pakal-shmira",
+    "slug": "pakal-shmira",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
-    },
-    "updates": {
-      "fallbackToCacheTimeout": 0
     },
     "assetBundlePatterns": [
       "**/*"
@@ -23,18 +19,12 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
-      "favicon": "./assets/images/favicon.png",
-      "bundler": "webpack"
-    },
-    "sdkVersion": "47.0.0",
-    "packagerOpts": {
-      "url": "http://127.0.0.1:81/"
+      "favicon": "./assets/favicon.png"
     }
-  },
-  "name": "daf-avo"
+  }
 }

@@ -2,7 +2,7 @@ import qs from 'qs'
 import Config from 'react-native-config'
 // import { camelizeKeys } from 'humps'
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosInstance } from 'axios'
-import { OptimizeShiftResponse } from './responses/optimizeShiftResponse'
+import { OptimizeShiftRequest, OptimizeShiftResponse } from './models'
 
 const GET_TOKEN_DEFAULT_TIMEOUT = 3000
 class ApiService {
@@ -24,7 +24,7 @@ class ApiService {
     // this.axiosInstance.interceptors.response.use(this.responseMiddleware.bind(this))
   }
 
-  public async optimizeShift(): Promise<OptimizeShiftResponse>{
+  public async optimizeShift(optimizeShiftRequest: OptimizeShiftRequest): Promise<OptimizeShiftResponse>{
     console.log('optimizeShift')
     const url = "/api/getOptimizedShift"
     //mock
