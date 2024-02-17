@@ -1,8 +1,8 @@
-import { optimize } from "../optimizeService/OptimizieService";
+import { translateUserShiftToConstraints } from "../optimizeService/OptimizieService";
 import { UserConstraints } from "../optimizeService/models";
 
 describe('Name of the group', () => {
-    it('should ', () => {
+    it('should translateUserShiftToConstraints transform correct', () => {
         const mockedUsersConstraints: UserConstraints[] = [{
             name: "Yosi",
             constraints: [[1,1,0,0],[1,1,1,1]]
@@ -12,8 +12,8 @@ describe('Name of the group', () => {
             constraints: [[1,0,0,0],[0,0,1,1]]
         }] 
 
-        const result = optimize(mockedUsersConstraints)
-
-        expect(mockedUsersConstraints).not.toBe(undefined)
+        const result = translateUserShiftToConstraints(mockedUsersConstraints)
+            
+        expect(result).toEqual([[[1,1,0,0],[1,1,1,1]],[[1,0,0,0],[0,0,1,1]]]) 
     });
 });

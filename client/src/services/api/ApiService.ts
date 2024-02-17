@@ -11,7 +11,7 @@ class ApiService {
 
   constructor() {
     this.axiosInstance = axios.create({
-      baseURL: 'http://localhost:8190',
+      baseURL: 'http://localhost:8080',
       timeout: 500,
       headers: {
         contentType: 'application/json'      },
@@ -24,11 +24,12 @@ class ApiService {
     // this.axiosInstance.interceptors.response.use(this.responseMiddleware.bind(this))
   }
 
-  public async optimizeShift(optimizeShiftRequest: OptimizeShiftRequest): Promise<OptimizeShiftResponse>{
+  public async optimizeShift(constraints: number[][][]): Promise<OptimizeShiftResponse>{
     console.log('optimizeShift')
     const url = "/api/getOptimizedShift"
     //mock
-    const data = {"mat":[[1, 1, 1, 1,0,1,0,1], [1, 0, 1, 1,1,0,1,0],[1, 0, 1, 1,1,0,1,0]],"posts":2}
+    // const data = {"mat":[[1, 1, 1, 1,0,1,0,1], [1, 0, 1, 1,1,0,1,0],[1, 0, 1, 1,1,0,1,0]],"posts":2}
+    const data = {"constraints":JSON.stringify(constraints)}
     const response: OptimizeShiftResponse = await this.post(url,data)
     console.log(`optimizeShift respose: ${JSON.stringify(response)}`)
     return response
