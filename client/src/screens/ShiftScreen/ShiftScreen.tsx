@@ -4,6 +4,9 @@ import SplitScreenComp from "./elements/SplitScreenComp";
 import useGenerateShiftTableView from "./hooks/useGenerateShiftTableView";
 import useShiftResourceListView from "./hooks/useShiftResourceListView";
 import { ShiftBoard } from "./models";
+import { Button } from "react-native-paper";
+import { StyleSheet, View } from 'react-native';
+
 
 export interface ShiftScreenProps {
 }
@@ -17,9 +20,13 @@ export default function ShiftScreen({ }: ShiftScreenProps) {
 
 
   return (
-    SplitScreenComp({ leftPanel: namesListView, rightPanel: tableView })
+    <View style={styles.container}>
+      {SplitScreenComp({ leftPanel: namesListView, rightPanel: tableView, style: styles.element })}
+      <Button style={styles.comp} onPress={()=>{}}>optimize</Button>
+    </View>
   );
 }
+
 function getShiftBoardData(names: string[]): ShiftBoard {
   const mockShiftBoard = {
     personals: names,
@@ -33,4 +40,26 @@ function getShiftBoardData(names: string[]): ShiftBoard {
   }
   return mockShiftBoard
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    flexDirection: 'column',
+    backgroundColor: 'white',
+    padding: 20
+
+  },
+  element:{
+    flexGrow: 30,
+    backgroundColor: 'lightblue',
+    margin: 5,
+    },
+  comp: {
+    flexGrow: 1,
+    marginBottom: 30,
+    width: 300,
+    alignSelf:'flex-start',
+    backgroundColor: 'lightgreen',
+  },
+});
 

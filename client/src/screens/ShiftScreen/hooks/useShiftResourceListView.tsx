@@ -11,16 +11,25 @@ export default function useShiftResourceListView(){
   const [list, setList] = useState(['חיים','אלון','יוסי','אפי','מאיר','עוז','צבי','תומר',]);
   const [selectedName, setSelectedName] = useState(['חיים']);
 
-  useEffect(() => {
-    setTimeout(() => {
-       setList((prev)=>[...prev, 'gilad'])
-    }, 4000);
-  },[])
-    
-  
+  const shiftResourceListView = (
+    <View style={styles.container}>
+      <EditableList list={list} optimizeCB={()=>optimize([])}/>
+    </View>
+  )
+
   const mocked = [{}]
   return {
     list,
     selectedName,
-    view: <EditableList list={list} optimizeCB={()=>optimize([])}/>}
+    view: shiftResourceListView
+  }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    height: '100%',
+    flexDirection: 'column',
+    backgroundColor: 'white',
+    flexBasis: 'auto'
+  },
+})

@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { Button } from "react-native-paper";
 import ApiService from "../services/api/ApiService";
+import { colors } from "@app/styles";
 
 interface EditableListProps {
   list: string[],
@@ -21,7 +22,6 @@ export function EditableList(props: EditableListProps) {
   );
 
   return <View style={styles.container}>
-    <Button style={styles.comp} onPress={props.optimizeCB}>optimize</Button>
     <FlatList
       style={styles.comp2}
       data={props.list}
@@ -34,20 +34,16 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     height: '100%',
   },
-  comp: {
-    height:'50px',
-    backgroundColor: '#3F445500'
-  },
+
   comp2: {
     flexGrow: 70,
-    backgroundColor: 'green'
-
   },
   item: {
-    backgroundColor: '#f9c2ff',
-    padding: 20,
-    marginVertical: 8,
-    marginHorizontal: 16,
+    padding: 10,
+    marginVertical: 1,
+    marginHorizontal: 5,
+    backgroundColor: colors.light_grey1,
+    alignItems:'center'
   },
   title: {
     fontSize: 32,
