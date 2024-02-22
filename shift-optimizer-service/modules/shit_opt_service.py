@@ -45,7 +45,7 @@ def solve_shift_optimization(availability_matrix) -> OptimReult :
                 shift_pos = s + post_offset
                 ele1_pos = (e, shift_pos)
                 ele2_pos = (e, shift_pos + 1)
-                print(f'solve_shift_optimization->Consecutivity_Constraint->e:{e}, s:{s}, p:{p}, ele1_pos:{ele1_pos}, ele2_pos:{ele2_pos}')
+                print(f'solve_shift_optimization->Consecutivity_Constraint->e:{e}, s:{s}, ele1_pos:{ele1_pos}, ele2_pos:{ele2_pos}')
                 temp_constraints.append(x[ele1_pos]+x[ele2_pos])
             lp_sum = lpSum(temp_constraints) <= 1, f"Employee_Consecutivity_Constraint_{e}_{s}"
             print(f'solve_shift_optimization->Consecutivity_Constraint->lp_sum: {lp_sum}')
@@ -59,7 +59,7 @@ def solve_shift_optimization(availability_matrix) -> OptimReult :
         for e in range(num_employees):
             ele1_pos = (e, s)
             temp_constraints.append(x[ele1_pos])
-            print(f'solve_shift_optimization->Shift_Coverage_Constraint->e:{e}, s:{s}, p:{p}, ele1_pos:{ele1_pos}, ele1_value:{x[ele1_pos]}')
+            print(f'solve_shift_optimization->Shift_Coverage_Constraint->e:{e}, s:{s}, ele1_pos:{ele1_pos}, ele1_value:{x[ele1_pos]}')
         lp_sum = lpSum(temp_constraints) == 1, f"Shift_Coverage_Constraint{s}"
         print(f'solve_shift_optimization->Shift_Coverage_Constraint->lp_sum: {lp_sum}')
         prob += lp_sum

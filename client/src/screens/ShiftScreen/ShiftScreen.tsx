@@ -6,6 +6,7 @@ import useShiftResourceListView from "./hooks/useShiftResourceListView";
 import { ShiftBoard } from "./models";
 import { Button } from "react-native-paper";
 import { StyleSheet, View } from 'react-native';
+import { optimize } from "@app/services/optimizeService/OptimizieService";
 
 
 export interface ShiftScreenProps {
@@ -18,11 +19,29 @@ export default function ShiftScreen({ }: ShiftScreenProps) {
 
   const { tableView } = useGenerateShiftTableView(cachedValue)
 
+  const user_constarints = [
+    {
+      name: 'a',
+      constraints: [[1, 1, 0, 0], [1, 1, 1, 1]],
+    },
+    {
+      name: 'b',
+      constraints: [[1, 1, 1, 1], [0, 0, 1, 1]]
+    },
+    {
+      name: 'c',
+      constraints: [[1, 1, 0, 0], [1, 1, 1, 1]]
+    },
+    {
+      name: 'd',
+      constraints: [[1, 1, 1, 1], [0, 0, 1, 1]]
+    }
+  ]
 
   return (
     <View style={styles.container}>
       {SplitScreenComp({ leftPanel: namesListView, rightPanel: tableView, style: styles.element })}
-      <Button style={styles.comp} onPress={()=>{}}>optimize</Button>
+      <Button style={styles.comp} onPress={()=>{optimize(user_constarints)}}>optimize</Button>
     </View>
   );
 }

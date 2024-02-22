@@ -1,6 +1,4 @@
 import qs from 'qs'
-import Config from 'react-native-config'
-// import { camelizeKeys } from 'humps'
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosInstance } from 'axios'
 import { OptimizeShiftRequest, OptimizeShiftResponse } from './models'
 
@@ -11,7 +9,7 @@ class ApiService {
 
   constructor() {
     this.axiosInstance = axios.create({
-      baseURL: 'http://localhost:8080',
+      baseURL: 'http://127.0.0.1:8190',
       timeout: 500,
       headers: {
         contentType: 'application/json'      },
@@ -20,7 +18,7 @@ class ApiService {
 
     this.authToken = ''
 
-    this.axiosInstance.interceptors.request.use(this.requestMiddleware.bind(this))
+    // this.axiosInstance.interceptors.request.use(this.requestMiddleware.bind(this))
     // this.axiosInstance.interceptors.response.use(this.responseMiddleware.bind(this))
   }
 
@@ -29,7 +27,7 @@ class ApiService {
     const url = "/api/getOptimizedShift"
     //mock
     // const data = {"mat":[[1, 1, 1, 1,0,1,0,1], [1, 0, 1, 1,1,0,1,0],[1, 0, 1, 1,1,0,1,0]],"posts":2}
-    const data = {"constraints":JSON.stringify(constraints)}
+    const data = {"constraints":constraints}
     const response: OptimizeShiftResponse = await this.post(url,data)
     console.log(`optimizeShift respose: ${JSON.stringify(response)}`)
     return response
