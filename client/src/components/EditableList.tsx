@@ -9,7 +9,7 @@ import ApiService from "../services/api/ApiService";
 import { colors } from "@app/styles";
 
 interface EditableListProps {
-  list: string[],
+  list: (string | undefined)[],
   optimizeCB: ()=>void
 }
 

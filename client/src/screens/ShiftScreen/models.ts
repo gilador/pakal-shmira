@@ -1,5 +1,7 @@
+import { UserConstraints } from "@app/services/optimizeService/models"
+
 export type ShiftBoard = {
-    personals: string[]
+    personals: UserConstraints[]
     posts: string[]
     hours: string[]
     shifts: string[][]

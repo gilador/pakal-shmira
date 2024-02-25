@@ -10,26 +10,38 @@ class ApiService {
   constructor() {
     this.axiosInstance = axios.create({
       baseURL: 'http://127.0.0.1:8190',
-      timeout: 500,
+      timeout: 3000,
       headers: {
-        contentType: 'application/json'      },
+        contentType: 'application/json'
+      },
       paramsSerializer: (params: any) => qs.stringify(params, { arrayFormat: 'repeat' }),
     })
 
     this.authToken = ''
 
-    // this.axiosInstance.interceptors.request.use(this.requestMiddleware.bind(this))
-    // this.axiosInstance.interceptors.response.use(this.responseMiddleware.bind(this))
+    const requestMiddleware = (config: any) => {
+      // if (this.authToken) {
+      //   config.headers.Authorization = this.authToken
+      // } else {
+      //   delete config.headers.Authorization
+      // }
+  
+      console.log(`ApiService->request: ${JSON.stringify(config)}`)
+  
+      return config
+    }
+
+    this.axiosInstance.interceptors.request.use(requestMiddleware)
+    this.axiosInstance.interceptors.response.use(this.responseMiddleware.bind(this))
   }
 
-  public async optimizeShift(constraints: number[][][]): Promise<OptimizeShiftResponse>{
+  public async optimizeShift(constraints: number[][][]): Promise<OptimizeShiftResponse> {
     console.log('optimizeShift')
     const url = "/api/getOptimizedShift"
     //mock
     // const data = {"mat":[[1, 1, 1, 1,0,1,0,1], [1, 0, 1, 1,1,0,1,0],[1, 0, 1, 1,1,0,1,0]],"posts":2}
-    const data = {"constraints":constraints}
-    const response: OptimizeShiftResponse = await this.post(url,data)
-    console.log(`optimizeShift respose: ${JSON.stringify(response)}`)
+    const data = { "constraints": constraints }
+    const response: OptimizeShiftResponse = await this.post(url, data)
     return response
   }
   // public setAuthToken(token: string): void {
@@ -65,25 +77,26 @@ class ApiService {
   }
 
   private requestMiddleware(config: AxiosRequestConfig): AxiosRequestConfig {
-    if (this.authToken) {
-      config.headers.Authorization = this.authToken
-    } else {
-      delete config.headers.Authorization
-    }
+    // if (this.authToken) {
+    //   config.headers.Authorization = this.authToken
+    // } else {
+    //   delete config.headers.Authorization
+    // }
+
+    console.log(`ApiService->response: ${JSON.stringify(config)}`)
 
     return config
   }
 
-  // private responseMiddleware(response: AxiosResponse): AxiosResponse {
-  //   if (
-  //     response.data &&
-  //     (response.headers['content-type'] as string).includes('application/json')
-  //   ) {
-  //     response.data = camelizeKeys(response.data)
-  //   }
+  private responseMiddleware(response: AxiosResponse): AxiosResponse {
+    // if (response.data && (response.headers['content-type'] as string).includes('application/json')
+    // ) {
+    //   response.data = camelizeKeys(response.data)
+    // }  
+    console.log(`ApiService->response: ${JSON.stringify(response)}`)
 
-  //   return response
-  // }
+    return response
+  }
 }
 
 export default new ApiService()

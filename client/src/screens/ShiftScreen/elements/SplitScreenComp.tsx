@@ -23,7 +23,7 @@ export default function SplitScreenComp({ leftPanel, rightPanel, style}: SplitSc
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: 'white',
+    backgroundColor: 'pink  ',
   },
   leftPanel:{
     flexShrink: 1,
