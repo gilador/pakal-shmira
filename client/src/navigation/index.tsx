@@ -2,7 +2,7 @@ import * as React from 'react';
 import {FontAwesome} from '@expo/vector-icons';
 import {DarkTheme, DefaultTheme, NavigationContainer} from '@react-navigation/native';
 
-import LinkingConfiguration from './LinkingConfiguration';
+import LinkingConfiguration from './linkingConfiguration';
 import {RootNavigator} from "./stacks/rootStack";
 
 export default function Navigation() {

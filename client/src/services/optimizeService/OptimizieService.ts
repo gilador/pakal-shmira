@@ -19,7 +19,7 @@ export async function optimize(users: UserConstraints[]): Promise<UserAssigedShi
 export function translateUserShiftToConstraints(users: UserConstraints[]): number[][][] {
   const constraints = users.reduce(function (pV: number[][][], cV: UserConstraints, cI) {
     console.log("pv: ", pV, `cV: ${JSON.stringify(cV)}`);
-    pV.push(cV.assigemnts);
+    pV.push(cV.assignments);
     return pV; // *********  Important ******
   }, []);
 
@@ -31,7 +31,7 @@ async function OptimizeShiftResponseToUserAssigedShifts(optResponse: OptimizeShi
   // console.log(`OptimizeShiftResponseToUserAssigedShifts->optResponse: ${JSON.stringify(optResponse)}`)
   const userAssigedShifts: UserAssigedShifts[] = users.reduce((acum, current, index) => {
     const assignedShift = {...current}
-    assignedShift.assigemnts = [...optResponse.result[index]]
+    assignedShift.assignments = [...optResponse.result[index]]
     acum.push(assignedShift)
     return acum
   },[] as UserAssigedShifts[])

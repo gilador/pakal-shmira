@@ -1,6 +1,7 @@
 export type UserConstraints = {
     name: string,
-    assigemnts: number[][]
+    assignments: number[][]
+    total: number
 }
 
 export type UserAssigedShifts = UserConstraints

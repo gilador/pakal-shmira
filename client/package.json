@@ -8,7 +8,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "tsc": "npx tsc",
-     "test": "jest"
+    "test": "jest"
   },
   "jest": {
     "preset": "jest-expo"

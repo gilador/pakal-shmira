@@ -5,11 +5,13 @@ describe('Name of the group', () => {
     it('should translateUserShiftToConstraints transform correct', () => {
         const mockedUsersConstraints: UserConstraints[] = [{
             name: "Yosi",
-            assigemnts: [[1,1,0,0],[1,1,1,1]]
+            assignments: [[1,1,0,0],[1,1,1,1]],
+            total:0
         },
         {
             name: "Matan",
-            assigemnts: [[1,0,0,0],[0,0,1,1]]
+            assignments: [[1,0,0,0],[0,0,1,1]],
+            total:0
         }] 
 
         const result = translateUserShiftToConstraints(mockedUsersConstraints)

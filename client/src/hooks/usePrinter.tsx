@@ -1,7 +1,6 @@
 import React, {MutableRefObject, useEffect, useRef} from 'react';
 import {StyleSheet} from 'react-native';
 import {useReactToPrint} from "react-to-print";
-import renderer from "react-test-renderer";
 import {AntDesign} from "@expo/vector-icons";
 
 

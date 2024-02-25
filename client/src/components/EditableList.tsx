@@ -14,7 +14,7 @@ interface EditableListProps {
 }
 
 export function EditableList(props: EditableListProps) {
-  type ItemProps = { title: string };
+  type ItemProps = { title: string | undefined };
   const Item = ({ title }: ItemProps) => (
     <View style={styles.item}>
       <Text style={styles.title}>{title}</Text>
