@@ -2,13 +2,13 @@ import * as React from 'react';
 import {FontAwesome} from '@expo/vector-icons';
 import {DarkTheme, DefaultTheme, NavigationContainer} from '@react-navigation/native';
 
-import LinkingConfiguration from './linkingConfiguration';
+import linking from './LinkingConfiguration';
 import {RootNavigator} from "./stacks/rootStack";
 
 export default function Navigation() {
   return (
     <NavigationContainer
-      linking={LinkingConfiguration}>
+      linking={linking}>
       <RootNavigator />
     </NavigationContainer>
   );

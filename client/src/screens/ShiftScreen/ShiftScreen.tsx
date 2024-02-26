@@ -14,7 +14,7 @@ import TableView from "./elements/tableView";
 export interface ShiftScreenProps {
 }
 
-export default function shiftScreen({ }: ShiftScreenProps) {
+export default function ShiftScreen({ }: ShiftScreenProps) {
   const { list: names, selectedNameId, view: namesListView } = useShiftResourceListView()
   const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names))
   const handleOptimize = useCallback(async () => {
