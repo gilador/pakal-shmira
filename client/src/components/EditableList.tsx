@@ -1,32 +1,34 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import React, { Component } from 'react';
-import { FlatList, StyleProp, StyleSheet, View } from 'react-native';
+import { FlatList, StyleProp, StyleSheet, TouchableOpacity, View } from 'react-native';
 import {
   Text,
 } from 'react-native';
 import { Button } from "react-native-paper";
 import ApiService from "../services/api/ApiService";
 import { colors } from "@app/styles";
+import { UserInfo } from "@app/screens/shiftScreen/models";
+import { UserCell } from "./userCell";
 
-interface EditableListProps {
-  list: (string | undefined)[],
-  optimizeCB: ()=>void
+type EditableListProps = {
+  list: UserInfo[]
+  onSelect: (selectedNameId: string) => void
+  selectedNameId: string
 }
 
 export function EditableList(props: EditableListProps) {
-  type ItemProps = { title: string | undefined };
-  const Item = ({ title }: ItemProps) => (
-    <View style={styles.item}>
-      <Text style={styles.title}>{title}</Text>
-    </View>
+  type ItemProps = { user: UserInfo };
+
+  const Item = ({ user }: ItemProps) => (
+    <UserCell user={user} isSelected={props.selectedNameId === user.id} cb={() => props.onSelect(user.id)} />
   );
 
-  return <View style={styles.container}>
+  return (<View style={styles.container}>
     <FlatList
       style={styles.comp2}
       data={props.list}
-      renderItem={({ item }) => <Item title={item} />} />
-  </View>
+      renderItem={({ item }) => <Item user={item} />} />
+  </View>)
 }
 
 const styles = StyleSheet.create({
@@ -43,7 +45,7 @@ const styles = StyleSheet.create({
     marginVertical: 1,
     marginHorizontal: 5,
     backgroundColor: colors.light_grey1,
-    alignItems:'center'
+    alignItems: 'center'
   },
   title: {
     fontSize: 32,
