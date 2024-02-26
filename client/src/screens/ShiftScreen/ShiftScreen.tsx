@@ -48,7 +48,7 @@ export default function shiftScreen({ }: ShiftScreenProps) {
       console.error('Error occurred while optimizing shifts:', error);
       // Handle error appropriately, e.g., show error message to the user
     }
-  },[])
+  },[names])
 
   return (
     <View style={styles.container}>
