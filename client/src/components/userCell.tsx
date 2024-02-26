@@ -3,13 +3,13 @@ import { TouchableOpacity, StyleSheet, View, Text} from "react-native";
 
 export type UserCellProps = {
     user: UserInfo
-    cb: () => void
     isSelected: boolean
+    cb?: () => void
 }
 
 export function UserCell(props: UserCellProps) {
     return (
-        <TouchableOpacity onPress={() => props.cb()}>
+        <TouchableOpacity onPress={props.cb} disabled = {!props.cb}>
             <View style={styles.container}>
                 <Text style={getTextStyle(props.user, props.isSelected)}>{props.user.name}</Text>
             </View>

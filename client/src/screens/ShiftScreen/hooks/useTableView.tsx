@@ -21,16 +21,12 @@ export default function useTableView({ names, selectedNameId }: useGenerateShift
     const uiArray = shiftData.shifts.map((array) => array.map((user => {
       console.log(`val:m${JSON.stringify(user)}, selectedNameId: ${selectedNameId}`)
       return (
-        <UserCell user={user} isSelected={user.id === selectedNameId} cb={() => alertIndex(user.id)} />
+        <UserCell user={user} isSelected={user.id === selectedNameId}/>
       )
     })))
     return uiArray
 
   }, [shiftData, selectedNameId])
-
-  const alertIndex = (value: any) => {
-    console.log(`This is column ${value}`);
-  }
 
   const handleOptimize = async () => {
     try {
