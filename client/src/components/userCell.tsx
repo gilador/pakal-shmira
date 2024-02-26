@@ -18,12 +18,12 @@ export function UserCell(props: UserCellProps) {
 }
 
 function getTextStyle(user: UserInfo, isSelected: boolean): any[]{
-    return [styles.title, isSelected ? { backgroundColor: 'blue' } : { backgroundColor: 'white' }]
+    return [styles.title, isSelected ? styles.selected : {}]
 
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 10, padding: 16, paddingTop: 30, backgroundColor: '#fff' },
+    container: { flex: 10, padding: 16, paddingTop: 30 },
     title: { textAlign: 'center' },
-    selected: {backgroundColor: 'azure'}
+    selected: {backgroundColor: 'pink'}
   });

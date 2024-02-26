@@ -15,7 +15,6 @@ export interface ShiftScreenProps {
 }
 
 export default function shiftScreen({ }: ShiftScreenProps) {
-  console.log(`ShiftScreen rnder`)
   const { list: names, selectedNameId, view: namesListView } = useShiftResourceListView()
   const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names))
 
