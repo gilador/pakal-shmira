@@ -15,7 +15,7 @@ export default function useShiftResourceListView() {
   })
 
   const [list, setList] = useState<UserInfo[]>(mocked);
-  const [selectedNameId, setSelectedNameId] = useState<string>('יוסי+2');
+  const [selectedNameId, setSelectedNameId] = useState<string>('יוסי+2'); //TODO
   const toggleUserSellection = useCallback((userNameId: string) => {
     setSelectedNameId(selectedNameId => selectedNameId === userNameId ? '' : userNameId)
   },[list])
