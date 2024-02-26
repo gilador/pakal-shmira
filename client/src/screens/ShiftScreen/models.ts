@@ -1,8 +1,17 @@
-import { UserConstraints } from "@app/services/optimizeService/models"
+export type UserInfo ={
+    name: string,
+    id: string
+}
+
+export type UserAssigments = {
+    user: UserInfo,
+    assignments: number[][]
+    total: number
+}
 
 export type ShiftBoard = {
-    personals: UserConstraints[]
+    personals: UserAssigments[]
     posts: string[]
     hours: string[]
-    shifts: string[][]
+    shifts: UserInfo[][]
 }

@@ -5,17 +5,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import SplitScreenComp from "./elements/SplitScreenComp";
 import useShiftResourceListView from "./hooks/useShiftResourceListView";
-import useTableView from "./hooks/useGenerateShiftTableView";
+import useTableView from "./hooks/useTableView";
 import { ShiftBoard } from "./models";
 
 
 export interface ShiftScreenProps {
 }
 
-export default function ShiftScreen({ }: ShiftScreenProps) {
+export default function shiftScreen({ }: ShiftScreenProps) {
   console.log(`ShiftScreen rnder`)
-  const { list: names, selectedNameIndex, view: namesListView } = useShiftResourceListView()
-  const { tableView, shiftData, handleOptimize } = useTableView({ names, selectedNameIndex })
+  const { list: names, selectedNameId, view: namesListView } = useShiftResourceListView()
+  const { tableView, shiftData, handleOptimize } = useTableView({ names, selectedNameId })
 
   return (
     <View style={styles.container}>

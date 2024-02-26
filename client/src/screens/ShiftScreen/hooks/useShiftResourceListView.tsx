@@ -6,21 +6,26 @@ import { FlatList, StyleSheet, View } from 'react-native';
 import {
   Text,
 } from 'react-native';
+import { UserInfo } from "../models";
 
 export default function useShiftResourceListView() {
-  const [list, setList] = useState(['חיים', 'אלון', 'יוסי', 'אפי', 'מאיר', 'עוז', 'צבי', 'תומר','מוטי','חזי','אלי',]);
-  const [selectedNameIndex, setSelectedNameIndex] = useState(0);
+  const mocked = ['חיים', 'אלון', 'יוסי', 'אפי', 'מאיר', 'עוז', 'צבי', 'תומר','מוטי','חזי','אלי'].map((val,index) => {
+    let user: UserInfo = { name: val, id:`${val}+${index}`}
+    return user
+  })
+
+  const [list, setList] = useState<UserInfo[]>(mocked);
+  const [selectedNameId, setSelectedNameId] = useState<string>('יוסי+2');
 
   const shiftResourceListView = (
     <View style={styles.container}>
-      <EditableList list={list} optimizeCB={() => optimize([])} />
+      <EditableList list={['חיים', 'אלון', 'יוסי', 'אפי', 'מאיר', 'עוז', 'צבי', 'תומר','מוטי','חזי','אלי']} optimizeCB={() => optimize([])} />
     </View>
   )
 
-  const mocked = [{}]
   return {
     list,
-    selectedNameIndex,
+    selectedNameId,
     view: shiftResourceListView
   }
 }

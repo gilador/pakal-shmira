@@ -1,23 +1,39 @@
 import { useCallback, useMemo, useState } from "react";
 import React, { Component } from 'react';
-import { StyleSheet, TouchableWithoutFeedbackComponent, View } from 'react-native';
+import { StyleSheet, TouchableWithoutFeedbackComponent, View, Text, TouchableOpacity, Alert } from 'react-native';
 import { Table, Row, Rows, TableWrapper, Col } from 'react-native-reanimated-table';
 
-import { UserConstraints } from "@app/services/optimizeService/models";
 import { optimize } from "@app/services/optimizeService/OptimizieService";
-import { stringify } from "qs";
-import { ShiftBoard } from "../models";
+import { ShiftBoard, UserAssigments, UserInfo } from "../models";
 
 interface useGenerateShiftTableViewProp {
-  names: (string | undefined)[],
-  selectedNameIndex: number
+  names: UserInfo[],
+  selectedNameId: string
 }
 
-export default function useTableView({ names, selectedNameIndex }: useGenerateShiftTableViewProp) {
-
+export default function useTableView({ names, selectedNameId}: useGenerateShiftTableViewProp) {
+  console.log(`useTableView->names:${JSON.stringify(names)}`)
   const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names))
 
-  console.log(`useGenerateShiftTableView->shiftData:${JSON.stringify(shiftData)}`)
+  const shiftDataElements = useMemo(() => {
+
+    const uiArray = shiftData.shifts.map((array) => array.map((val => { 
+      console.log(`val:m${JSON.stringify(val)}, selectedNameId: ${selectedNameId}`)
+      return(
+      <TouchableOpacity onPress={() => alertIndex(val.id)}>
+        <View style={styles.btn}>
+          <Text style={val.id === selectedNameId ? {backgroundColor: 'blue'} : {backgroundColor: 'white'}}>{val.name}</Text>
+        </View>
+      </TouchableOpacity>
+      )
+    })))
+    return uiArray
+
+  }, [shiftData])
+
+  const alertIndex = (value: any) => {
+    console.log(`This is column ${value}`);
+  }
 
   const handleOptimize = async () => {
     try {
@@ -27,13 +43,13 @@ export default function useTableView({ names, selectedNameIndex }: useGenerateSh
       // Update shift data
       setShiftData((prev: ShiftBoard) => {
         const boardShift = prev.shifts.slice(); // Create a copy of board shifts
-        userShifts.forEach(userShift => {
+        userShifts.forEach((userShift, index) => {
           let total = 0;
           userShift.assignments.forEach((hourArray, hourIndex) => {
             hourArray.forEach((post, postIndex) => {
-              console.log(`handleOptimize-> ${userShift.name},[${hourIndex}][${postIndex}]= ${post}`);
+              console.log(`handleOptimize-> ${userShift.user.name},[${hourIndex}][${postIndex}]= ${post}`);
               if (post === 1) {
-                boardShift[postIndex][hourIndex] = userShift.name;
+                boardShift[postIndex][hourIndex] = {name: userShift.user.name, id: `${userShift.user.name}+${index}`}
                 total++;
               }
             });
@@ -50,14 +66,13 @@ export default function useTableView({ names, selectedNameIndex }: useGenerateSh
     }
   };
 
-  console.log('useGenerateShiftTableView')
   const getShiftView = (
     <View style={styles.container}>
       <Table borderStyle={{ borderWidth: 1 }}>
         <Row data={shiftData.posts} flexArr={[1, 1, 1, 1, 1]} style={styles.head} textStyle={styles.text} />
         <TableWrapper style={styles.wrapper}>
           <Col data={shiftData.hours} style={styles.title} textStyle={styles.text} />
-          <Rows data={shiftData.shifts} flexArr={[1, 1, 1, 1]} style={styles.row} textStyle={styles.text} />
+          <Rows data={shiftDataElements} flexArr={[1, 1, 1, 1]} style={styles.row} textStyle={styles.text} />
         </TableWrapper>
       </Table>
     </View>
@@ -70,11 +85,11 @@ export default function useTableView({ names, selectedNameIndex }: useGenerateSh
   }
 }
 
-function getShiftBoardDataMock(names: (string | undefined)[]): ShiftBoard {
+function getShiftBoardDataMock(users: UserInfo[]): ShiftBoard {
   const posts = ['', 'ש.ג1', 'ש.ג2', 'מערבי', 'מזרחי']
   const hours = ['0600-1000', '1000-1400', '1400-1600', '1600-2000', '2000-2400']
 
-  const sharedConst = ['ש.ג1', 'ש.ג2', 'מערבי', 'מזרחי'].reduce(
+  const sharedConstraints = ['ש.ג1', 'ש.ג2', 'מערבי', 'מזרחי'].reduce(
     (acumPosts, post) => {
       const origRet: number[] = hours.reduce((acumeHours, hour) => {
         (acumeHours as number[]).push(1)
@@ -85,27 +100,27 @@ function getShiftBoardDataMock(names: (string | undefined)[]): ShiftBoard {
     }
     , [])
 
-  const usersConst = names?.reduce((acum, name) => {
-    let userCon: UserConstraints = {
-      name: name || '',
-      assignments: sharedConst,
+  const usersConst = users?.reduce((acum, user, index) => {
+    let userCon: UserAssigments = {
+      user: {name: user.name || '', id:`${user.name}+${index}`},
+      assignments: sharedConstraints,
       total: 0
     };
-    (acum as UserConstraints[]).push(userCon)
+    (acum as UserAssigments[]).push(userCon)
     return acum
   }, [])
 
-  console.log(`gilad-> getShiftBoardDataMock-> usersConst: ${JSON.stringify(usersConst)}`)
+  // console.log(`gilad-> getShiftBoardDataMock-> usersConst: ${JSON.stringify(usersConst)}`)
 
   const mockShiftBoard = {
     personals: usersConst,
     posts,
     hours,
-    shifts: [['', '', '', ''],
-    ['', '', '', ''],
-    ['', '', '', ''],
-    ['', '', '', ''],
-    ['', '', '', '']]
+    shifts: [[{name:'',id:''}, {name:'',id:''}, {name:'',id:''}, {name:'',id:''}],
+    [{name:'',id:''}, {name:'',id:''}, {name:'',id:''}, {name:'',id:''}],
+    [{name:'',id:''}, {name:'',id:''}, {name:'',id:''}, {name:'',id:''}],
+    [{name:'',id:''}, {name:'',id:''}, {name:'',id:''}, {name:'',id:''}],
+    [{name:'',id:''}, {name:'',id:''}, {name:'',id:''}, {name:'',id:''}]]
   }
   return mockShiftBoard
 }
@@ -117,5 +132,10 @@ const styles = StyleSheet.create({
   row: { height: 50 },
   text: { textAlign: 'center' },
   wrapper: { flexDirection: 'row' },
+  btn: { width: 58, height: 18, marginLeft: 15, backgroundColor: '#c8e1ff', borderRadius: 2 },
+
 
 });
+
+
+

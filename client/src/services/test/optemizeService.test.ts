@@ -1,15 +1,15 @@
+import { UserAssigments } from "@app/screens/shiftScreen/models";
 import { translateUserShiftToConstraints } from "../optimizeService/OptimizieService";
-import { UserConstraints } from "../optimizeService/models";
 
 describe('Name of the group', () => {
     it('should translateUserShiftToConstraints transform correct', () => {
-        const mockedUsersConstraints: UserConstraints[] = [{
-            name: "Yosi",
+        const mockedUsersConstraints: UserAssigments[] = [{
+            user: {name: "Yosi", id:'Yosi+0'},
             assignments: [[1,1,0,0],[1,1,1,1]],
             total:0
         },
         {
-            name: "Matan",
+            user: {name: "Matan", id:'Matan+1'},
             assignments: [[1,0,0,0],[0,0,1,1]],
             total:0
         }] 
