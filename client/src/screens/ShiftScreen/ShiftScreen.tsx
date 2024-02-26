@@ -19,7 +19,7 @@ export default function shiftScreen({ }: ShiftScreenProps) {
   const { list: names, selectedNameId, view: namesListView } = useShiftResourceListView()
   const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names))
 
-  const handleOptimize = async () => {
+  const handleOptimize = useCallback(async () => {
     try {
       // Optimize user shifts asynchronously
       const userShifts = await optimize(shiftData.personals);
@@ -48,12 +48,12 @@ export default function shiftScreen({ }: ShiftScreenProps) {
       console.error('Error occurred while optimizing shifts:', error);
       // Handle error appropriately, e.g., show error message to the user
     }
-  };
+  },[])
 
   return (
     <View style={styles.container}>
       {SplitScreenComp({ leftPanel: namesListView, rightPanel: (<TableView selectedNameId={selectedNameId} shiftData={shiftData} />), style: styles.top })}
-      <Button style={styles.bottom} onPress={() => { handleOptimize() }}>optimize</Button>
+      <Button style={styles.bottom} onPress={handleOptimize}>optimize</Button>
     </View>
   );
 }
