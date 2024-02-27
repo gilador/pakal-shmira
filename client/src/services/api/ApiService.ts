@@ -38,8 +38,6 @@ class ApiService {
   public async optimizeShift(constraints: number[][][]): Promise<OptimizeShiftResponse> {
     console.log('optimizeShift')
     const url = "/api/getOptimizedShift"
-    //mock
-    // const data = {"mat":[[1, 1, 1, 1,0,1,0,1], [1, 0, 1, 1,1,0,1,0],[1, 0, 1, 1,1,0,1,0]],"posts":2}
     const data = { "constraints": constraints }
     const response: OptimizeShiftResponse = await this.post(url, data)
     return response

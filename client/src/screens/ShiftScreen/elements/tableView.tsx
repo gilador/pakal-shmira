@@ -6,38 +6,44 @@ import { Table, Row, Rows, TableWrapper, Col } from 'react-native-reanimated-tab
 import { optimize } from "@app/services/optimizeService/OptimizieService";
 import { ShiftBoard, UserAssigments, UserInfo } from "../models";
 import { UserCell } from "@app/components/userCell";
+import { getEmptyCellsForSkeleton } from "../utils";
 
 type useGenerateShiftTableViewProp = {
   selectedNameId: string
   posts: string[]
   hours: string[]
-  shifts: UserInfo[][]
+  shifts?: UserInfo[][]
 }
 
 export default function TableView({ selectedNameId, posts, hours, shifts }: useGenerateShiftTableViewProp) {
-  console.log(`useTableView->selectedNameId:${JSON.stringify(selectedNameId)}`)
+  console.log(`TableView->selectedNameId:${JSON.stringify(selectedNameId)}`)
   // const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names))
+  const emptyCellsForSkeleton: UserInfo[][] = useMemo(() => {
+    return getEmptyCellsForSkeleton(hours.length, posts.length-1)
+  },[hours, posts])
 
   const shiftDataElements = useMemo(() => {
+    console.log(`TableView->useMemo->shifts:${JSON.stringify(shifts)}`)
 
-    const uiArray = shifts.map((array) => array.map((user => {
-      console.log(`val:m${JSON.stringify(user)}, selectedNameId: ${selectedNameId}`)
+    let uiArray = (shifts ?? emptyCellsForSkeleton).map((array) => array.map((user => {
+      console.log(`TableView->val:m${JSON.stringify(user)}, selectedNameId: ${selectedNameId}`)
       return (
         <UserCell user={user} isSelected={user.id === selectedNameId}/>
       )
     })))
     return uiArray
 
-  }, [[...shifts], selectedNameId])
+  }, [[...shifts??[]], selectedNameId])
 
+  const flexHeadArray = useMemo(()=>(Array(posts.length).fill(1)),[posts])
 
   return (
     <View style={styles.container}>
       <Table borderStyle={{ borderWidth: 1 }}>
-        <Row data={posts} flexArr={[1, 1, 1, 1, 1]} style={styles.head} textStyle={styles.text} />
+        <Row data={posts} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
         <TableWrapper style={styles.wrapper}>
           <Col data={hours} style={styles.title} textStyle={styles.text} />
-          <Rows data={shiftDataElements} flexArr={[1, 1, 1, 1]} style={styles.row} textStyle={styles.text} />
+          <Rows data={shiftDataElements} flexArr={flexHeadArray.slice(0,-1)} style={styles.row} textStyle={styles.text} />
         </TableWrapper>
       </Table>
     </View>

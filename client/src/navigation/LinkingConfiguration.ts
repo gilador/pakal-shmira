@@ -7,7 +7,6 @@
 import { LinkingOptions } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
 import {RootStackParamList} from "../../types";
-import ShiftScreen from '../screens/shiftScreen/shiftScreen';
 
 const linking: LinkingOptions<RootStackParamList> = {
   prefixes: [Linking.createURL('/')],

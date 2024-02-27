@@ -13,5 +13,5 @@ export type ShiftBoard = {
     personals: UserAssigments[]
     posts: string[]
     hours: string[]
-    shifts: UserInfo[][]
+    shifts?: UserInfo[][]
 }

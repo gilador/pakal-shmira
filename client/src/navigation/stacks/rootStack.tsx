@@ -4,7 +4,6 @@ import NotFoundScreen from "../../screens/notFoundScreen";
 import ModalScreen from "../../screens/modalScreen";
 import {RootStackParamList} from "../../../types";
 import ShiftScreen from "@app/screens/shiftScreen/shiftScreen";
-// import ShiftScreen from "@app/screens/ShiftScreen/ShiftScreen";
 
 /**
  * A root stack navigator is often used for displaying modals on top of all other content.

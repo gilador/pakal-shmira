@@ -9,58 +9,72 @@ import useTableView from "./elements/tableView";
 import { ShiftBoard, UserAssigments, UserInfo } from "./models";
 import { optimize } from "@app/services/optimizeService/OptimizieService";
 import TableView from "./elements/tableView";
+import { getEmptyCellsForSkeleton } from "./utils";
 
 
-export interface ShiftScreenProps {
-}
-
-export default function ShiftScreen({ }: ShiftScreenProps) {
+export default function ShiftScreen() {
+  console.log('ShiftScreen')
   const { list: names, selectedNameId, view: namesListView } = useShiftResourceListView()
   const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names))
+  const emptyCellsForSkeleton: UserInfo[][] = useMemo(() => {
+    return getEmptyCellsForSkeleton(shiftData.hours.length, shiftData.posts.length-1)
+  },[shiftData])
+
   const handleOptimize = useCallback(async () => {
     try {
       // Optimize user shifts asynchronously
-      const userShifts = await optimize(shiftData.personals);
+      const userAssigments : UserAssigments[] = await optimize(shiftData.personals);
 
       // Update shift data
       setShiftData((prev: ShiftBoard) => {
-        const boardShift = prev.shifts.slice(); // Create a copy of board shifts
-        userShifts.forEach((userShift, index) => {
+        const shifts = emptyCellsForSkeleton.slice()
+        userAssigments.forEach((userShift, index) => {
           let total = 0;
           userShift.assignments.forEach((hourArray, hourIndex) => {
             hourArray.forEach((post, postIndex) => {
-              console.log(`handleOptimize-> ${userShift.user.name},[${hourIndex}][${postIndex}]= ${post}`);
+              // console.log(`handleOptimize-> ${userShift.user.name},[${hourIndex}][${postIndex}]= ${post}`);
               if (post === 1) {
-                boardShift[postIndex][hourIndex] = { name: userShift.user.name, id: `${userShift.user.name}+${index}` }
+                shifts[postIndex][hourIndex] = { name: userShift.user.name, id: `${userShift.user.name}+${index}` }
                 total++;
               }
             });
           });
           userShift.total = total
         });
+        const newShiftBoard: ShiftBoard = {personals: userAssigments, shifts, hours: prev.hours, posts: prev.posts}
 
-        // Update shift data with the optimized shifts
-        return { ...prev };
+        // console.log(`newShiftBoar: ${JSON.stringify(newShiftBoard)}`)
+        return newShiftBoard;
       });
     } catch (error) {
       console.error('Error occurred while optimizing shifts:', error);
       // Handle error appropriately, e.g., show error message to the user
     }
-  },[shiftData])
+  }, [shiftData])
+
+  const rightView = useMemo(() => (
+    <View>
+      <TableView selectedNameId={selectedNameId} shifts={shiftData.shifts} hours={shiftData.hours} posts={shiftData.posts} />
+      <TableView selectedNameId={selectedNameId} hours={shiftData.hours} posts={shiftData.posts} />
+    </View>
+  ), [selectedNameId, shiftData])
 
   return (
     <View style={styles.container}>
-      {SplitScreenComp({ leftPanel: namesListView, rightPanel: (<TableView selectedNameId={selectedNameId} shifts={shiftData.shifts} hours={shiftData.hours} posts={shiftData.posts} />), style: styles.top })}
+      {SplitScreenComp({ leftPanel: namesListView, rightPanel: rightView, style: styles.top })}
       <Button style={styles.bottom} onPress={handleOptimize}>optimize</Button>
     </View>
   );
 }
 
-function getShiftBoardDataMock(users: UserInfo[]): ShiftBoard {
-  const posts = ['', 'ש.ג1', 'ש.ג2', 'מערבי', 'מזרחי']
-  const hours = ['0600-1000', '1000-1400', '1400-1600', '1600-2000', '2000-2400']
 
-  const sharedConstraints = ['ש.ג1', 'ש.ג2', 'מערבי', 'מזרחי'].reduce(
+//------------------------------------------functions--------------------------------------------------------
+
+function getShiftBoardDataMock(users: UserInfo[]): ShiftBoard {
+  const posts = ['', 'ש.ג1', 'ש.ג2', 'מערבי', 'מזרחי','דרומי']
+  const hours = ['0600-1000', '1000-1400', '1400-1600', '1600-2000', '2000-2400', '0000-0400']
+
+  const sharedConstraints = (posts.slice(1)).reduce(
     (acumPosts, post) => {
       const origRet: number[] = hours.reduce((acumeHours, hour) => {
         (acumeHours as number[]).push(1)
@@ -87,14 +101,12 @@ function getShiftBoardDataMock(users: UserInfo[]): ShiftBoard {
     personals: usersConst,
     posts,
     hours,
-    shifts: [[{ name: '', id: '' }, { name: '', id: '' }, { name: '', id: '' }, { name: '', id: '' }],
-    [{ name: '', id: '' }, { name: '', id: '' }, { name: '', id: '' }, { name: '', id: '' }],
-    [{ name: '', id: '' }, { name: '', id: '' }, { name: '', id: '' }, { name: '', id: '' }],
-    [{ name: '', id: '' }, { name: '', id: '' }, { name: '', id: '' }, { name: '', id: '' }],
-    [{ name: '', id: '' }, { name: '', id: '' }, { name: '', id: '' }, { name: '', id: '' }]]
+    shifts: undefined
   }
   return mockShiftBoard
 }
+
+//------------------------------------------StyleSheet--------------------------------------------------------
 
 const styles = StyleSheet.create({
   container: {
@@ -118,5 +130,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     backgroundColor: 'lightgreen',
   },
+  rightContainer: {
+    flexDirection: 'column'
+  }
 });
-
