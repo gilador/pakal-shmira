@@ -3,35 +3,26 @@ import React, { Component } from 'react';
 import { StyleSheet, TouchableWithoutFeedbackComponent, View, Text, TouchableOpacity, Alert } from 'react-native';
 import { Table, Row, Rows, TableWrapper, Col } from 'react-native-reanimated-table';
 
-import { optimize } from "@app/services/optimizeService/OptimizieService";
 import { ShiftBoard, UserAssigments, UserInfo } from "../models";
-// import { UserCell } from "@app/components/userCell";
 import { getEmptyCellsForSkeleton } from "../utils";
-import UserCell from "@app/components/userCell";
+import NameCellView from "./NameCellView";
 
-type useGenerateShiftTableViewProp = {
+type ShiftTableViewProp = {
   selectedNameId: string
   posts: string[]
   hours: string[]
   shifts?: UserInfo[][]
-  constraints?: number[][] 
 }
 
-export default function TableView({ selectedNameId, posts, hours, shifts, constraints =[] }: useGenerateShiftTableViewProp) {
-  console.log(`TableView->selectedNameId:${JSON.stringify(selectedNameId)}`)
-  // const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names))
+export default function ShiftTableView({ selectedNameId, posts, hours, shifts }: ShiftTableViewProp) {
   const emptyCellsForSkeleton: UserInfo[][] = useMemo(() => {
-    return getEmptyCellsForSkeleton(hours.length, posts.length-1)
-  },[hours, posts])
+    return getEmptyCellsForSkeleton<UserInfo>(hours.length, posts.length - 1, { name: "", id: "" })
+  }, [hours, posts])
 
   const shiftDataElements = useMemo(() => {
-    console.log(`TableView->useMemo->shifts:${JSON.stringify(shifts)}`)
-
     let uiArray = (shifts ?? emptyCellsForSkeleton).map((array) => array.map((user => {
-      console.log(`TableView->val:m${JSON.stringify(user)}, selectedNameId: ${selectedNameId}`)
       return (
-        <UserCell user={user} isSelected={user.id === selectedNameId}/>
-        // <View/>
+        <NameCellView user={user} isSelected={user.id === selectedNameId} />
       )
     })))
     return uiArray
@@ -50,7 +41,7 @@ export default function TableView({ selectedNameId, posts, hours, shifts, constr
   //   })))
   //   return uiArray
   // },[constraints])
-  const flexHeadArray = useMemo(()=>(Array(posts.length).fill(1)),[posts])
+  const flexHeadArray = useMemo(() => (Array(posts.length).fill(1)), [posts])
 
   return (
     <View style={styles.container}>
@@ -58,7 +49,7 @@ export default function TableView({ selectedNameId, posts, hours, shifts, constr
         <Row data={posts} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
         <TableWrapper style={styles.wrapper}>
           <Col data={hours} style={styles.title} textStyle={styles.text} />
-          <Rows data={shiftDataElements} flexArr={flexHeadArray.slice(0,-1)} style={styles.row} textStyle={styles.text} />
+          <Rows data={shiftDataElements} flexArr={flexHeadArray.slice(0, -1)} style={styles.row} textStyle={styles.text} />
         </TableWrapper>
       </Table>
     </View>
@@ -74,8 +65,8 @@ const styles = StyleSheet.create({
   row: { height: 50 },
   text: { textAlign: 'center' },
   wrapper: { flexDirection: 'row' },
-  constraint_allow: {backgroundColor: 'green'},
-  constraint_dis_allow: {backgroundColor: 'red'}
+  constraint_allow: { backgroundColor: 'green' },
+  constraint_dis_allow: { backgroundColor: 'red' }
 });
 
 

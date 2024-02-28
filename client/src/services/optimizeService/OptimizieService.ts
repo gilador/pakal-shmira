@@ -17,10 +17,10 @@ export async function optimize(users: UserAssigments[]): Promise<UserAssigments[
 }
 
 export function translateUserShiftToConstraints(users: UserAssigments[]): number[][][] {
-  const constraints = users.reduce(function (pV: number[][][], cV: UserAssigments, cI) {
-    console.log("pv: ", pV, `cV: ${JSON.stringify(cV)}`);
-    pV.push(cV.assignments);
-    return pV; // *********  Important ******
+  const constraints = users.reduce(function (pV: number[][][], cV: UserAssigments) {
+    // console.log("pv: ", pV, `cV: ${JSON.stringify(cV)}`);
+    pV.push(cV.assignments.map(val=>val.map(inner=>+inner)));
+    return pV;
   }, []);
 
   console.log(`constraints: ${JSON.stringify(constraints)}`)
@@ -28,7 +28,7 @@ export function translateUserShiftToConstraints(users: UserAssigments[]): number
 }
 
 async function OptimizeShiftResponseToUserAssigedShifts(optResponse: OptimizeShiftResponse, users: UserAssigments[]): Promise<UserAssigments[]> {
-  console.log(`OptimizeShiftResponseToUserAssigedShifts->optResponse: ${JSON.stringify(optResponse)}, users: ${JSON.stringify(users)}`)
+  // console.log(`OptimizeShiftResponseToUserAssigedShifts->optResponse: ${JSON.stringify(optResponse)}, users: ${JSON.stringify(users)}`)
   const userAssigedShifts: UserAssigments[] = users.reduce((acum, current, index) => {
     const assignedShift = {...current}
     assignedShift.assignments = [...optResponse.result[index]]

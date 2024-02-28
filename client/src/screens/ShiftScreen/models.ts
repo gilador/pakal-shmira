@@ -5,7 +5,7 @@ export type UserInfo ={
 
 export type UserAssigments = {
     user: UserInfo,
-    assignments: number[][]
+    assignments: boolean[][]
     total: number
 }
 

@@ -2,13 +2,13 @@ import { UserInfo } from "@app/screens/shiftScreen/models";
 import { memo } from "react";
 import { TouchableOpacity, StyleSheet, View, Text} from "react-native";
 
-export type UserCellProps = {
+export type NameCellViewProps = {
     user: UserInfo
     isSelected: boolean
     cb?: () => void
 }
 
-const UserCell = (props: UserCellProps) => {
+const NameCellView = (props: NameCellViewProps) => {
     console.log(`UserCell: ${props.user.name}`)
     return (
         <TouchableOpacity onPress={props.cb} disabled = {!props.cb}>
@@ -30,4 +30,4 @@ const styles = StyleSheet.create({
     selected: {backgroundColor: 'pink'}
   });
 
-  export default memo(UserCell)
+  export default memo(NameCellView)

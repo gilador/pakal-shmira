@@ -3,6 +3,6 @@ export type OptimizeShiftRequest = {
 }
 
 export type OptimizeShiftResponse = {
-    result: number[][][]
+    result: boolean[][][]
     isOptim: boolean
 }

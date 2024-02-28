@@ -5,11 +5,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import SplitScreenComp from "./elements/SplitScreenComp";
 import useShiftUsersListView from "./hooks/useShiftUsersListView";
-import useTableView from "./elements/tableView";
+import useTableView from "./elements/ShiftTableView";
 import { ShiftBoard, UserAssigments, UserInfo } from "./models";
 import { optimize } from "@app/services/optimizeService/OptimizieService";
-import TableView from "./elements/tableView";
 import { getEmptyCellsForSkeleton } from "./utils";
+import ShiftTableView from "./elements/ShiftTableView";
+import AvilabilityTableView from "./elements/AvilabilityTableView";
 
 
 export default function ShiftScreen() {
@@ -17,7 +18,7 @@ export default function ShiftScreen() {
   const { list: names, selectedNameId, view: namesListView } = useShiftUsersListView()
   const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names))
   const emptyCellsForSkeleton: UserInfo[][] = useMemo(() => {
-    return getEmptyCellsForSkeleton(shiftData.hours.length, shiftData.posts.length-1)
+    return getEmptyCellsForSkeleton<UserInfo>(shiftData.hours.length, shiftData.posts.length-1,{name:'',id:''})
   },[shiftData])
 
   const handleOptimize = useCallback(async () => {
@@ -33,7 +34,7 @@ export default function ShiftScreen() {
           userShift.assignments.forEach((hourArray, hourIndex) => {
             hourArray.forEach((post, postIndex) => {
               // console.log(`handleOptimize-> ${userShift.user.name},[${hourIndex}][${postIndex}]= ${post}`);
-              if (post === 1) {
+              if (post) {
                 shifts[postIndex][hourIndex] = { name: userShift.user.name, id: `${userShift.user.name}+${index}` }
                 total++;
               }
@@ -54,10 +55,8 @@ export default function ShiftScreen() {
 
   const rightView = useMemo(() => (
     <View>
-      <TableView selectedNameId={selectedNameId} shifts={shiftData.shifts} hours={shiftData.hours} posts={shiftData.posts} />
-      {/* <TableView hours={shiftData.hours} posts={shiftData.posts} constraints={shiftData.personals.reduce((prev, userAssigments)=>{
-        return userAssigments.user.id === selectedNameId ? userAssigments.assignments : undefined},
-        [])} /> */}
+      <ShiftTableView selectedNameId={selectedNameId} shifts={shiftData.shifts} hours={shiftData.hours} posts={shiftData.posts} />
+      {selectedNameId && <AvilabilityTableView colLabel={shiftData.posts} rowLabel={shiftData.hours} data={shiftData.personals[0].assignments} />}
     </View>
   ), [selectedNameId, shiftData])
 

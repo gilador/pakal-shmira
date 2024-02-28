@@ -1,7 +1,7 @@
 import { UserInfo } from "./models";
 
-export function getEmptyCellsForSkeleton(cols: number, rows: number): UserInfo[][]{
+export function getEmptyCellsForSkeleton<T>(cols: number, rows: number, fillObj: T): T[][]{
     return Array(cols).fill(undefined).map(() => {
-      return Array<UserInfo>(rows).fill({ name: "", id: "" });
+      return Array<T>(rows).fill(fillObj);
   })
 }
