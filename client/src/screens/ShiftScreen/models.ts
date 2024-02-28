@@ -1,17 +1,18 @@
-export type UserInfo ={
+export type User ={
     name: string,
     id: string
 }
 
-export type UserAssigments = {
-    user: UserInfo,
+export type UserShiftData = {
+    user: User,
     assignments: boolean[][]
-    total: number
+    constraints: boolean[][]
+    totalAssigments: number
 }
 
 export type ShiftBoard = {
-    personals: UserAssigments[]
+    users: UserShiftData[]
     posts: string[]
     hours: string[]
-    shifts?: UserInfo[][]
+    shifts?: User[][]
 }

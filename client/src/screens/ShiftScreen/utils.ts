@@ -1,4 +1,4 @@
-import { UserInfo } from "./models";
+import { User } from "./models";
 
 export function getEmptyCellsForSkeleton<T>(cols: number, rows: number, fillObj: T): T[][]{
     return Array(cols).fill(undefined).map(() => {

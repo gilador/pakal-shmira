@@ -5,16 +5,16 @@ import { FlatList, StyleSheet, View } from 'react-native';
 import {
   Text,
 } from 'react-native';
-import { UserInfo } from "../models";
+import { User } from "../models";
 import { EditableList } from "@app/components/EditableList";
 
 export default function useShiftUsersListView() {
   const mocked = ['חיים', 'אלון', 'יוסי', 'אפי', 'מאיר', 'עוז', 'צבי', 'תומר','מוטי','חזי','אלי'].map((val,index) => {
-    let user: UserInfo = { name: val, id:`${val}+${index}`}
+    let user: User = { name: val, id:`${val}+${index}`}
     return user
   })
 
-  const [list, setList] = useState<UserInfo[]>(mocked);
+  const [list, setList] = useState<User[]>(mocked);
   const [selectedNameId, setSelectedNameId] = useState<string>(''); //TODO
   const toggleUserSellection = useCallback((userNameId: string) => {
     setSelectedNameId(selectedNameId => selectedNameId === userNameId ? '' : userNameId)

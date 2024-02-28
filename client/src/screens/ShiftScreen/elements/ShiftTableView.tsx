@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { StyleSheet, TouchableWithoutFeedbackComponent, View, Text, TouchableOpacity, Alert } from 'react-native';
 import { Table, Row, Rows, TableWrapper, Col } from 'react-native-reanimated-table';
 
-import { ShiftBoard, UserAssigments, UserInfo } from "../models";
+import { ShiftBoard, UserShiftData, User } from "../models";
 import { getEmptyCellsForSkeleton } from "../utils";
 import NameCellView from "./NameCellView";
 
@@ -11,12 +11,12 @@ type ShiftTableViewProp = {
   selectedNameId: string
   posts: string[]
   hours: string[]
-  shifts?: UserInfo[][]
+  shifts?: User[][]
 }
 
 export default function ShiftTableView({ selectedNameId, posts, hours, shifts }: ShiftTableViewProp) {
-  const emptyCellsForSkeleton: UserInfo[][] = useMemo(() => {
-    return getEmptyCellsForSkeleton<UserInfo>(hours.length, posts.length - 1, { name: "", id: "" })
+  const emptyCellsForSkeleton: User[][] = useMemo(() => {
+    return getEmptyCellsForSkeleton<User>(hours.length, posts.length - 1, { name: "", id: "" })
   }, [hours, posts])
 
   const shiftDataElements = useMemo(() => {

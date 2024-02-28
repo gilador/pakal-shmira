@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { StyleSheet, TouchableWithoutFeedbackComponent, View, Text, TouchableOpacity, Alert } from 'react-native';
 import { Table, Row, Rows, TableWrapper, Col } from 'react-native-reanimated-table';
 
-import { ShiftBoard, UserAssigments, UserInfo } from "../models";
+import { ShiftBoard, UserShiftData, User } from "../models";
 import { getEmptyCellsForSkeleton } from "../utils";
 import AvilablityCellView from "./AvilablityCellView";
 

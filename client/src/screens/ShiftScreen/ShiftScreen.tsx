@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SplitScreenComp from "./elements/SplitScreenComp";
 import useShiftUsersListView from "./hooks/useShiftUsersListView";
 import useTableView from "./elements/ShiftTableView";
-import { ShiftBoard, UserAssigments, UserInfo } from "./models";
+import { ShiftBoard, UserShiftData, User } from "./models";
 import { optimize } from "@app/services/optimizeService/OptimizieService";
 import { getEmptyCellsForSkeleton } from "./utils";
 import ShiftTableView from "./elements/ShiftTableView";
@@ -17,14 +17,14 @@ export default function ShiftScreen() {
   console.log('ShiftScreen')
   const { list: names, selectedNameId, view: namesListView } = useShiftUsersListView()
   const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names))
-  const emptyCellsForSkeleton: UserInfo[][] = useMemo(() => {
-    return getEmptyCellsForSkeleton<UserInfo>(shiftData.hours.length, shiftData.posts.length-1,{name:'',id:''})
+  const emptyCellsForSkeleton: User[][] = useMemo(() => {
+    return getEmptyCellsForSkeleton<User>(shiftData.hours.length, shiftData.posts.length-1,{name:'',id:''})
   },[shiftData])
 
   const handleOptimize = useCallback(async () => {
     try {
       // Optimize user shifts asynchronously
-      const userAssigments : UserAssigments[] = await optimize(shiftData.personals);
+      const userAssigments : UserShiftData[] = await optimize(shiftData.users);
 
       // Update shift data
       setShiftData((prev: ShiftBoard) => {
@@ -40,9 +40,9 @@ export default function ShiftScreen() {
               }
             });
           });
-          userShift.total = total
+          userShift.totalAssigments = total
         });
-        const newShiftBoard: ShiftBoard = {personals: userAssigments, shifts, hours: prev.hours, posts: prev.posts}
+        const newShiftBoard: ShiftBoard = {users: userAssigments, shifts, hours: prev.hours, posts: prev.posts}
 
         // console.log(`newShiftBoar: ${JSON.stringify(newShiftBoard)}`)
         return newShiftBoard;
@@ -56,7 +56,7 @@ export default function ShiftScreen() {
   const rightView = useMemo(() => (
     <View>
       <ShiftTableView selectedNameId={selectedNameId} shifts={shiftData.shifts} hours={shiftData.hours} posts={shiftData.posts} />
-      {selectedNameId && <AvilabilityTableView colLabel={shiftData.posts} rowLabel={shiftData.hours} data={shiftData.personals[0].assignments} />}
+      {selectedNameId && <AvilabilityTableView colLabel={shiftData.posts} rowLabel={shiftData.hours} data={shiftData.users[0].assignments} />}
     </View>
   ), [selectedNameId, shiftData])
 
@@ -71,7 +71,7 @@ export default function ShiftScreen() {
 
 //------------------------------------------functions--------------------------------------------------------
 
-function getShiftBoardDataMock(users: UserInfo[]): ShiftBoard {
+function getShiftBoardDataMock(users: User[]): ShiftBoard {
   const posts = ['', 'ש.ג1', 'ש.ג2', 'מערבי', 'מזרחי','דרומי']
   const hours = ['0600-1000', '1000-1400', '1400-1600', '1600-2000', '2000-2400', '0000-0400']
 
@@ -87,19 +87,20 @@ function getShiftBoardDataMock(users: UserInfo[]): ShiftBoard {
     , [])
 
   const usersConst = users?.reduce((acum, user, index) => {
-    let userCon: UserAssigments = {
+    let userCon: UserShiftData = {
       user: { name: user.name || '', id: `${user.name}+${index}` },
-      assignments: sharedConstraints,
-      total: 0
+      assignments: [],
+      totalAssigments: 0,
+      constraints: sharedConstraints
     };
-    (acum as UserAssigments[]).push(userCon)
+    (acum as UserShiftData[]).push(userCon)
     return acum
   }, [])
 
   // console.log(`gilad-> getShiftBoardDataMock-> usersConst: ${JSON.stringify(usersConst)}`)
 
   const mockShiftBoard = {
-    personals: usersConst,
+    users: usersConst,
     posts,
     hours,
     shifts: undefined

@@ -1,9 +1,9 @@
-import { UserInfo } from "@app/screens/shiftScreen/models";
+import { User } from "@app/screens/shiftScreen/models";
 import { memo } from "react";
 import { TouchableOpacity, StyleSheet, View, Text} from "react-native";
 
 export type NameCellViewProps = {
-    user: UserInfo
+    user: User
     isSelected: boolean
     cb?: () => void
 }
@@ -19,7 +19,7 @@ const NameCellView = (props: NameCellViewProps) => {
     );
 }
 
-function getTextStyle(user: UserInfo, isSelected: boolean): any[]{
+function getTextStyle(user: User, isSelected: boolean): any[]{
     return [styles.title, isSelected ? styles.selected : {}]
 
 }
