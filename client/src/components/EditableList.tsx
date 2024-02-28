@@ -8,7 +8,7 @@ import { Button } from "react-native-paper";
 import ApiService from "../services/api/ApiService";
 import { colors } from "@app/styles";
 import { UserInfo } from "@app/screens/shiftScreen/models";
-import { UserCell } from "./userCell";
+import UserCell from "./userCell";
 
 type EditableListProps = {
   list: UserInfo[]
@@ -18,7 +18,6 @@ type EditableListProps = {
 
 export function EditableList(props: EditableListProps) {
   type ItemProps = { user: UserInfo };
-
   const Item = ({ user }: ItemProps) => (
     <UserCell user={user} isSelected={props.selectedNameId === user.id} cb={() => props.onSelect(user.id)} />
   );

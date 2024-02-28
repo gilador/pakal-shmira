@@ -5,17 +5,19 @@ import { Table, Row, Rows, TableWrapper, Col } from 'react-native-reanimated-tab
 
 import { optimize } from "@app/services/optimizeService/OptimizieService";
 import { ShiftBoard, UserAssigments, UserInfo } from "../models";
-import { UserCell } from "@app/components/userCell";
+// import { UserCell } from "@app/components/userCell";
 import { getEmptyCellsForSkeleton } from "../utils";
+import UserCell from "@app/components/userCell";
 
 type useGenerateShiftTableViewProp = {
   selectedNameId: string
   posts: string[]
   hours: string[]
   shifts?: UserInfo[][]
+  constraints?: number[][] 
 }
 
-export default function TableView({ selectedNameId, posts, hours, shifts }: useGenerateShiftTableViewProp) {
+export default function TableView({ selectedNameId, posts, hours, shifts, constraints =[] }: useGenerateShiftTableViewProp) {
   console.log(`TableView->selectedNameId:${JSON.stringify(selectedNameId)}`)
   // const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names))
   const emptyCellsForSkeleton: UserInfo[][] = useMemo(() => {
@@ -29,12 +31,25 @@ export default function TableView({ selectedNameId, posts, hours, shifts }: useG
       console.log(`TableView->val:m${JSON.stringify(user)}, selectedNameId: ${selectedNameId}`)
       return (
         <UserCell user={user} isSelected={user.id === selectedNameId}/>
+        // <View/>
       )
     })))
     return uiArray
 
-  }, [[...shifts??[]], selectedNameId])
+  }, [shifts, selectedNameId])
 
+  // const constraintDataElements = useMemo(() => {
+  //   if (!constraints){
+  //     return undefined
+  //   }
+  //   let uiArray = constraints.map((array) => array.map((constraints => {
+  //     // console.log(`TableView->val:m${JSON.stringify(user)}, selectedNameId: ${selectedNameId}`)
+  //     return (
+  //       <View style={styles.constraint_allow}/>
+  //     )
+  //   })))
+  //   return uiArray
+  // },[constraints])
   const flexHeadArray = useMemo(()=>(Array(posts.length).fill(1)),[posts])
 
   return (
@@ -59,6 +74,8 @@ const styles = StyleSheet.create({
   row: { height: 50 },
   text: { textAlign: 'center' },
   wrapper: { flexDirection: 'row' },
+  constraint_allow: {backgroundColor: 'green'},
+  constraint_dis_allow: {backgroundColor: 'red'}
 });
 
 

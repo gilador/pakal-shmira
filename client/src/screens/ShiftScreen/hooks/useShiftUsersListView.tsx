@@ -8,14 +8,14 @@ import {
 import { UserInfo } from "../models";
 import { EditableList } from "@app/components/EditableList";
 
-export default function useShiftResourceListView() {
+export default function useShiftUsersListView() {
   const mocked = ['חיים', 'אלון', 'יוסי', 'אפי', 'מאיר', 'עוז', 'צבי', 'תומר','מוטי','חזי','אלי'].map((val,index) => {
     let user: UserInfo = { name: val, id:`${val}+${index}`}
     return user
   })
 
   const [list, setList] = useState<UserInfo[]>(mocked);
-  const [selectedNameId, setSelectedNameId] = useState<string>('יוסי+2'); //TODO
+  const [selectedNameId, setSelectedNameId] = useState<string>(''); //TODO
   const toggleUserSellection = useCallback((userNameId: string) => {
     setSelectedNameId(selectedNameId => selectedNameId === userNameId ? '' : userNameId)
   },[list])

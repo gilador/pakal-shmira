@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 
 import SplitScreenComp from "./elements/SplitScreenComp";
-import useShiftResourceListView from "./hooks/useShiftResourceListView";
+import useShiftUsersListView from "./hooks/useShiftUsersListView";
 import useTableView from "./elements/tableView";
 import { ShiftBoard, UserAssigments, UserInfo } from "./models";
 import { optimize } from "@app/services/optimizeService/OptimizieService";
@@ -14,7 +14,7 @@ import { getEmptyCellsForSkeleton } from "./utils";
 
 export default function ShiftScreen() {
   console.log('ShiftScreen')
-  const { list: names, selectedNameId, view: namesListView } = useShiftResourceListView()
+  const { list: names, selectedNameId, view: namesListView } = useShiftUsersListView()
   const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names))
   const emptyCellsForSkeleton: UserInfo[][] = useMemo(() => {
     return getEmptyCellsForSkeleton(shiftData.hours.length, shiftData.posts.length-1)
@@ -55,7 +55,9 @@ export default function ShiftScreen() {
   const rightView = useMemo(() => (
     <View>
       <TableView selectedNameId={selectedNameId} shifts={shiftData.shifts} hours={shiftData.hours} posts={shiftData.posts} />
-      <TableView selectedNameId={selectedNameId} hours={shiftData.hours} posts={shiftData.posts} />
+      {/* <TableView hours={shiftData.hours} posts={shiftData.posts} constraints={shiftData.personals.reduce((prev, userAssigments)=>{
+        return userAssigments.user.id === selectedNameId ? userAssigments.assignments : undefined},
+        [])} /> */}
     </View>
   ), [selectedNameId, shiftData])
 
