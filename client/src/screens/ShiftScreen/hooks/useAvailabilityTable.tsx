@@ -10,7 +10,7 @@ import {
   Table,
   TableWrapper,
 } from "react-native-reanimated-table";
-import { getEmptyCellsForSkeleton } from "../utils";
+import { getEmptyCellsForSkeleton, transposeMat } from "../utils";
 
 import AvailabilityCellView from "../elements/AvailabilityCellView";
 
@@ -26,6 +26,9 @@ export default function UseAvailabilityTable({
   data,
 }: useAvailabilityTableProp) {
 
+  const transposedMatrix = transposeMat(data);
+
+  //TODO might not be needed, the system creates constrains for each user by default to always avail 
   const dataSkeleton: boolean[][] = useMemo(() => {
     return getEmptyCellsForSkeleton<boolean>(
       posts.length,
@@ -34,9 +37,9 @@ export default function UseAvailabilityTable({
     );
   }, [hours, posts]);
 
-  console.log(`UseAvailabilityTable-> data: ${JSON.stringify(data)}, dataSkeleton: ${JSON.stringify(dataSkeleton)}`)
+  console.log(`UseAvailabilityTable-> transposedMatrix: ${JSON.stringify(transposedMatrix)}, dataSkeleton: ${JSON.stringify(dataSkeleton)}`)
   
-  const [userConstraint, setUserConstraint] = useState(dataSkeleton);
+  const [userConstraint, setUserConstraint] = useState(transposedMatrix);
 
 
   const shiftDataElements = useMemo(() => {
