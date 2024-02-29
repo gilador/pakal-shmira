@@ -9,7 +9,6 @@ export type NameCellViewProps = {
 }
 
 const NameCellView = (props: NameCellViewProps) => {
-    console.log(`UserCell: ${props.user.name}`)
     return (
         <TouchableOpacity onPress={props.cb} disabled = {!props.cb}>
             <View style={styles.container}>

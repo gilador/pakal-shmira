@@ -1,16 +1,15 @@
-import { Button } from "react-native-paper";
+import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from 'react-native';
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Button } from "react-native-paper";
 
 
-import SplitScreenComp from "./elements/SplitScreenComp";
-import useShiftUsersListView from "./hooks/useShiftUsersListView";
-import useTableView from "./elements/ShiftTableView";
-import { ShiftBoard, UserShiftData, User } from "./models";
 import { optimize } from "@app/services/optimizeService/OptimizieService";
-import { getEmptyCellsForSkeleton } from "./utils";
 import ShiftTableView from "./elements/ShiftTableView";
-import AvilabilityTableView from "./elements/AvilabilityTableView";
+import SplitScreenComp from "./elements/SplitScreenComp";
+import UseAvailabilityTable from "./hooks/useAvailabilityTable";
+import useShiftUsersListView from "./hooks/useShiftUsersListView";
+import { ShiftBoard, User, UserShiftData } from "./models";
+import { getEmptyCellsForSkeleton } from "./utils";
 
 
 export default function ShiftScreen() {
@@ -24,12 +23,12 @@ export default function ShiftScreen() {
   const handleOptimize = useCallback(async () => {
     try {
       // Optimize user shifts asynchronously
-      const userAssigments : UserShiftData[] = await optimize(shiftData.users);
+      const userAssignments : UserShiftData[] = await optimize(shiftData.users);
 
       // Update shift data
       setShiftData((prev: ShiftBoard) => {
         const shifts = emptyCellsForSkeleton.slice()
-        userAssigments.forEach((userShift, index) => {
+        userAssignments.forEach((userShift, index) => {
           let total = 0;
           userShift.assignments.forEach((hourArray, hourIndex) => {
             hourArray.forEach((post, postIndex) => {
@@ -40,9 +39,9 @@ export default function ShiftScreen() {
               }
             });
           });
-          userShift.totalAssigments = total
+          userShift.totalAssignments = total
         });
-        const newShiftBoard: ShiftBoard = {users: userAssigments, shifts, hours: prev.hours, posts: prev.posts}
+        const newShiftBoard: ShiftBoard = {users: userAssignments, shifts, hours: prev.hours, posts: prev.posts}
 
         // console.log(`newShiftBoar: ${JSON.stringify(newShiftBoard)}`)
         return newShiftBoard;
@@ -56,7 +55,7 @@ export default function ShiftScreen() {
   const rightView = useMemo(() => (
     <View>
       <ShiftTableView selectedNameId={selectedNameId} shifts={shiftData.shifts} hours={shiftData.hours} posts={shiftData.posts} />
-      {selectedNameId && <AvilabilityTableView colLabel={shiftData.posts} rowLabel={shiftData.hours} data={shiftData.users[0].assignments} />}
+      {!selectedNameId ? null : <UseAvailabilityTable data={shiftData.users[0].constraints} hours={shiftData.hours} posts={shiftData.posts} />}
     </View>
   ), [selectedNameId, shiftData])
 
@@ -76,12 +75,12 @@ function getShiftBoardDataMock(users: User[]): ShiftBoard {
   const hours = ['0600-1000', '1000-1400', '1400-1600', '1600-2000', '2000-2400', '0000-0400']
 
   const sharedConstraints = (posts.slice(1)).reduce(
-    (acumPosts, post) => {
-      const origRet: number[] = hours.reduce((acumeHours, hour) => {
-        (acumeHours as number[]).push(1)
+    (acumPosts, hours) => {
+      const origRet: boolean[] = posts.reduce((acumeHours, hour) => {
+        (acumeHours as boolean[]).push(true)
         return acumeHours
       }, []);
-      (acumPosts as number[][]).push(origRet)
+      (acumPosts as boolean[][]).push(origRet)
       return acumPosts
     }
     , [])
@@ -90,14 +89,12 @@ function getShiftBoardDataMock(users: User[]): ShiftBoard {
     let userCon: UserShiftData = {
       user: { name: user.name || '', id: `${user.name}+${index}` },
       assignments: [],
-      totalAssigments: 0,
+      totalAssignments: 0,
       constraints: sharedConstraints
     };
     (acum as UserShiftData[]).push(userCon)
     return acum
   }, [])
-
-  // console.log(`gilad-> getShiftBoardDataMock-> usersConst: ${JSON.stringify(usersConst)}`)
 
   const mockShiftBoard = {
     users: usersConst,

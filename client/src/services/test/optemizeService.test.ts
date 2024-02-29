@@ -7,13 +7,13 @@ describe('Name of the group', () => {
             user: {name: "Yosi", id:'Yosi+0'},
             assignments:[],
             constraints: [[true,true,false,false],[true,true,true,true]],
-            totalAssigments:0
+            totalAssignments:0
         },
         {
             user: {name: "Matan", id:'Matan+1'},
             assignments:[],
             constraints: [[true,false,false,false],[false,false,true,true]],
-            totalAssigments:0
+            totalAssignments:0
         }] 
 
         const result = translateUserShiftToConstraints(mockedUsersConstraints)

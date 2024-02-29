@@ -7,7 +7,7 @@ export type UserShiftData = {
     user: User,
     assignments: boolean[][]
     constraints: boolean[][]
-    totalAssigments: number
+    totalAssignments: number
 }
 
 export type ShiftBoard = {

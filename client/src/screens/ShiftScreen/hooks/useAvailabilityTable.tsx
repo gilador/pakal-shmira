@@ -1,55 +1,52 @@
-import { useCallback, useMemo, useState } from "react";
-import React, { Component } from "react";
+import React, { useMemo, useState } from "react";
 import {
   StyleSheet,
-  TouchableWithoutFeedbackComponent,
-  View,
-  Text,
-  TouchableOpacity,
-  Alert,
+  View
 } from "react-native";
 import {
-  Table,
+  Col,
   Row,
   Rows,
+  Table,
   TableWrapper,
-  Col,
 } from "react-native-reanimated-table";
-
-import { ShiftBoard, UserShiftData, User } from "../models";
 import { getEmptyCellsForSkeleton } from "../utils";
-import NameCellView from "./NameCellView";
 
-type ShiftTableViewProp = {
-  selectedNameId: string;
-  posts: string[];
+import AvailabilityCellView from "../elements/AvailabilityCellView";
+
+type useAvailabilityTableProp = {
   hours: string[];
-  shifts?: User[][];
+  posts: string[];
+  data: boolean[][];
 };
 
-export default function ShiftTableView({
-  selectedNameId,
+export default function UseAvailabilityTable({
   posts,
   hours,
-  shifts,
-}: ShiftTableViewProp) {
-  const emptyCellsForSkeleton: User[][] = useMemo(() => {
-    return getEmptyCellsForSkeleton<User>(hours.length, posts.length - 1, {
-      name: "",
-      id: "",
-    });
+  data,
+}: useAvailabilityTableProp) {
+
+  const dataSkeleton: boolean[][] = useMemo(() => {
+    return getEmptyCellsForSkeleton<boolean>(
+      posts.length,
+      hours.length - 1,
+      true
+    );
   }, [hours, posts]);
 
+  console.log(`UseAvailabilityTable-> data: ${JSON.stringify(data)}, dataSkeleton: ${JSON.stringify(dataSkeleton)}`)
+  
+  const [userConstraint, setUserConstraint] = useState(dataSkeleton);
+
+
   const shiftDataElements = useMemo(() => {
-    let uiArray = (shifts ?? emptyCellsForSkeleton).map((array) =>
-      array.map((user) => {
-        return (
-          <NameCellView user={user} isSelected={user.id === selectedNameId} />
-        );
+    let uiArray = (userConstraint).map((array) =>
+      array.map((availability) => {
+        return <AvailabilityCellView availability={availability} />;
       })
     );
     return uiArray;
-  }, [shifts, selectedNameId]);
+  }, [userConstraint]);
 
   const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts]);
 

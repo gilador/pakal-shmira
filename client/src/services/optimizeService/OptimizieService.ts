@@ -13,7 +13,7 @@ export async function optimize(users: UserShiftData[]): Promise<UserShiftData[]>
   const constraints = translateUserShiftToConstraints(users)
   const optResponse = await ApiService.optimizeShift(constraints)
   //TODO add isOptim:false promise rejection 
-  return OptimizeShiftResponseToUserAssigedShifts(optResponse, users)
+  return OptimizeShiftResponseToUserAssignedShifts(optResponse, users)
 }
 
 export function translateUserShiftToConstraints(users: UserShiftData[]): number[][][] {
@@ -27,17 +27,16 @@ export function translateUserShiftToConstraints(users: UserShiftData[]): number[
   return constraints
 }
 
-async function OptimizeShiftResponseToUserAssigedShifts(optResponse: OptimizeShiftResponse, users: UserShiftData[]): Promise<UserShiftData[]> {
-  // console.log(`OptimizeShiftResponseToUserAssigedShifts->optResponse: ${JSON.stringify(optResponse)}, users: ${JSON.stringify(users)}`)
-  const userAssigedShifts: UserShiftData[] = users.reduce((acum, current, index) => {
+async function OptimizeShiftResponseToUserAssignedShifts(optResponse: OptimizeShiftResponse, users: UserShiftData[]): Promise<UserShiftData[]> {
+  const userAssignedShifts: UserShiftData[] = users.reduce((acum, current, index) => {
     const assignedShift = {...current}
     assignedShift.assignments = [...optResponse.result[index]]
     acum.push(assignedShift)
     return acum
   },[] as UserShiftData[])
 
-  console.log(`OptimizeShiftResponseToUserAssigedShifts->userAssigedShifts: ${JSON.stringify(userAssigedShifts)}`)
+  console.log(`OptimizeShiftResponseToUserAssignedShifts->userAssignedShifts: ${JSON.stringify(userAssignedShifts)}`)
 
-  return Promise.resolve(userAssigedShifts)
+  return Promise.resolve(userAssignedShifts)
   // throw new Error("Function not implemented.");
 }

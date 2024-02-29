@@ -2,26 +2,26 @@ import { memo } from "react";
 import { TouchableOpacity, StyleSheet, View, Text } from "react-native";
 
 export type NameCellViewProps = {
-    avilablity: boolean
+    availability: boolean
     cb?: () => void
 }
 
-const AvilabilityTableView = (props: NameCellViewProps) => {
+const AvailabilityCellView = (props: NameCellViewProps) => {
     return (
         <TouchableOpacity onPress={props.cb} disabled={!props.cb}>
-            <View style={getAvilablityStyle(props.avilablity)} />
+            <View style={getAvailabilityStyle(props.availability)} />
         </TouchableOpacity>
     );
 }
 
-function getAvilablityStyle(avilablity: boolean): any[] {
-    return [styles.container, avilablity ? styles.avilable : {}]
+function getAvailabilityStyle(availability: boolean): any[] {
+    return [styles.container, availability ? styles.available : {}]
 
 }
 
 const styles = StyleSheet.create({
     container: { flex: 10, padding: 16, paddingTop: 30, backgroundColor: 'red' },
-    avilable: { backgroundColor: 'green' }
+    available: { backgroundColor: 'green' }
 });
 
-export default memo(AvilabilityTableView)
+export default memo(AvailabilityCellView)
