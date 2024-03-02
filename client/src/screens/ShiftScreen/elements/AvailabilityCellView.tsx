@@ -1,14 +1,16 @@
 import { memo } from "react";
 import { TouchableOpacity, StyleSheet, View, Text } from "react-native";
+import { TupleType } from "typescript";
 
 export type NameCellViewProps = {
     availability: boolean
-    cb?: () => void
+    index: [number, number]
+    cb?: (availability: boolean, index: [number, number]) => void
 }
 
 const AvailabilityCellView = (props: NameCellViewProps) => {
     return (
-        <TouchableOpacity onPress={props.cb} disabled={!props.cb}>
+        <TouchableOpacity onPress={()=>props.cb && props.cb(props.availability, props.index)} disabled={!props.cb}>
             <View style={getAvailabilityStyle(props.availability)} />
         </TouchableOpacity>
     );

@@ -17,7 +17,7 @@ import {
 } from "react-native-reanimated-table";
 
 import { ShiftBoard, UserShiftData, User } from "../models";
-import { getEmptyCellsForSkeleton } from "../utils";
+import { getEmptyMatrix } from "../utils";
 import NameCellView from "./NameCellView";
 
 type ShiftTableViewProp = {
@@ -34,7 +34,7 @@ export default function ShiftTableView({
   shifts,
 }: ShiftTableViewProp) {
   const emptyCellsForSkeleton: User[][] = useMemo(() => {
-    return getEmptyCellsForSkeleton<User>(hours.length, posts.length - 1, {
+    return getEmptyMatrix<User>(hours.length, posts.length - 1, {
       name: "",
       id: "",
     });

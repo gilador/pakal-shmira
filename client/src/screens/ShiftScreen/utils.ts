@@ -1,12 +1,13 @@
 import { User } from "./models";
 
-export function getEmptyCellsForSkeleton<T>(cols: number, rows: number, fillObj: T): T[][]{
+export function getEmptyMatrix<T>(cols: number, rows: number, fillObj: T): T[][]{
     return Array(cols).fill(undefined).map(() => {
       return Array<T>(rows).fill(fillObj);
   })
 }
 
 export function transposeMat(mat: any[][]) {
+  console.log(`transposeMat - before: mat: ${JSON.stringify(mat)}`)
   const m = mat.length; // Number of rows in the original array
   const n = mat[0].length; // Number of columns in the original array
   
@@ -21,6 +22,8 @@ export function transposeMat(mat: any[][]) {
       }
       transformedArray.push(row);
   }
+  console.log(`transposeMat - after: transformedArray: ${JSON.stringify(transformedArray)}`)
+
 
   return transformedArray;
 }
