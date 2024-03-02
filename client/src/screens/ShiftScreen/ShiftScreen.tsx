@@ -18,15 +18,12 @@ export default function ShiftScreen() {
     selectedNameId,
     view: namesListView,
   } = useShiftUsersListView();
+
   const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names));
-  //FIXME too complex, needs to
-  const emptyCellsForSkeleton: User[][] = useMemo(() => {
-    return getEmptyMatrix<User>(
-      shiftData.hours.length,
-      shiftData.posts.length - 1,
-      { name: "", id: "" }
-    );
-  }, [shiftData]);
+  
+  const selectedUser = useMemo(()=>{
+    return shiftData.users.find((val)=>val.user.id === selectedNameId)
+  }, [selectedNameId, shiftData])
 
   const handleOptimize = useCallback(async () => {
     try {
@@ -82,15 +79,15 @@ export default function ShiftScreen() {
           hours={shiftData.hours}
           posts={shiftData.posts}
         />
-        {!selectedNameId ? null : (
+        {(!selectedNameId  && !selectedUser) ? null : (
           <UseAvailabilityTable
-            data={shiftData.users[0].constraints}
+            data={selectedUser.constraints}
             hours={shiftData.hours}
             posts={shiftData.posts}
             onConstraintsChanged={function (data: boolean[][]): void {
               setShiftData((pre) => {
                 console.log(`gigo ->before-> data: ${data}, pre.users[0].constraints : ${JSON.stringify(pre.users[0].constraints )} `)
-                pre.users[0].constraints = data;
+                selectedUser.constraints = data;
                 console.log(`gigo ->after-> data: ${data}, pre.users[0].constraints : ${JSON.stringify(pre.users[0].constraints )} `)
                 return { ...pre };
               });
