@@ -16,20 +16,20 @@ export default function useShiftUsersListView() {
 
   const [list, setList] = useState<User[]>(mocked);
   const [selectedNameId, setSelectedNameId] = useState<string>(''); //TODO
-  const toggleUserSellection = useCallback((userNameId: string) => {
+  const toggleUserSelection = useCallback((userNameId: string) => {
     setSelectedNameId(selectedNameId => selectedNameId === userNameId ? '' : userNameId)
   },[list])
 
-  const shiftResourceListView = (
+  const ShiftResourceListView = (
     <View style={styles.container}>
-      <EditableList list={list} onSelect={toggleUserSellection} selectedNameId={selectedNameId}/>
+      <EditableList list={list} onSelect={toggleUserSelection} selectedNameId={selectedNameId}/>
     </View>
   )
 
   return {
     list,
     selectedNameId,
-    view: shiftResourceListView
+    view: ShiftResourceListView
   }
 }
 
