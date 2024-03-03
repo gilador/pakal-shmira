@@ -15,60 +15,48 @@ type useAvailabilityTableProp = {
   hours: string[];
   posts: string[];
   data: boolean[][];
-  onConstraintsChanged: (data: boolean[][])=>void
+  onConstraintsChanged: (data: boolean[][]) => void;
 };
 
 export default function UseAvailabilityTable({
   posts,
   hours,
   data,
-  onConstraintsChanged
+  onConstraintsChanged,
 }: useAvailabilityTableProp) {
   const transposedMatrix = transposeMat(data);
+  // const transposedMatrix  = useMemo(() => {
+  //   console.log(`UseAvailabilityTable-> transposedMatrix: prev:${JSON.stringify(transposedMatrix)}`)
+  //   return transposeMat(data)
+  // }, [data]);
+  // console.log(`render-> UseAvailabilityTable: data: ${JSON.stringify(data)}`)
 
-  //TODO might not be needed, the system creates constrains for each user by default to always avail
-  const dataSkeleton: boolean[][] = useMemo(() => {
-    return getEmptyMatrix<boolean>(
-      posts.length,
-      hours.length,
-      true
-    );
-  }, [hours, posts]);
-
-  // console.log(`UseAvailabilityTable-> transposedMatrix: ${JSON.stringify(transposedMatrix)}, dataSkeleton: ${JSON.stringify(dataSkeleton)}`)
-
-  const [userConstraint, setUserConstraint] = useState(transposedMatrix);
-  console.log(`gilad-> userConstraint: ${JSON.stringify(userConstraint)}`);
+  // const [userConstraint, setUserConstraint] = useState(transposeMat(data));
+  // console.log(`gilad-> userConstraint: ${JSON.stringify(userConstraint)}`);
 
   const cb = (availability: boolean, index: [number, number]) => {
     console.log(`gilad-> availability:${availability} index:${index}:`);
-    setUserConstraint((pre) => {
-      pre[index[0]][index[1]] = !availability;
-      console.log(
-        `gilad-> pre[index[0]][index[1]:${
-          pre[index[0]][index[1]]
-        }: pre:${JSON.stringify(pre)}`
-      );
-      const newState = pre.slice()
-      onConstraintsChanged(transposeMat(newState))
-      return newState;
-    });
+    const newData = JSON.parse(JSON.stringify(data))
+    newData[index[0]][index[1]] = !availability;
+    console.log(
+      `gilad-> pre[index[0]][index[1]:${
+        newData[index[0]][index[1]]
+      }: pre:${JSON.stringify(newData)}`
+    );
+    onConstraintsChanged((newData));
   };
 
-  const shiftDataElements = useMemo(() => {
-    let uiArray = userConstraint.map((array, postIndex) =>
-      array.map((availability, hourIndex) => {
-        return (
-          <AvailabilityCellView
-            availability={availability}
-            index={[postIndex, hourIndex]}
-            cb={cb}
-          />
-        );
-      })
-    );
-    return uiArray;
-  }, [userConstraint]);
+  const shiftDataElements = transposedMatrix.map((array, postIndex) =>
+    array.map((availability, hourIndex) => {
+      return (
+        <AvailabilityCellView
+          availability={availability}
+          index={[postIndex, hourIndex]}
+          cb={cb}
+        />
+      );
+    })
+  );
 
   const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts]);
   return (
@@ -101,6 +89,4 @@ const styles = StyleSheet.create({
   row: { height: 50 },
   text: { textAlign: "center" },
   wrapper: { flexDirection: "row" },
-  constraint_allow: { backgroundColor: "green" },
-  constraint_dis_allow: { backgroundColor: "red" },
 });

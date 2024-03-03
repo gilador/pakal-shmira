@@ -20,10 +20,13 @@ export default function ShiftScreen() {
   } = useShiftUsersListView();
 
   const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names));
-  
   const selectedUser = useMemo(()=>{
-    return shiftData.users.find((val)=>val.user.id === selectedNameId)
+    const selected = shiftData.users.find((val)=>val.user.id === selectedNameId)
+    console.log(`selected: ${JSON.stringify(selected)}`)
+    return selected
   }, [selectedNameId, shiftData])
+
+
 
   const handleOptimize = useCallback(async () => {
     try {
@@ -86,17 +89,19 @@ export default function ShiftScreen() {
             posts={shiftData.posts}
             onConstraintsChanged={function (data: boolean[][]): void {
               setShiftData((pre) => {
-                console.log(`gigo ->before-> data: ${data}, pre.users[0].constraints : ${JSON.stringify(pre.users[0].constraints )} `)
-                selectedUser.constraints = data;
-                console.log(`gigo ->after-> data: ${data}, pre.users[0].constraints : ${JSON.stringify(pre.users[0].constraints )} `)
-                return { ...pre };
+                console.log(`gigo ->before-> data: ${data}, selectedUser.constraints : ${JSON.stringify(selectedUser.constraints )} `)
+                const newState = JSON.parse(JSON.stringify(pre))
+                const newUser = newState.users.find((val)=>val.user.id === selectedNameId) || {constraints:[]}
+                newUser.constraints = data;
+                console.log(`gigo ->after-> data: ${data}, selectedUser.constraintss : ${JSON.stringify(selectedUser.constraints )} `)
+                return newState;
               });
             }}
           />
         )}
       </View>
     ),
-    [selectedNameId, shiftData]
+    [selectedNameId, shiftData, selectedUser]
   );
 
   return (

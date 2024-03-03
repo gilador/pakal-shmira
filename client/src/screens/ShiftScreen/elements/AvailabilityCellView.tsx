@@ -9,8 +9,10 @@ export type NameCellViewProps = {
 }
 
 const AvailabilityCellView = (props: NameCellViewProps) => {
+    console.log('render-> AvailabilityCellView')
+
     return (
-        <TouchableOpacity onPress={()=>props.cb && props.cb(props.availability, props.index)} disabled={!props.cb}>
+        <TouchableOpacity onPress={()=>props.cb && props.cb(props.availability, [props.index[1],props.index[0]])} disabled={!props.cb}>
             <View style={getAvailabilityStyle(props.availability)} />
         </TouchableOpacity>
     );
