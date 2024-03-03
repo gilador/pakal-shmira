@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 import {
   Col,
@@ -7,45 +7,34 @@ import {
   Table,
   TableWrapper,
 } from "react-native-reanimated-table";
-import { getEmptyMatrix, transposeMat } from "../utils";
+import { transposeMat } from "../utils";
 
-import AvailabilityCellView from "../elements/AvailabilityCellView";
+import AvailabilityCellView from "./AvailabilityCellView";
+import withLogs from "@app/components/HOC/withLogs";
 
 type useAvailabilityTableProp = {
   hours: string[];
   posts: string[];
-  data: boolean[][];
+  availabilityData?: boolean[][];
   onConstraintsChanged: (data: boolean[][]) => void;
 };
 
-export default function UseAvailabilityTable({
+const AvailabilityTableView = ({
   posts,
   hours,
-  data,
+  availabilityData = [],
   onConstraintsChanged,
-}: useAvailabilityTableProp) {
-  const transposedMatrix = transposeMat(data);
-  // const transposedMatrix  = useMemo(() => {
-  //   console.log(`UseAvailabilityTable-> transposedMatrix: prev:${JSON.stringify(transposedMatrix)}`)
-  //   return transposeMat(data)
-  // }, [data]);
-  // console.log(`render-> UseAvailabilityTable: data: ${JSON.stringify(data)}`)
+}: useAvailabilityTableProp) => {
+  const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts]);
 
-  // const [userConstraint, setUserConstraint] = useState(transposeMat(data));
-  // console.log(`gilad-> userConstraint: ${JSON.stringify(userConstraint)}`);
-
+  const transposedMatrix = useMemo(() =>  transposeMat(availabilityData), [availabilityData]);
+  // const transposedMatrix = transposeMat(availabilityData);
   const cb = (availability: boolean, index: [number, number]) => {
-    console.log(`gilad-> availability:${availability} index:${index}:`);
-    const newData = JSON.parse(JSON.stringify(data))
+    const newData = JSON.parse(JSON.stringify(availabilityData));
     newData[index[0]][index[1]] = !availability;
-    console.log(
-      `gilad-> pre[index[0]][index[1]:${
-        newData[index[0]][index[1]]
-      }: pre:${JSON.stringify(newData)}`
-    );
-    onConstraintsChanged((newData));
+    onConstraintsChanged(newData);
   };
-
+  
   const shiftDataElements = transposedMatrix.map((array, postIndex) =>
     array.map((availability, hourIndex) => {
       return (
@@ -58,7 +47,7 @@ export default function UseAvailabilityTable({
     })
   );
 
-  const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts]);
+  
   return (
     <View style={styles.container}>
       <Table borderStyle={{ borderWidth: 1 }}>
@@ -82,6 +71,10 @@ export default function UseAvailabilityTable({
   );
 }
 
+//------------------------------------------functions--------------------------------------------------------
+
+//------------------------------------------StyleSheet--------------------------------------------------------
+
 const styles = StyleSheet.create({
   container: { flex: 10, padding: 16, paddingTop: 30, backgroundColor: "#fff" },
   head: { height: 50, backgroundColor: "#f1f8ff", textAlign: "center" },
@@ -90,3 +83,6 @@ const styles = StyleSheet.create({
   text: { textAlign: "center" },
   wrapper: { flexDirection: "row" },
 });
+
+export default withLogs(AvailabilityTableView)
+

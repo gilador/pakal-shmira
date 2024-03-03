@@ -1,5 +1,5 @@
 import { UserShiftData } from "@app/screens/shiftScreen/models";
-import { translateUserShiftToConstraints } from "../optimizeService/OptimizieService";
+import { translateUserShiftToConstraints } from "../optimizeService/OptimizeService";
 
 describe('Name of the group', () => {
     it('should translateUserShiftToConstraints transform correct', () => {

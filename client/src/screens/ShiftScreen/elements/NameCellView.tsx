@@ -1,3 +1,4 @@
+import withLogs from "@app/components/HOC/withLogs";
 import { User } from "@app/screens/shiftScreen/models";
 import { memo } from "react";
 import { TouchableOpacity, StyleSheet, View, Text} from "react-native";
@@ -18,10 +19,14 @@ const NameCellView = (props: NameCellViewProps) => {
     );
 }
 
+//------------------------------------------functions--------------------------------------------------------
+
 function getTextStyle(user: User, isSelected: boolean): any[]{
     return [styles.title, isSelected ? styles.selected : {}]
 
 }
+
+//------------------------------------------StyleSheet--------------------------------------------------------
 
 const styles = StyleSheet.create({
     container: { flex: 10, padding: 16, paddingTop: 30 },
@@ -29,4 +34,4 @@ const styles = StyleSheet.create({
     selected: {backgroundColor: 'pink'}
   });
 
-  export default memo(NameCellView)
+  export default memo(withLogs(NameCellView))

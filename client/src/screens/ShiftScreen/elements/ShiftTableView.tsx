@@ -27,12 +27,12 @@ type ShiftTableViewProp = {
   shifts?: User[][];
 };
 
-export default function ShiftTableView({
+const ShiftTableView = ({
   selectedNameId,
   posts,
   hours,
   shifts,
-}: ShiftTableViewProp) {
+}: ShiftTableViewProp) => {
   const emptyCellsForSkeleton: User[][] = useMemo(() => {
     return getEmptyMatrix<User>(hours.length, posts.length - 1, {
       name: "",
@@ -76,6 +76,10 @@ export default function ShiftTableView({
   );
 }
 
+//------------------------------------------functions--------------------------------------------------------
+
+//------------------------------------------StyleSheet--------------------------------------------------------
+
 const styles = StyleSheet.create({
   container: { flex: 10, padding: 16, paddingTop: 30, backgroundColor: "#fff" },
   head: { height: 50, backgroundColor: "#f1f8ff", textAlign: "center" },
@@ -86,3 +90,5 @@ const styles = StyleSheet.create({
   constraint_allow: { backgroundColor: "green" },
   constraint_dis_allow: { backgroundColor: "red" },
 });
+
+export default ShiftTableView

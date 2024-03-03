@@ -1,16 +1,18 @@
-import { useCallback, useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
 import { Button } from "react-native-paper";
+import { StyleSheet, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
 
-import { optimize } from "@app/services/optimizeService/OptimizieService";
-import ShiftTableView from "./elements/ShiftTableView";
-import SplitScreenComp from "./elements/SplitScreenComp";
-import useShiftUsersListView from "./hooks/useShiftUsersListView";
-import { ShiftBoard, User, UserShiftData } from "./models";
+import { optimize } from "@app/services/optimizeService/OptimizeService";
+
 import { getEmptyMatrix } from "./utils";
-import UseAvailabilityTable from "./hooks/useAvailabilityTable";
+import ShiftTableView from "./elements/ShiftTableView";
+import { ShiftBoard, User, UserShiftData } from "./models";
+import AvailabilityTableView from "./elements/AvailabilityTableView";
+import useShiftUsersListView from "./hooks/useShiftUsersListView";
+import withLogs from "@app/components/HOC/withLogs";
+import SplitScreenComp from "@app/components/SplitScreenComp";
 
-export default function ShiftScreen() {
+const ShiftScreen = () => {
   console.log("ShiftScreen");
 
   const {
@@ -19,6 +21,7 @@ export default function ShiftScreen() {
     view: namesListView,
   } = useShiftUsersListView();
 
+  console.log(`${ShiftScreen.name}`)
   const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names));
   const selectedUser = useMemo(()=>{
     const selected = shiftData.users.find((val)=>val.user.id === selectedNameId)
@@ -83,17 +86,17 @@ export default function ShiftScreen() {
           posts={shiftData.posts}
         />
         {(!selectedNameId  && !selectedUser) ? null : (
-          <UseAvailabilityTable
-            data={selectedUser.constraints}
+          <AvailabilityTableView
+            availabilityData={selectedUser?.constraints}
             hours={shiftData.hours}
             posts={shiftData.posts}
             onConstraintsChanged={function (data: boolean[][]): void {
               setShiftData((pre) => {
-                console.log(`gigo ->before-> data: ${data}, selectedUser.constraints : ${JSON.stringify(selectedUser.constraints )} `)
+                console.log(`gigo ->before-> data: ${data}, selectedUser.constraints : ${JSON.stringify(selectedUser?.constraints )} `)
                 const newState = JSON.parse(JSON.stringify(pre))
-                const newUser = newState.users.find((val)=>val.user.id === selectedNameId) || {constraints:[]}
+                const newUser = newState.users.find((val: UserShiftData)=>val.user.id === selectedNameId) || {constraints:[]}
                 newUser.constraints = data;
-                console.log(`gigo ->after-> data: ${data}, selectedUser.constraintss : ${JSON.stringify(selectedUser.constraints )} `)
+                console.log(`gigo ->after-> data: ${data}, selectedUser.constraints : ${JSON.stringify(selectedUser?.constraints )} `)
                 return newState;
               });
             }}
@@ -106,17 +109,15 @@ export default function ShiftScreen() {
 
   return (
     <View style={styles.container}>
-      {SplitScreenComp({
-        leftPanel: namesListView,
-        rightPanel: rightView,
-        style: styles.top,
-      })}
+      <SplitScreenComp leftPanel={namesListView} rightPanel={rightView} style={ styles.top}/>
       <Button style={styles.bottom} onPress={handleOptimize}>
         optimize
-      </Button>
+      </Button>x
     </View>
   );
 }
+
+export default withLogs(ShiftScreen)
 
 //------------------------------------------functions--------------------------------------------------------
 

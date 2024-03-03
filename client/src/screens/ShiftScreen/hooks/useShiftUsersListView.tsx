@@ -1,4 +1,4 @@
-import { optimize } from "@app/services/optimizeService/OptimizieService";
+import { optimize } from "@app/services/optimizeService/OptimizeService";
 import { ReactComponentElement, memo, useCallback, useEffect, useMemo, useState } from "react";
 import React, { Component } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
