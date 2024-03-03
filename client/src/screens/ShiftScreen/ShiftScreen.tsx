@@ -21,15 +21,14 @@ const ShiftScreen = () => {
     view: namesListView,
   } = useShiftUsersListView();
 
-  console.log(`${ShiftScreen.name}`)
+  console.log(`${ShiftScreen.name}`);
   const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names));
-  const selectedUser = useMemo(()=>{
-    const selected = shiftData.users.find((val)=>val.user.id === selectedNameId)
-    console.log(`selected: ${JSON.stringify(selected)}`)
-    return selected
-  }, [selectedNameId, shiftData])
-
-
+  const selectedUser = useMemo(() => {
+    const selected = shiftData.users.find(
+      (val) => val.user.id === selectedNameId
+    );
+    return selected;
+  }, [selectedNameId, shiftData]);
 
   const handleOptimize = useCallback(async () => {
     try {
@@ -42,7 +41,8 @@ const ShiftScreen = () => {
         const shifts = getEmptyMatrix<User>(
           shiftData.hours.length,
           shiftData.posts.length - 1,
-          { name: "", id: "" })
+          { name: "", id: "" }
+        );
 
         optimizedShift.forEach((userShift, index) => {
           let total = 0;
@@ -85,18 +85,18 @@ const ShiftScreen = () => {
           hours={shiftData.hours}
           posts={shiftData.posts}
         />
-        {(!selectedNameId  && !selectedUser) ? null : (
+        {!selectedNameId && !selectedUser ? null : (
           <AvailabilityTableView
             availabilityData={selectedUser?.constraints}
             hours={shiftData.hours}
             posts={shiftData.posts}
             onConstraintsChanged={function (data: boolean[][]): void {
               setShiftData((pre) => {
-                console.log(`gigo ->before-> data: ${data}, selectedUser.constraints : ${JSON.stringify(selectedUser?.constraints )} `)
-                const newState = JSON.parse(JSON.stringify(pre))
-                const newUser = newState.users.find((val: UserShiftData)=>val.user.id === selectedNameId) || {constraints:[]}
+                const newState = JSON.parse(JSON.stringify(pre));
+                const newUser = newState.users.find(
+                  (val: UserShiftData) => val.user.id === selectedNameId
+                ) || { constraints: [] };
                 newUser.constraints = data;
-                console.log(`gigo ->after-> data: ${data}, selectedUser.constraints : ${JSON.stringify(selectedUser?.constraints )} `)
                 return newState;
               });
             }}
@@ -109,15 +109,20 @@ const ShiftScreen = () => {
 
   return (
     <View style={styles.container}>
-      <SplitScreenComp leftPanel={namesListView} rightPanel={rightView} style={ styles.top}/>
+      <SplitScreenComp
+        leftPanel={namesListView}
+        rightPanel={rightView}
+        style={styles.top}
+      />
       <Button style={styles.bottom} onPress={handleOptimize}>
         optimize
-      </Button>x
+      </Button>
+      x
     </View>
   );
-}
+};
 
-export default withLogs(ShiftScreen)
+export default withLogs(ShiftScreen);
 
 //------------------------------------------functions--------------------------------------------------------
 

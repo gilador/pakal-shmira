@@ -7,7 +7,7 @@ export function getEmptyMatrix<T>(cols: number, rows: number, fillObj: T): T[][]
 }
 
 export function transposeMat(mat: any[][]) {
-  console.log(`transposeMat - before: mat: ${JSON.stringify(mat)}`)
+  // console.log(`transposeMat - before: mat: ${JSON.stringify(mat)}`)
   const m = mat.length; // Number of rows in the original array
   const n = mat[0].length; // Number of columns in the original array
   
@@ -22,7 +22,7 @@ export function transposeMat(mat: any[][]) {
       }
       transformedArray.push(row);
   }
-  console.log(`transposeMat - after: transformedArray: ${JSON.stringify(transformedArray)}`)
+  // console.log(`transposeMat - after: transformedArray: ${JSON.stringify(transformedArray)}`)
 
 
   return transformedArray;
