@@ -13,6 +13,7 @@ import { Text } from "react-native";
 import { User } from "../models";
 import EditableList from "@app/screens/shiftScreen/elements/EditableList";
 import withLogs from "@app/components/HOC/withLogs";
+import { extractWords } from "@app/common/utils";
 
 export default function useShiftUsersListView() {
   const [list, setList] = useState<User[]>([]);
@@ -30,13 +31,19 @@ export default function useShiftUsersListView() {
   );
 
   const onAdd = (user: string) => {
-    const userObj = {
-      name: user,
-      id: `${user}+${Date.now()}`,
-    };
+    const names = extractWords(user)
+    console.log(`names: ${JSON.stringify(names)}`)
+    const ret = names.map((ele)=>({
+      name: ele,
+      id: `${ele}+${Date.now()}`,
+    }))
+
+    // const userObj = {
+    //   name: user,
+    //   id: `${user}+${Date.now()}`,
+    // };
     setList((preList) => {
-      console.log("hi there");
-      preList.push(userObj);
+      preList.push(...ret);
       return [...preList];
     });
   };
