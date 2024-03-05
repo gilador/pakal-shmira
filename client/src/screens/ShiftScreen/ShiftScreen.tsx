@@ -20,12 +20,11 @@ const ShiftScreen = () => {
   } = useShiftUsersListView();
 
   const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names));
-  
+
   const selectedUser = useMemo(() => {
-    if (!selectedNameId)
-      return undefined
+    if (!selectedNameId) return undefined;
     const selected = shiftData.users.find(
-      (val) => val.user.id === selectedNameId
+      (val) => val.user.id === selectedNameId,
     );
     return selected;
   }, [selectedNameId, shiftData]);
@@ -41,7 +40,7 @@ const ShiftScreen = () => {
         const shifts = getEmptyMatrix<User>(
           shiftData.hours.length,
           shiftData.posts.length - 1,
-          { name: "", id: "" }
+          { name: "", id: "" },
         );
 
         optimizedShift.forEach((userShift, index) => {
@@ -49,10 +48,7 @@ const ShiftScreen = () => {
           userShift.assignments.forEach((hourArray, hourIndex) => {
             hourArray.forEach((post, postIndex) => {
               if (post) {
-                shifts[postIndex][hourIndex] = {
-                  name: userShift.user.name,
-                  id: `${userShift.user.name}+${index}`,
-                };
+                shifts[postIndex][hourIndex] = userShift.user
                 total++;
               }
             });
@@ -75,7 +71,7 @@ const ShiftScreen = () => {
   }, [shiftData]);
 
   useEffect(() => {
-    setShiftData(getShiftBoardDataMock(names))
+    setShiftData(getShiftBoardDataMock(names));
   }, [names]);
 
   const rightView = useMemo(
@@ -96,7 +92,7 @@ const ShiftScreen = () => {
               setShiftData((pre) => {
                 const newState = JSON.parse(JSON.stringify(pre));
                 const newUser = newState.users.find(
-                  (val: UserShiftData) => val.user.id === selectedNameId
+                  (val: UserShiftData) => val.user.id === selectedNameId,
                 ) || { constraints: [] };
                 newUser.constraints = data;
                 return newState;
@@ -106,7 +102,7 @@ const ShiftScreen = () => {
         )}
       </View>
     ),
-    [selectedNameId, shiftData, selectedUser]
+    [selectedNameId, shiftData, selectedUser],
   );
 
   return (
@@ -175,7 +171,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     padding: 2,
   },
-  top:{
+  top: {
     flexGrow: 1,
     flexShrink: 0,
     marginTop: 50,
@@ -200,4 +196,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default memo(withLogs(ShiftScreen))
+export default memo(withLogs(ShiftScreen));

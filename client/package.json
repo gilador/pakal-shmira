@@ -10,8 +10,7 @@
     "tsc": "npx tsc",
     "test": "jest",
     "clean": "rm -rf node_modules",
-    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\"" 
-
+    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\""
   },
   "jest": {
     "preset": "jest-expo"
@@ -46,7 +45,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
-    "@types/qs": "^6.9.12"
+    "@types/qs": "^6.9.12",
+    "prettier": "^3.2.5"
   },
   "private": true
 }

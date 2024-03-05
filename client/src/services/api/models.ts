@@ -1,8 +1,8 @@
 export type OptimizeShiftRequest = {
-    constraints: number[][][]
-}
+  constraints: number[][][];
+};
 
 export type OptimizeShiftResponse = {
-    result: boolean[][][]
-    isOptim: boolean
-}
+  result: boolean[][][];
+  isOptim: boolean;
+};

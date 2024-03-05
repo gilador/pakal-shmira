@@ -54,4 +54,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default withLogs(SplitScreenComp)
+export default withLogs(SplitScreenComp);

@@ -15,20 +15,18 @@ import EditableList from "@app/screens/shiftScreen/elements/EditableList";
 import withLogs from "@app/components/HOC/withLogs";
 
 export default function useShiftUsersListView() {
-
-
   const [list, setList] = useState<User[]>([]);
 
   const [selectedNameId, setSelectedNameId] = useState<string | undefined>(
-    undefined
+    undefined,
   ); //TODO
   const toggleUserSelection = useCallback(
     (userNameId: string) => {
       setSelectedNameId((selectedNameId) =>
-        selectedNameId === userNameId ? undefined : userNameId
+        selectedNameId === userNameId ? undefined : userNameId,
       );
     },
-    [list]
+    [list],
   );
 
   const onAdd = (user: string) => {
@@ -37,9 +35,9 @@ export default function useShiftUsersListView() {
       id: `${user}+${Date.now()}`,
     };
     setList((preList) => {
-      console.log('hi there')
+      console.log("hi there");
       preList.push(userObj);
-      return [...preList]
+      return [...preList];
     });
   };
 
@@ -57,7 +55,7 @@ export default function useShiftUsersListView() {
   return {
     list,
     selectedNameId,
-    view: ShiftResourceListView
+    view: ShiftResourceListView,
   };
 }
 

@@ -12,11 +12,9 @@ export type NameCellViewProps = {
 const NameCellView = (props: NameCellViewProps) => {
   return (
     <Pressable
-
       onPress={props.cb}
       disabled={!props.cb}
-      onHoverIn={({ nativeEvent: MouseEvent }) => {
-      }}
+      onHoverIn={({ nativeEvent: MouseEvent }) => {}}
     >
       <Text style={getTextStyle(props.user, props.isSelected)}>
         {props.user.name}

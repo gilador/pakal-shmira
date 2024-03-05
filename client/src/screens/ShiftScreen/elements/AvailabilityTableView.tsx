@@ -27,14 +27,17 @@ const AvailabilityTableView = ({
 }: useAvailabilityTableProp) => {
   const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts]);
 
-  const transposedMatrix = useMemo(() =>  transposeMat(availabilityData), [availabilityData]);
+  const transposedMatrix = useMemo(
+    () => transposeMat(availabilityData),
+    [availabilityData],
+  );
   // const transposedMatrix = transposeMat(availabilityData);
   const cb = (availability: boolean, index: [number, number]) => {
     const newData = JSON.parse(JSON.stringify(availabilityData));
     newData[index[0]][index[1]] = !availability;
     onConstraintsChanged(newData);
   };
-  
+
   const shiftDataElements = transposedMatrix.map((array, postIndex) =>
     array.map((availability, hourIndex) => {
       return (
@@ -44,10 +47,9 @@ const AvailabilityTableView = ({
           cb={cb}
         />
       );
-    })
+    }),
   );
 
-  
   return (
     <View style={styles.container}>
       <Table borderStyle={{ borderWidth: 1 }}>
@@ -69,7 +71,7 @@ const AvailabilityTableView = ({
       </Table>
     </View>
   );
-}
+};
 
 //------------------------------------------functions--------------------------------------------------------
 
@@ -84,5 +86,4 @@ const styles = StyleSheet.create({
   wrapper: { flexDirection: "row" },
 });
 
-export default withLogs(AvailabilityTableView)
-
+export default withLogs(AvailabilityTableView);

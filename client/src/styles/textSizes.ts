@@ -11,4 +11,4 @@ export default {
   body_small: { fontSize: 14, lineHeight: 16 },
   caption: { fontSize: 12, lineHeight: 16 },
   extra_small: { fontSize: 10, lineHeight: 13 },
-}
+};

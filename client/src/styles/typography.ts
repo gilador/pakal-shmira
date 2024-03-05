@@ -1,17 +1,17 @@
-import { StyleSheet, TextStyle } from 'react-native'
-import textSizes from './textSizes'
-import colors from './colors'
+import { StyleSheet, TextStyle } from "react-native";
+import textSizes from "./textSizes";
+import colors from "./colors";
 
 interface FontProps {
-  fontSize: number
-  lineHeight: number
+  fontSize: number;
+  lineHeight: number;
 }
 
 const fonts = {
-  light: 'Gilroy-Light',
-  bold: 'gilroy-extra-bold',
-  heb_dot: 'Dafavohebfont-Regular'
-}
+  light: "Gilroy-Light",
+  bold: "gilroy-extra-bold",
+  heb_dot: "Dafavohebfont-Regular",
+};
 
 function createTextStyle(fontProps: FontProps) {
   return StyleSheet.create({
@@ -27,17 +27,21 @@ function createTextStyle(fontProps: FontProps) {
     OrangeBold: textStyle(fontProps, colors.dario_pumpkin, fonts.bold),
     PurpleRegular: textStyle(fontProps, colors.purple, fonts.light),
     PurpleBold: textStyle(fontProps, colors.purple, fonts.bold),
-    TransparentRegular: textStyle(fontProps, 'transparent', fonts.light),
-  })
+    TransparentRegular: textStyle(fontProps, "transparent", fonts.light),
+  });
 }
 
-function textStyle({ fontSize, lineHeight }: FontProps, textColor: string, fontFamily?: string) {
+function textStyle(
+  { fontSize, lineHeight }: FontProps,
+  textColor: string,
+  fontFamily?: string,
+) {
   return {
     fontSize,
     lineHeight,
     fontFamily: fontFamily,
     color: textColor,
-  } as TextStyle
+  } as TextStyle;
 }
 
 /**
@@ -76,4 +80,4 @@ export default {
   caption: createTextStyle(textSizes.caption),
   //10
   extra_small: createTextStyle(textSizes.extra_small),
-}
+};

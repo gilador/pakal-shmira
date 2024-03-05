@@ -43,10 +43,11 @@ const ShiftTableView = ({
   const shiftDataElements = useMemo(() => {
     let uiArray = (shifts ?? emptyCellsForSkeleton).map((array) =>
       array.map((user) => {
+        console.log(`shiftDataElements->user.id:${user.id}, selectedNameId:${selectedNameId}`)
         return (
           <NameCellView user={user} isSelected={user.id === selectedNameId} />
         );
-      })
+      }),
     );
     return uiArray;
   }, [shifts, selectedNameId]);
@@ -74,7 +75,7 @@ const ShiftTableView = ({
       </Table>
     </View>
   );
-}
+};
 
 //------------------------------------------functions--------------------------------------------------------
 
@@ -89,4 +90,4 @@ const styles = StyleSheet.create({
   wrapper: { flexDirection: "row" },
 });
 
-export default ShiftTableView
+export default ShiftTableView;

@@ -1,3 +1,3 @@
 export interface Dictionary<Type> {
-    [index: string]: Type;
+  [index: string]: Type;
 }

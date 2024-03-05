@@ -1,24 +1,24 @@
-import NameCellView from "@app/screens/shiftScreen/elements/NameCellView"
-import { User } from "@app/screens/shiftScreen/models"
-import { colors } from "@app/styles"
-import React, { memo, useEffect, useState } from "react"
-import { FlatList, StyleProp, StyleSheet, View, ViewStyle } from "react-native"
-import { IconButton, TextInput } from "react-native-paper"
+import NameCellView from "@app/screens/shiftScreen/elements/NameCellView";
+import { User } from "@app/screens/shiftScreen/models";
+import { colors } from "@app/styles";
+import React, { memo, useEffect, useState } from "react";
+import { FlatList, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { IconButton, TextInput } from "react-native-paper";
 
 type EditableListProps = {
-  list: User[]
-  onSelect: (selectedNameId: string) => void
-  selectedNameId: string | undefined
-  onUserAdded: (user: string) => void
-}
+  list: User[];
+  onSelect: (selectedNameId: string) => void;
+  selectedNameId: string | undefined;
+  onUserAdded: (user: string) => void;
+};
 
 type ItemProps = {
-  user: User
-  selectedNameId: string | undefined
-  onSelect: (selectedNameId: string) => void
-  onDelete: (selectedNameId: string) => void
-  isEditing: boolean
-}
+  user: User;
+  selectedNameId: string | undefined;
+  onSelect: (selectedNameId: string) => void;
+  onDelete: (selectedNameId: string) => void;
+  isEditing: boolean;
+};
 
 const Item = memo(
   ({ user, selectedNameId, onSelect, isEditing }: ItemProps) => (
@@ -40,44 +40,44 @@ const Item = memo(
         />
       )}
     </View>
-  )
-)
+  ),
+);
 
-type EditAddButtonProps = {}
+type EditAddButtonProps = {};
 type EditAddButtonViewProps = {
-  style?: StyleProp<ViewStyle>
-}
+  style?: StyleProp<ViewStyle>;
+};
 
 const useEditAddButton = ({}: EditAddButtonProps) => {
-  const [isEditing, setIsEditing] = React.useState(false)
+  const [isEditing, setIsEditing] = React.useState(false);
 
   const EditAddButtonView = memo(({ style }: EditAddButtonViewProps) => (
     <View style={style}>
       <IconButton
         icon={isEditing ? "checkbox-marked-circle" : "square-edit-outline"}
         onPress={() => {
-          setIsEditing((pre) => !pre)
+          setIsEditing((pre) => !pre);
         }}
         containerColor="lightgreen"
       />
     </View>
-  ))
+  ));
 
   return {
     isEditing,
     EditAddButtonView,
-  }
-}
+  };
+};
 
 const EditableList = memo((props: EditableListProps) => {
-  const { isEditing, EditAddButtonView } = useEditAddButton({})
-  const refAddedName = React.useRef<string | undefined>("")
+  const { isEditing, EditAddButtonView } = useEditAddButton({});
+  const refAddedName = React.useRef<string | undefined>("");
   useEffect(() => {
     if (!isEditing && refAddedName.current) {
-      props.onUserAdded(refAddedName.current)
+      props.onUserAdded(refAddedName.current);
     }
-    refAddedName.current = undefined
-  }, [isEditing])
+    refAddedName.current = undefined;
+  }, [isEditing]);
 
   return (
     <View style={styles.container}>
@@ -87,7 +87,7 @@ const EditableList = memo((props: EditableListProps) => {
           style={styles.input}
           placeholder="שם"
           onChangeText={(val: string) => {
-            refAddedName.current = val
+            refAddedName.current = val;
           }}
         />
       )}
@@ -104,8 +104,8 @@ const EditableList = memo((props: EditableListProps) => {
         )}
       />
     </View>
-  )
-})
+  );
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -133,6 +133,6 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     width: "100%",
   },
-})
+});
 
-export default EditableList
+export default EditableList;
