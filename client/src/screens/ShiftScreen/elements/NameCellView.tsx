@@ -1,37 +1,45 @@
 import withLogs from "@app/components/HOC/withLogs";
 import { User } from "@app/screens/shiftScreen/models";
-import { memo } from "react";
-import { TouchableOpacity, StyleSheet, View, Text} from "react-native";
+import React, { memo } from "react";
+import { StyleSheet, View, Text, Pressable } from "react-native";
 
 export type NameCellViewProps = {
-    user: User
-    isSelected: boolean
-    cb?: () => void
-}
+  user: User;
+  isSelected: boolean;
+  cb?: () => void;
+};
 
 const NameCellView = (props: NameCellViewProps) => {
-    return (
-        <TouchableOpacity onPress={props.cb} disabled = {!props.cb}>
-            <View style={styles.container}>
-                <Text style={getTextStyle(props.user, props.isSelected)}>{props.user.name}</Text>
-            </View>
-        </TouchableOpacity>
-    );
-}
+  return (
+    <Pressable
+
+      onPress={props.cb}
+      disabled={!props.cb}
+      onHoverIn={({ nativeEvent: MouseEvent }) => {
+      }}
+    >
+      <Text style={getTextStyle(props.user, props.isSelected)}>
+        {props.user.name}
+      </Text>
+    </Pressable>
+  );
+};
 
 //------------------------------------------functions--------------------------------------------------------
 
-function getTextStyle(user: User, isSelected: boolean): any[]{
-    return [styles.title, isSelected ? styles.selected : {}]
-
+function getTextStyle(user: User, isSelected: boolean): any[] {
+  return [styles.title, isSelected ? styles.selected : {}];
 }
 
 //------------------------------------------StyleSheet--------------------------------------------------------
 
 const styles = StyleSheet.create({
-    container: { flex: 10, padding: 16, paddingTop: 30 },
-    title: { textAlign: 'center' },
-    selected: {backgroundColor: 'pink'}
-  });
+  title: {
+    paddingTop: 30,
+    textAlign: "center",
+    textAlignVertical: "top",
+  },
+  selected: { backgroundColor: "pink" },
+});
 
-  export default memo(withLogs(NameCellView))
+export default memo(withLogs(NameCellView));

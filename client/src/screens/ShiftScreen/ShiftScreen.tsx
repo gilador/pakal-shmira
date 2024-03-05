@@ -1,10 +1,10 @@
 import { Button } from "react-native-paper";
-import { StyleSheet, View } from "react-native";
-import { useCallback, useMemo, useState } from "react";
+import { StyleSheet, View, Text } from "react-native";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 import { optimize } from "@app/services/optimizeService/OptimizeService";
 
-import { getEmptyMatrix } from "./utils";
+import { getEmptyMatrix } from "../../common/utils";
 import ShiftTableView from "./elements/ShiftTableView";
 import { ShiftBoard, User, UserShiftData } from "./models";
 import AvailabilityTableView from "./elements/AvailabilityTableView";
@@ -13,17 +13,17 @@ import withLogs from "@app/components/HOC/withLogs";
 import SplitScreenComp from "@app/components/SplitScreenComp";
 
 const ShiftScreen = () => {
-  console.log("ShiftScreen");
-
   const {
     list: names,
     selectedNameId,
     view: namesListView,
   } = useShiftUsersListView();
 
-  console.log(`${ShiftScreen.name}`);
   const [shiftData, setShiftData] = useState(getShiftBoardDataMock(names));
+  
   const selectedUser = useMemo(() => {
+    if (!selectedNameId)
+      return undefined
     const selected = shiftData.users.find(
       (val) => val.user.id === selectedNameId
     );
@@ -48,7 +48,6 @@ const ShiftScreen = () => {
           let total = 0;
           userShift.assignments.forEach((hourArray, hourIndex) => {
             hourArray.forEach((post, postIndex) => {
-              // console.log(`handleOptimize-> ${userShift.user.name},[${hourIndex}][${postIndex}]= ${post}`);
               if (post) {
                 shifts[postIndex][hourIndex] = {
                   name: userShift.user.name,
@@ -67,7 +66,6 @@ const ShiftScreen = () => {
           posts: prev.posts,
         };
 
-        // console.log(`newShiftBoar: ${JSON.stringify(newShiftBoard)}`)
         return newShiftBoard;
       });
     } catch (error) {
@@ -75,6 +73,10 @@ const ShiftScreen = () => {
       // Handle error appropriately, e.g., show error message to the user
     }
   }, [shiftData]);
+
+  useEffect(() => {
+    setShiftData(getShiftBoardDataMock(names))
+  }, [names]);
 
   const rightView = useMemo(
     () => (
@@ -112,17 +114,14 @@ const ShiftScreen = () => {
       <SplitScreenComp
         leftPanel={namesListView}
         rightPanel={rightView}
-        style={styles.top}
+        style={styles.body}
       />
       <Button style={styles.bottom} onPress={handleOptimize}>
         optimize
       </Button>
-      x
     </View>
   );
 };
-
-export default withLogs(ShiftScreen);
 
 //------------------------------------------functions--------------------------------------------------------
 
@@ -148,7 +147,7 @@ function getShiftBoardDataMock(users: User[]): ShiftBoard {
 
   const usersConst = users?.reduce((acum, user, index) => {
     let userCon: UserShiftData = {
-      user: { name: user.name || "", id: `${user.name}+${index}` },
+      user: user,
       assignments: [],
       totalAssignments: 0,
       constraints: sharedConstraints,
@@ -176,7 +175,13 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     padding: 2,
   },
-  top: {
+  top:{
+    flexGrow: 1,
+    flexShrink: 0,
+    marginTop: 50,
+    backgroundColor: "lightgreen",
+  },
+  body: {
     flexGrow: 1,
     flexShrink: 1,
     backgroundColor: "lightblue",
@@ -194,3 +199,5 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
 });
+
+export default memo(withLogs(ShiftScreen))

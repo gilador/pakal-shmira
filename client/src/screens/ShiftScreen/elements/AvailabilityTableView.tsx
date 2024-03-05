@@ -7,7 +7,7 @@ import {
   Table,
   TableWrapper,
 } from "react-native-reanimated-table";
-import { transposeMat } from "../utils";
+import { transposeMat } from "../../../common/utils";
 
 import AvailabilityCellView from "./AvailabilityCellView";
 import withLogs from "@app/components/HOC/withLogs";

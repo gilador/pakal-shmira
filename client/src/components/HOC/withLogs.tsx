@@ -3,7 +3,6 @@ import React, { useEffect } from 'react';
 // Define a higher-order component as a function
 function withLogging<P extends object>(WrappedComponent: React.ComponentType<P>): React.ComponentType<P> {
   // Return a new functional component
-  console.log(`Component withLogging`);
   console.log(`Component ${WrappedComponent.displayName || WrappedComponent.name} is rendered`);
 
   const FnComp = (props: P) => {

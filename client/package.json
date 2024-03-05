@@ -9,7 +9,9 @@
     "web": "expo start --web",
     "tsc": "npx tsc",
     "test": "jest",
-    "prepare": "husky"
+    "clean": "rm -rf node_modules",
+    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\"" 
+
   },
   "jest": {
     "preset": "jest-expo"

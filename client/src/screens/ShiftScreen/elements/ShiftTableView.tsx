@@ -17,7 +17,7 @@ import {
 } from "react-native-reanimated-table";
 
 import { ShiftBoard, UserShiftData, User } from "../models";
-import { getEmptyMatrix } from "../utils";
+import { getEmptyMatrix } from "../../../common/utils";
 import NameCellView from "./NameCellView";
 
 type ShiftTableViewProp = {
@@ -87,8 +87,6 @@ const styles = StyleSheet.create({
   row: { height: 50 },
   text: { textAlign: "center" },
   wrapper: { flexDirection: "row" },
-  constraint_allow: { backgroundColor: "green" },
-  constraint_dis_allow: { backgroundColor: "red" },
 });
 
 export default ShiftTableView

@@ -40,8 +40,7 @@ const styles = StyleSheet.create({
     backgroundColor: "pink  ",
   },
   leftPanel: {
-    flexShrink: 1,
-    flexGrow: 1,
+    flex: 1,
   },
   separator: {
     backgroundColor: colors.black,
@@ -50,7 +49,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   rightPanel: {
-    flexGrow: 50,
+    flexGrow: 5,
     flexShrink: 1,
   },
 });

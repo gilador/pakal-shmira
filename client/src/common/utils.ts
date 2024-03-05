@@ -1,4 +1,4 @@
-import { User } from "./models";
+import { User } from "../screens/shiftScreen/models";
 
 export function getEmptyMatrix<T>(cols: number, rows: number, fillObj: T): T[][]{
     return Array(cols).fill(undefined).map(() => {
