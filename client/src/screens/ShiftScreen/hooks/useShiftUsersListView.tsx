@@ -1,28 +1,28 @@
-import { optimize } from "@app/services/optimizeService/OptimizeService";
-import {
-  ReactComponentElement,
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import React, { Component } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
-import { Text } from "react-native";
-import { User } from "../models";
-import EditableList from "@app/screens/shiftScreen/elements/EditableList";
-import withLogs from "@app/components/HOC/withLogs";
 import { extractWords } from "@app/common/utils";
+import EditableList from "@app/screens/shiftScreen/elements/EditableList";
+import React, { useCallback, useState } from "react";
+import { StyleSheet, View } from "react-native";
+import { User } from "../models";
 
 export default function useShiftUsersListView() {
-  const [list, setList] = useState<User[]>([]);
+  const mocked = [
+    { name: "אלון", id: "1" },
+    { name: "צביקה", id: "2" },
+    { name: "תמיר", id: "3" },
+    { name: "רחמים", id: "4" },
+    { name: "מתי", id: "5" },
+    { name: "כספי", id: "6" },
+    { name: "אליהו", id: "7" },
+  ];
+  const [list, setList] = useState<User[]>(mocked);
 
   const [selectedNameId, setSelectedNameId] = useState<string | undefined>(
     undefined,
-  ); //TODO
+  );
+
+  //TODO
   const toggleUserSelection = useCallback(
-    (userNameId: string) => {
+    (userNameId: string | undefined) => {
       setSelectedNameId((selectedNameId) =>
         selectedNameId === userNameId ? undefined : userNameId,
       );
@@ -31,19 +31,28 @@ export default function useShiftUsersListView() {
   );
 
   const onAdd = (user: string) => {
-    const names = extractWords(user)
-    console.log(`names: ${JSON.stringify(names)}`)
-    const ret = names.map((ele)=>({
+    const names = extractWords(user);
+    const ret = names.map((ele) => ({
       name: ele,
       id: `${ele}+${Date.now()}`,
-    }))
+    }));
 
-    // const userObj = {
-    //   name: user,
-    //   id: `${user}+${Date.now()}`,
-    // };
     setList((preList) => {
       preList.push(...ret);
+      return [...preList];
+    });
+  };
+
+  const onDelete = (userId: string) => {
+    setList((preList) => {
+      console.log(`onDelete->before->preList: ${JSON.stringify(preList)}`);
+      const index = preList.findIndex((el) => el.id === userId);
+      if (index >= 0) {
+        index >= 0 && preList.splice(index, 1);
+      }
+
+      console.log(`onDelete->after->ret: ${JSON.stringify(preList)}`);
+
       return [...preList];
     });
   };
@@ -55,6 +64,7 @@ export default function useShiftUsersListView() {
         onSelect={toggleUserSelection}
         selectedNameId={selectedNameId}
         onUserAdded={onAdd}
+        onUserDeleted={onDelete}
       />
     </View>
   );

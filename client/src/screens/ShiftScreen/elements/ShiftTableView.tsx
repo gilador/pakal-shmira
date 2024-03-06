@@ -21,7 +21,7 @@ import { getEmptyMatrix } from "../../../common/utils";
 import NameCellView from "./NameCellView";
 
 type ShiftTableViewProp = {
-  selectedNameId: string;
+  selectedNameId: string | undefined;
   posts: string[];
   hours: string[];
   shifts?: User[][];
@@ -43,7 +43,9 @@ const ShiftTableView = ({
   const shiftDataElements = useMemo(() => {
     let uiArray = (shifts ?? emptyCellsForSkeleton).map((array) =>
       array.map((user) => {
-        console.log(`shiftDataElements->user.id:${user.id}, selectedNameId:${selectedNameId}`)
+        console.log(
+          `shiftDataElements->user.id:${user.id}, selectedNameId:${selectedNameId}`,
+        );
         return (
           <NameCellView user={user} isSelected={user.id === selectedNameId} />
         );

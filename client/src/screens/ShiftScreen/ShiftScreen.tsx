@@ -48,7 +48,7 @@ const ShiftScreen = () => {
           userShift.assignments.forEach((hourArray, hourIndex) => {
             hourArray.forEach((post, postIndex) => {
               if (post) {
-                shifts[postIndex][hourIndex] = userShift.user
+                shifts[postIndex][hourIndex] = userShift.user;
                 total++;
               }
             });
