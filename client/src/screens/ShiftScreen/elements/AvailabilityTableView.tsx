@@ -1,23 +1,23 @@
-import React, { useMemo } from "react";
-import { StyleSheet, View } from "react-native";
 import {
   Col,
   Row,
   Rows,
   Table,
   TableWrapper,
-} from "react-native-reanimated-table";
-import { transposeMat } from "../../../common/utils";
+} from "react-native-reanimated-table"
+import { StyleSheet, View } from "react-native"
+import React, { useMemo } from "react"
 
-import AvailabilityCellView from "./AvailabilityCellView";
-import withLogs from "@app/components/HOC/withLogs";
+import AvailabilityCellView from "./AvailabilityCellView"
+import { transposeMat } from "../../../common/utils"
+import withLogs from "@app/components/HOC/withLogs"
 
 type useAvailabilityTableProp = {
-  hours: string[];
-  posts: string[];
-  availabilityData?: boolean[][];
-  onConstraintsChanged: (data: boolean[][]) => void;
-};
+  hours: string[]
+  posts: string[]
+  availabilityData?: boolean[][]
+  onConstraintsChanged: (data: boolean[][]) => void
+}
 
 const AvailabilityTableView = ({
   posts,
@@ -25,18 +25,18 @@ const AvailabilityTableView = ({
   availabilityData = [],
   onConstraintsChanged,
 }: useAvailabilityTableProp) => {
-  const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts]);
+  const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts])
 
   const transposedMatrix = useMemo(
     () => transposeMat(availabilityData),
     [availabilityData],
-  );
+  )
   // const transposedMatrix = transposeMat(availabilityData);
   const cb = (availability: boolean, index: [number, number]) => {
-    const newData = JSON.parse(JSON.stringify(availabilityData));
-    newData[index[0]][index[1]] = !availability;
-    onConstraintsChanged(newData);
-  };
+    const newData = JSON.parse(JSON.stringify(availabilityData))
+    newData[index[0]][index[1]] = !availability
+    onConstraintsChanged(newData)
+  }
 
   const shiftDataElements = transposedMatrix.map((array, postIndex) =>
     array.map((availability, hourIndex) => {
@@ -46,9 +46,9 @@ const AvailabilityTableView = ({
           index={[postIndex, hourIndex]}
           cb={cb}
         />
-      );
+      )
     }),
-  );
+  )
 
   return (
     <View style={styles.container}>
@@ -70,8 +70,8 @@ const AvailabilityTableView = ({
         </TableWrapper>
       </Table>
     </View>
-  );
-};
+  )
+}
 
 //------------------------------------------functions--------------------------------------------------------
 
@@ -84,6 +84,6 @@ const styles = StyleSheet.create({
   row: { height: 50 },
   text: { textAlign: "center" },
   wrapper: { flexDirection: "row" },
-});
+})
 
-export default withLogs(AvailabilityTableView);
+export default withLogs(AvailabilityTableView)

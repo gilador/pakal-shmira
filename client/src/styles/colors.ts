@@ -71,4 +71,4 @@ export default {
   dark_gray_0_opaciity: "#20213000",
   selected: "#9747FF",
   unselected: "#AFF4C6",
-};
+}

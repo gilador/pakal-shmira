@@ -1,11 +1,12 @@
-import qs from "qs";
-import axios, { AxiosRequestConfig, AxiosResponse, AxiosInstance } from "axios";
-import { OptimizeShiftRequest, OptimizeShiftResponse } from "./models";
+import axios, { AxiosRequestConfig, AxiosResponse, AxiosInstance } from "axios"
+import qs from "qs"
 
-const GET_TOKEN_DEFAULT_TIMEOUT = 3000;
+import { OptimizeShiftRequest, OptimizeShiftResponse } from "./models"
+
+const GET_TOKEN_DEFAULT_TIMEOUT = 3000
 class ApiService {
-  private axiosInstance: AxiosInstance;
-  private authToken: string;
+  private axiosInstance: AxiosInstance
+  private authToken: string
 
   constructor() {
     this.axiosInstance = axios.create({
@@ -16,9 +17,9 @@ class ApiService {
       },
       paramsSerializer: (params: any) =>
         qs.stringify(params, { arrayFormat: "repeat" }),
-    });
+    })
 
-    this.authToken = "";
+    this.authToken = ""
 
     const requestMiddleware = (config: any) => {
       // if (this.authToken) {
@@ -27,25 +28,25 @@ class ApiService {
       //   delete config.headers.Authorization
       // }
 
-      console.log(`ApiService->request: ${JSON.stringify(config)}`);
+      console.log(`ApiService->request: ${JSON.stringify(config)}`)
 
-      return config;
-    };
+      return config
+    }
 
-    this.axiosInstance.interceptors.request.use(requestMiddleware);
+    this.axiosInstance.interceptors.request.use(requestMiddleware)
     this.axiosInstance.interceptors.response.use(
       this.responseMiddleware.bind(this),
-    );
+    )
   }
 
   public async optimizeShift(
     constraints: number[][][],
   ): Promise<OptimizeShiftResponse> {
-    console.log("optimizeShift");
-    const url = "/api/getOptimizedShift";
-    const data = { constraints: constraints };
-    const response: OptimizeShiftResponse = await this.post(url, data);
-    return response;
+    console.log("optimizeShift")
+    const url = "/api/getOptimizedShift"
+    const data = { constraints: constraints }
+    const response: OptimizeShiftResponse = await this.post(url, data)
+    return response
   }
   // public setAuthToken(token: string): void {
   //   this.authToken = `Bearer ${token}`
@@ -73,13 +74,13 @@ class ApiService {
       url,
       data,
       config,
-    );
-    return response.data;
+    )
+    return response.data
   }
 
   private async get(url: string, config?: AxiosRequestConfig): Promise<any> {
-    const response: AxiosResponse = await this.axiosInstance.get(url, config);
-    return response.data;
+    const response: AxiosResponse = await this.axiosInstance.get(url, config)
+    return response.data
   }
 
   private async patch(
@@ -91,8 +92,8 @@ class ApiService {
       url,
       data,
       config,
-    );
-    return response.data;
+    )
+    return response.data
   }
 
   private requestMiddleware(config: AxiosRequestConfig): AxiosRequestConfig {
@@ -102,9 +103,9 @@ class ApiService {
     //   delete config.headers.Authorization
     // }
 
-    console.log(`ApiService->response: ${JSON.stringify(config)}`);
+    console.log(`ApiService->response: ${JSON.stringify(config)}`)
 
-    return config;
+    return config
   }
 
   private responseMiddleware(response: AxiosResponse): AxiosResponse {
@@ -112,10 +113,10 @@ class ApiService {
     // ) {
     //   response.data = camelizeKeys(response.data)
     // }
-    console.log(`ApiService->response: ${JSON.stringify(response)}`);
+    console.log(`ApiService->response: ${JSON.stringify(response)}`)
 
-    return response;
+    return response
   }
 }
 
-export default new ApiService();
+export default new ApiService()

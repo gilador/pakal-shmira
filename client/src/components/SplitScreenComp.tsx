@@ -1,12 +1,13 @@
-import { StyleSheet, View, StyleProp, ViewStyle } from "react-native";
-import React from "react";
-import { colors } from "../styles";
-import withLogs from "./HOC/withLogs";
+import { StyleSheet, View, StyleProp, ViewStyle } from "react-native"
+import React from "react"
+
+import withLogs from "./HOC/withLogs"
+import { colors } from "../styles"
 
 export interface SplitScreenCompProps {
-  leftPanel: JSX.Element;
-  rightPanel: JSX.Element;
-  style?: StyleProp<ViewStyle>;
+  leftPanel: JSX.Element
+  rightPanel: JSX.Element
+  style?: StyleProp<ViewStyle>
 }
 
 const SplitScreenComp = ({
@@ -16,10 +17,10 @@ const SplitScreenComp = ({
 }: SplitScreenCompProps): JSX.Element => {
   const newRightPanel = React.cloneElement(rightPanel, {
     style: styles.rightPanel,
-  });
+  })
   const newLeftPanel = React.cloneElement(leftPanel, {
     style: styles.leftPanel,
-  });
+  })
 
   return (
     <View style={[style, styles.container]}>
@@ -27,8 +28,8 @@ const SplitScreenComp = ({
       <View style={styles.separator} />
       {newRightPanel}
     </View>
-  );
-};
+  )
+}
 
 //------------------------------------------functions--------------------------------------------------------
 
@@ -52,6 +53,6 @@ const styles = StyleSheet.create({
     flexGrow: 5,
     flexShrink: 1,
   },
-});
+})
 
-export default withLogs(SplitScreenComp);
+export default withLogs(SplitScreenComp)

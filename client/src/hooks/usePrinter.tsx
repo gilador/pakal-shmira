@@ -1,54 +1,55 @@
-import React, { MutableRefObject, useEffect, useRef } from "react";
-import { StyleSheet } from "react-native";
-import { useReactToPrint } from "react-to-print";
-import { AntDesign } from "@expo/vector-icons";
+import React, { MutableRefObject, useEffect, useRef } from "react"
+import { useReactToPrint } from "react-to-print"
+import { StyleSheet } from "react-native"
+
+import { AntDesign } from "@expo/vector-icons"
 
 export default function usePrint(printRef: React.RefObject<Node>): {
-  print: () => void;
-  printIcon: JSX.Element;
+  print: () => void
+  printIcon: JSX.Element
 } {
   useEffect(() => {
     const handleKeyDown = (event: {
-      preventDefault: () => void;
-      which: any;
-      keyCode: any;
-      ctrlKey: any;
-      metaKey: any;
+      preventDefault: () => void
+      which: any
+      keyCode: any
+      ctrlKey: any
+      metaKey: any
     }) => {
-      const code = event.which || event.keyCode;
+      const code = event.which || event.keyCode
 
-      let charCode = String.fromCharCode(code).toLowerCase();
+      let charCode = String.fromCharCode(code).toLowerCase()
       if ((event.ctrlKey || event.metaKey) && charCode === "p") {
-        event.preventDefault();
-        callPrint();
+        event.preventDefault()
+        callPrint()
       }
-    };
+    }
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown)
 
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [])
 
   const callPrint = useReactToPrint({
     content: () => {
-      const cpy = printRef.current?.cloneNode(true) as HTMLElement;
+      const cpy = printRef.current?.cloneNode(true) as HTMLElement
 
       if (cpy.style !== undefined) {
-        cpy.style.alignSelf = "center";
-        cpy.style.width = "100%";
-        cpy.style.height = "100%";
-        (cpy.childNodes[0] as HTMLElement).style.borderWidth = "0";
-        console.log(`gilad->eeeeeeeee`);
+        cpy.style.alignSelf = "center"
+        cpy.style.width = "100%"
+        cpy.style.height = "100%"
+        ;(cpy.childNodes[0] as HTMLElement).style.borderWidth = "0"
+        console.log(`gilad->eeeeeeeee`)
       }
 
-      return cpy as React.ReactInstance;
+      return cpy as React.ReactInstance
     },
     documentTitle: "DafAvo Exercise",
-  });
+  })
 
   return {
     print: () => {
-      callPrint();
+      callPrint()
     },
     printIcon: (
       <AntDesign
@@ -59,7 +60,7 @@ export default function usePrint(printRef: React.RefObject<Node>): {
         style={styles.print}
       />
     ),
-  };
+  }
 }
 
 const styles = StyleSheet.create({
@@ -94,4 +95,4 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     alignSelf: "center",
   },
-});
+})

@@ -1,5 +1,5 @@
-import { UserShiftData } from "@app/screens/shiftScreen/models";
-import { translateUserShiftToConstraints } from "../optimizeService/OptimizeService";
+import { translateUserShiftToConstraints } from "../optimizeService/OptimizeService"
+import { UserShiftData } from "@app/screens/shiftScreen/models"
 
 describe("Name of the group", () => {
   it("should translateUserShiftToConstraints transform correct", () => {
@@ -22,9 +22,9 @@ describe("Name of the group", () => {
         ],
         totalAssignments: 0,
       },
-    ];
+    ]
 
-    const result = translateUserShiftToConstraints(mockedUsersConstraints);
+    const result = translateUserShiftToConstraints(mockedUsersConstraints)
 
     expect(result).toEqual([
       [
@@ -35,6 +35,6 @@ describe("Name of the group", () => {
         [1, 0, 0, 0],
         [0, 0, 1, 1],
       ],
-    ]);
-  });
-});
+    ])
+  })
+})

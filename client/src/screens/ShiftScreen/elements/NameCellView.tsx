@@ -1,13 +1,14 @@
-import withLogs from "@app/components/HOC/withLogs";
-import { User } from "@app/screens/shiftScreen/models";
-import React, { memo } from "react";
-import { StyleSheet, View, Text, Pressable } from "react-native";
+import { StyleSheet, View, Text, Pressable } from "react-native"
+import React, { memo } from "react"
+
+import { User } from "@app/screens/shiftScreen/models"
+import withLogs from "@app/components/HOC/withLogs"
 
 export type NameCellViewProps = {
-  user: User;
-  isSelected: boolean;
-  cb?: () => void;
-};
+  user: User
+  isSelected: boolean
+  cb?: () => void
+}
 
 const NameCellView = (props: NameCellViewProps) => {
   return (
@@ -20,13 +21,13 @@ const NameCellView = (props: NameCellViewProps) => {
         {props.user.name}
       </Text>
     </Pressable>
-  );
-};
+  )
+}
 
 //------------------------------------------functions--------------------------------------------------------
 
 function getTextStyle(user: User, isSelected: boolean): any[] {
-  return [styles.title, isSelected ? styles.selected : {}];
+  return [styles.title, isSelected ? styles.selected : {}]
 }
 
 //------------------------------------------StyleSheet--------------------------------------------------------
@@ -38,6 +39,6 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   selected: { backgroundColor: "pink" },
-});
+})
 
-export default memo(withLogs(NameCellView));
+export default memo(withLogs(NameCellView))

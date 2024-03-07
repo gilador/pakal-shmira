@@ -1,8 +1,23 @@
-import { extractWords } from "@app/common/utils";
-import EditableList from "@app/screens/shiftScreen/elements/EditableList";
-import React, { useCallback, useState } from "react";
+import React, { createContext, useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
+
+import EditableList from "@app/screens/shiftScreen/elements/EditableList";
+import { extractWords } from "@app/common/utils";
 import { User } from "../models";
+
+export type ShiftListContextType = {
+  onUserToggleSelected: (userNameId: string | undefined) => void;
+  onUserAdded: (userNameId: string | undefined) => void;
+  onUserRemoved: (userNameId: string) => void;
+  selectedNameId: string | undefined;
+};
+
+export const ShiftListContext = createContext<ShiftListContextType>({
+  onUserToggleSelected: () => {},
+  onUserAdded: () => {},
+  onUserRemoved: () => {},
+  selectedNameId: undefined,
+});
 
 export default function useShiftUsersListView() {
   const mocked = [
@@ -20,7 +35,6 @@ export default function useShiftUsersListView() {
     undefined,
   );
 
-  //TODO
   const toggleUserSelection = useCallback(
     (userNameId: string | undefined) => {
       setSelectedNameId((selectedNameId) =>
@@ -30,7 +44,10 @@ export default function useShiftUsersListView() {
     [list],
   );
 
-  const onAdd = (user: string) => {
+  const onAdd = (user: string | undefined) => {
+    if (!user){
+      return
+    }
     const names = extractWords(user);
     const ret = names.map((ele) => ({
       name: ele,
@@ -43,30 +60,29 @@ export default function useShiftUsersListView() {
     });
   };
 
-  const onDelete = (userId: string) => {
+  const onRemove = (userId: string) => {
     setList((preList) => {
-      console.log(`onDelete->before->preList: ${JSON.stringify(preList)}`);
       const index = preList.findIndex((el) => el.id === userId);
       if (index >= 0) {
         index >= 0 && preList.splice(index, 1);
       }
-
-      console.log(`onDelete->after->ret: ${JSON.stringify(preList)}`);
-
       return [...preList];
     });
   };
 
+  const context: ShiftListContextType = {
+    onUserToggleSelected: toggleUserSelection,
+    onUserAdded: onAdd,
+    onUserRemoved: onRemove,
+    selectedNameId: selectedNameId,
+  };
+
   const ShiftResourceListView = (
-    <View style={styles.container}>
-      <EditableList
-        list={list}
-        onSelect={toggleUserSelection}
-        selectedNameId={selectedNameId}
-        onUserAdded={onAdd}
-        onUserDeleted={onDelete}
-      />
-    </View>
+    <ShiftListContext.Provider value={context}>
+      <View style={styles.container}>
+        <EditableList list={list} />
+      </View>
+    </ShiftListContext.Provider>
   );
 
   return {

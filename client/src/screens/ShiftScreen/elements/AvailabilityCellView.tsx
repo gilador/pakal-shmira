@@ -1,23 +1,24 @@
-import withLogs from "@app/components/HOC/withLogs";
-import { memo, useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native"
+import { memo, useState } from "react"
+
+import withLogs from "@app/components/HOC/withLogs"
 
 export type NameCellViewProps = {
-  availability: boolean;
-  index: [number, number];
-  cb?: (availability: boolean, index: [number, number]) => void;
-};
+  availability: boolean
+  index: [number, number]
+  cb?: (availability: boolean, index: [number, number]) => void
+}
 
 const AvailabilityCellView = (props: NameCellViewProps) => {
-  const [opacity, setOpacity] = useState(1);
+  const [opacity, setOpacity] = useState(1)
 
   return (
     <Pressable
       onHoverIn={() => {
-        setOpacity(0.5);
+        setOpacity(0.5)
       }}
       onHoverOut={() => {
-        setOpacity(1);
+        setOpacity(1)
       }}
       onPress={() =>
         props.cb &&
@@ -27,8 +28,8 @@ const AvailabilityCellView = (props: NameCellViewProps) => {
     >
       <View style={getAvailabilityStyle(props.availability, opacity)} />
     </Pressable>
-  );
-};
+  )
+}
 
 //------------------------------------------functions--------------------------------------------------------
 
@@ -37,7 +38,7 @@ function getAvailabilityStyle(availability: boolean, opacity: number): any[] {
     styles.container,
     availability ? styles.available : {},
     { opacity: opacity },
-  ];
+  ]
 }
 
 //------------------------------------------StyleSheet--------------------------------------------------------
@@ -46,6 +47,6 @@ const styles = StyleSheet.create({
   container: { flex: 10, padding: 16, paddingTop: 30, backgroundColor: "red" },
   available: { backgroundColor: "green" },
   hover: { backgroundColor: "pink" },
-});
+})
 
-export default memo(withLogs(AvailabilityCellView));
+export default memo(withLogs(AvailabilityCellView))
