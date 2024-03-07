@@ -5,27 +5,27 @@ import React, {
   useRef,
   useState,
   useTransition,
-} from "react"
-import { FlatList, StyleProp, StyleSheet, View, ViewStyle } from "react-native"
-import { IconButton, TextInput } from "react-native-paper"
+} from "react";
+import { FlatList, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { IconButton, TextInput } from "react-native-paper";
 
-import NameCellView from "@app/screens/shiftScreen/elements/NameCellView"
-import { ShiftListContext } from "../hooks/useShiftUsersListView"
-import useEditAddButton from "../hooks/useEditAddButton"
-import { User } from "@app/screens/shiftScreen/models"
-import { colors } from "@app/styles"
+import NameCellView from "@app/screens/shiftScreen/elements/NameCellView";
+import { ShiftListContext } from "../hooks/useShiftUsersListView";
+import useEditAddButton from "../hooks/useEditAddButton";
+import { User } from "@app/screens/shiftScreen/models";
+import { colors } from "@app/styles";
 
 type EditableListProps = {
-  list: User[]
-}
+  list: User[];
+};
 
 type ItemProps = {
-  user: User
-  selectedNameId: string | undefined
-  onSelect: (selectedNameId: string) => void
-  onDelete: (selectedNameId: string) => void
-  isEditing: boolean
-}
+  user: User;
+  selectedNameId: string | undefined;
+  onSelect: (selectedNameId: string) => void;
+  onDelete: (selectedNameId: string) => void;
+  isEditing: boolean;
+};
 
 const Item = memo(
   ({ user, selectedNameId, onSelect, onDelete, isEditing }: ItemProps) => {
@@ -36,7 +36,7 @@ const Item = memo(
           user={user}
           isSelected={selectedNameId === user.id}
           cb={() => {
-            !isEditing && onSelect(user.id)
+            !isEditing && onSelect(user.id);
           }}
         />
         {isEditing && (
@@ -51,24 +51,24 @@ const Item = memo(
           />
         )}
       </View>
-    )
+    );
   },
-)
+);
 
 //-----
 const EditableList = memo((props: EditableListProps) => {
-  const shiftListContext = useContext(ShiftListContext)
+  const shiftListContext = useContext(ShiftListContext);
 
-  const { isEditing, EditAddButtonView } = useEditAddButton({})
+  const { isEditing, EditAddButtonView } = useEditAddButton({});
   const [textValue, setTextValue] = React.useState<string | undefined>(
     undefined,
-  )
-  const textInputRef = useRef<any>(null)
+  );
+  const textInputRef = useRef<any>(null);
 
   useEffect(() => {
-    !isEditing && shiftListContext.onUserAdded(textValue)
-    setTextValue("")
-  }, [isEditing])
+    !isEditing && shiftListContext.onUserAdded(textValue);
+    setTextValue("");
+  }, [isEditing]);
 
   return (
     <View style={styles.container}>
@@ -82,14 +82,14 @@ const EditableList = memo((props: EditableListProps) => {
           value={textValue}
           placeholder="הזן שמות ברווחים"
           onChangeText={(val: string) => {
-            console.log(`r-onChangeText-> is`)
-            setTextValue(val)
+            console.log(`r-onChangeText-> is`);
+            setTextValue(val);
           }}
           onBlur={() => {
-            console.log(`r-onBlur-> is`)
-            shiftListContext.onUserAdded(textValue)
-            setTextValue("")
-            textInputRef?.current?.focus()
+            console.log(`r-onBlur-> is`);
+            shiftListContext.onUserAdded(textValue);
+            setTextValue("");
+            textInputRef?.current?.focus();
           }}
         />
       )}
@@ -107,19 +107,20 @@ const EditableList = memo((props: EditableListProps) => {
         )}
       />
     </View>
-  )
-})
+  );
+});
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: "column",
+    height: "100%",
+    paddingBottom: 40,
   },
 
   list: {
-    flexGrow: 70,
+    flexGrow: 1,
   },
   item: {
-    padding: 10,
     marginVertical: 1,
     marginHorizontal: 5,
     backgroundColor: colors.light_grey1,
@@ -127,15 +128,16 @@ const styles = StyleSheet.create({
   },
   button: {
     alignSelf: "flex-end",
+    flexShrink:0
   },
   title: {
     fontSize: 32,
   },
   input: {
     flexGrow: 0,
-    flexShrink: 1,
+    flexShrink: 0,
     width: "100%",
   },
-})
+});
 
-export default EditableList
+export default EditableList;
