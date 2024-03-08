@@ -1,30 +1,24 @@
 import {
-  StyleSheet,
-  TouchableWithoutFeedbackComponent,
-  View,
-  Text,
-  TouchableOpacity,
-  Alert,
-} from "react-native"
-import {
-  Table,
+  Col,
   Row,
   Rows,
+  Table,
   TableWrapper,
-  Col,
 } from "react-native-reanimated-table"
-import { useCallback, useMemo, useState } from "react"
-import React, { Component } from "react"
+import { StyleSheet, View } from "react-native"
+import React, { useMemo } from "react"
 
-import { ShiftBoard, UserShiftData, User } from "../models"
 import { getEmptyMatrix } from "../../../common/utils"
 import NameCellView from "./NameCellView"
+import PostCellView from "./PostCellView"
+import { User } from "../models"
 
 type ShiftTableViewProp = {
   selectedNameId: string | undefined
-  posts: string[]
+  posts: (string | undefined)[]
   hours: string[]
   shifts?: User[][]
+  isEditing?: boolean
 }
 
 const ShiftTableView = ({
@@ -32,6 +26,7 @@ const ShiftTableView = ({
   posts,
   hours,
   shifts,
+  isEditing = false,
 }: ShiftTableViewProp) => {
   const emptyCellsForSkeleton: User[][] = useMemo(() => {
     return getEmptyMatrix<User>(hours.length, posts.length - 1, {
@@ -43,21 +38,42 @@ const ShiftTableView = ({
   const shiftDataElements = useMemo(() => {
     let uiArray = (shifts ?? emptyCellsForSkeleton).map((array) =>
       array.map((user) => {
-        console.log(
-          `shiftDataElements->user.id:${user.id}, selectedNameId:${selectedNameId}`,
-        )
         return (
-          <NameCellView user={user} isSelected={user.id === selectedNameId} />
+          <NameCellView
+            user={user.name}
+            isDisable={true}
+            isSelected={user.id === selectedNameId}
+          />
         )
       }),
     )
     return uiArray
   }, [shifts, selectedNameId])
 
+  const shitPostsElement = useMemo(() => {
+    let uiArray = posts.map((post) => {
+      console.log(
+        `shiftDataElements->user.id:${post}, selectedNameId:${selectedNameId}`,
+      )
+      return <PostCellView post={post} />
+    })
+    return uiArray
+  }, [posts])
+
   const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts])
 
   return (
     <View style={styles.container}>
+      {isEditing && (
+        <TableWrapper borderStyle={{ borderWidth: 4, borderColor: "white" }}>
+          <Row
+            data={shitPostsElement}
+            flexArr={flexHeadArray}
+            style={styles.head2}
+            textStyle={styles.text}
+          />
+        </TableWrapper>
+      )}
       <Table borderStyle={{ borderWidth: 1 }}>
         <Row
           data={posts}
@@ -85,6 +101,12 @@ const ShiftTableView = ({
 
 const styles = StyleSheet.create({
   container: { flex: 10, padding: 16, paddingTop: 30, backgroundColor: "#fff" },
+  head2: {
+    height: 50,
+    backgroundColor: "#f1f8ff",
+    borderRadius: 0,
+    borderBlockColor: "white",
+  },
   head: { height: 50, backgroundColor: "#f1f8ff", textAlign: "center" },
   title: { flex: 1, backgroundColor: "#f6f8fa" },
   row: { height: 50 },

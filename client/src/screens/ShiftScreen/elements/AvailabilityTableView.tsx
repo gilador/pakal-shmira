@@ -14,7 +14,7 @@ import withLogs from "@app/components/HOC/withLogs"
 
 type useAvailabilityTableProp = {
   hours: string[]
-  posts: string[]
+  posts: (string | undefined)[]
   availabilityData?: boolean[][]
   onConstraintsChanged: (data: boolean[][]) => void
 }

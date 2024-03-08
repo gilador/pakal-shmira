@@ -5,74 +5,38 @@ import React, {
   useRef,
   useState,
   useTransition,
-} from "react";
-import { FlatList, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
-import { IconButton, TextInput } from "react-native-paper";
+} from "react"
+import { FlatList, StyleProp, StyleSheet, View, ViewStyle } from "react-native"
+import { IconButton, TextInput } from "react-native-paper"
 
-import NameCellView from "@app/screens/shiftScreen/elements/NameCellView";
-import { ShiftListContext } from "../hooks/useShiftUsersListView";
-import useEditAddButton from "../hooks/useEditAddButton";
-import { User } from "@app/screens/shiftScreen/models";
-import { colors } from "@app/styles";
+import NameCellView from "@app/screens/shiftScreen/elements/NameCellView"
+import { ShiftListContext } from "../hooks/useShiftUsersListView"
+import useEditAddButton from "../hooks/useEditAddButton"
+import { User } from "@app/screens/shiftScreen/models"
+import { colors } from "@app/styles"
+import EditableListItem from "./EditableListItem"
 
 type EditableListProps = {
-  list: User[];
-};
-
-type ItemProps = {
-  user: User;
-  selectedNameId: string | undefined;
-  onSelect: (selectedNameId: string) => void;
-  onDelete: (selectedNameId: string) => void;
-  isEditing: boolean;
-};
-
-const Item = memo(
-  ({ user, selectedNameId, onSelect, onDelete, isEditing }: ItemProps) => {
-    // const isSelected = isEditing ? false : selectedNameId === user.id
-    return (
-      <View>
-        <NameCellView
-          user={user}
-          isSelected={selectedNameId === user.id}
-          cb={() => {
-            !isEditing && onSelect(user.id);
-          }}
-        />
-        {isEditing && (
-          <IconButton
-            style={{
-              position: "absolute",
-              alignSelf: "flex-end",
-              alignContent: "center",
-            }}
-            icon={"close-circle"}
-            onPress={() => onDelete(user.id)}
-          />
-        )}
-      </View>
-    );
-  },
-);
+  list: User[]
+  isEditing: boolean
+}
 
 //-----
-const EditableList = memo((props: EditableListProps) => {
-  const shiftListContext = useContext(ShiftListContext);
+const EditableList = memo(({ list, isEditing }: EditableListProps) => {
+  const shiftListContext = useContext(ShiftListContext)
 
-  const { isEditing, EditAddButtonView } = useEditAddButton({});
   const [textValue, setTextValue] = React.useState<string | undefined>(
     undefined,
-  );
-  const textInputRef = useRef<any>(null);
+  )
+  const textInputRef = useRef<any>(null)
 
   useEffect(() => {
-    !isEditing && shiftListContext.onUserAdded(textValue);
-    setTextValue("");
-  }, [isEditing]);
+    !isEditing && shiftListContext.onUserAdded(textValue)
+    setTextValue("")
+  }, [isEditing])
 
   return (
     <View style={styles.container}>
-      <EditAddButtonView style={styles.button} />
       {isEditing && (
         <TextInput
           ref={textInputRef}
@@ -82,33 +46,30 @@ const EditableList = memo((props: EditableListProps) => {
           value={textValue}
           placeholder="הזן שמות ברווחים"
           onChangeText={(val: string) => {
-            console.log(`r-onChangeText-> is`);
-            setTextValue(val);
+            console.log(`r-onChangeText-> is`)
+            setTextValue(val)
           }}
           onBlur={() => {
-            console.log(`r-onBlur-> is`);
-            shiftListContext.onUserAdded(textValue);
-            setTextValue("");
-            textInputRef?.current?.focus();
+            console.log(`r-onBlur-> is`)
+            shiftListContext.onUserAdded(textValue)
+            setTextValue("")
+            textInputRef?.current?.focus()
           }}
         />
       )}
       <FlatList
         style={styles.list}
-        data={props.list}
+        data={list}
         renderItem={({ item }) => (
-          <Item
+          <EditableListItem
             user={item}
-            selectedNameId={shiftListContext.selectedNameId}
             isEditing={isEditing}
-            onSelect={shiftListContext.onUserToggleSelected}
-            onDelete={shiftListContext.onUserRemoved}
           />
         )}
       />
     </View>
-  );
-});
+  )
+})
 
 const styles = StyleSheet.create({
   container: {
@@ -116,28 +77,32 @@ const styles = StyleSheet.create({
     height: "100%",
     paddingBottom: 40,
   },
-
   list: {
     flexGrow: 1,
   },
-  item: {
-    marginVertical: 1,
-    marginHorizontal: 5,
-    backgroundColor: colors.light_grey1,
-    alignItems: "center",
-  },
   button: {
     alignSelf: "flex-end",
-    flexShrink:0
-  },
-  title: {
-    fontSize: 32,
+    flexShrink: 0,
   },
   input: {
     flexGrow: 0,
     flexShrink: 0,
     width: "100%",
   },
-});
+  itemContainer: {
+    marginVertical: 4,
+    flexDirection: "row",
+    flexGrow: 0,
+    alignItems: "center",
+  },
+  nameCell: {
+    flexBasis: "auto",
+    flexGrow: 1,
+  },
+  cellButton: {
+    height: "100%",
+    alignSelf: "center",
+  },
+})
 
-export default EditableList;
+export default EditableList

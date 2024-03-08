@@ -12,7 +12,7 @@ export type UserShiftData = {
 
 export type ShiftBoard = {
   users: UserShiftData[]
-  posts: string[]
+  posts: (string | undefined)[]
   hours: string[]
   shifts?: User[][]
 }
