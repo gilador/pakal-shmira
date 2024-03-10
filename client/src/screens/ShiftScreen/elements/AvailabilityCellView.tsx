@@ -1,52 +1,57 @@
-import { Pressable, StyleSheet, View } from "react-native"
-import { memo, useState } from "react"
+import { Pressable, StyleSheet, View } from 'react-native'
+import { memo, useState } from 'react'
 
-import withLogs from "@app/components/HOC/withLogs"
+import withLogs from '@app/components/HOC/withLogs'
 
 export type NameCellViewProps = {
-  availability: boolean
-  index: [number, number]
-  cb?: (availability: boolean, index: [number, number]) => void
+    availability: boolean
+    index: [number, number]
+    cb?: (availability: boolean, index: [number, number]) => void
 }
 
 const AvailabilityCellView = (props: NameCellViewProps) => {
-  const [opacity, setOpacity] = useState(1)
+    const [opacity, setOpacity] = useState(1)
 
-  return (
-    <Pressable
-      onHoverIn={() => {
-        setOpacity(0.5)
-      }}
-      onHoverOut={() => {
-        setOpacity(1)
-      }}
-      onPress={() =>
-        props.cb &&
-        props.cb(props.availability, [props.index[1], props.index[0]])
-      }
-      disabled={!props.cb}
-    >
-      <View style={getAvailabilityStyle(props.availability, opacity)} />
-    </Pressable>
-  )
+    return (
+        <Pressable
+            onHoverIn={() => {
+                setOpacity(0.5)
+            }}
+            onHoverOut={() => {
+                setOpacity(1)
+            }}
+            onPress={() =>
+                props.cb &&
+                props.cb(props.availability, [props.index[1], props.index[0]])
+            }
+            disabled={!props.cb}
+        >
+            <View style={getAvailabilityStyle(props.availability, opacity)} />
+        </Pressable>
+    )
 }
 
 //------------------------------------------functions--------------------------------------------------------
 
 function getAvailabilityStyle(availability: boolean, opacity: number): any[] {
-  return [
-    styles.container,
-    availability ? styles.available : {},
-    { opacity: opacity },
-  ]
+    return [
+        styles.container,
+        availability ? styles.available : {},
+        { opacity: opacity },
+    ]
 }
 
 //------------------------------------------StyleSheet--------------------------------------------------------
 
 const styles = StyleSheet.create({
-  container: { flex: 10, padding: 16, paddingTop: 30, backgroundColor: "red" },
-  available: { backgroundColor: "green" },
-  hover: { backgroundColor: "pink" },
+    container: {
+        flex: 10,
+        padding: 16,
+        paddingTop: 30,
+        backgroundColor: 'red',
+    },
+    available: { backgroundColor: 'green' },
+    hover: { backgroundColor: 'pink' },
 })
 
 export default memo(withLogs(AvailabilityCellView))
