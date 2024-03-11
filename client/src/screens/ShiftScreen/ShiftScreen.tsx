@@ -1,55 +1,71 @@
-import {
-    createContext,
-    memo,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from 'react'
-import { Button, IconButton } from 'react-native-paper'
-import { StyleSheet, View, Text } from 'react-native'
+import { memo, useEffect, useMemo, useState } from 'react'
+import { StyleSheet, View } from 'react-native'
+import { Button } from 'react-native-paper'
 
 import { optimize } from '@app/services/optimizeService/OptimizeService'
 import AvailabilityTableView from './elements/AvailabilityTableView'
 import useShiftUsersListView from './hooks/useShiftUsersListView'
 import SplitScreenComp from '@app/components/SplitScreenComp'
-import { ShiftBoard, User, UserShiftData } from './models'
-import ShiftTableView from './elements/ShiftTableView'
 import withLogs from '@app/components/HOC/withLogs'
 
 import useShiftTableView from './hooks/useShiftTableView'
 import useEditAddButton from './hooks/useEditAddButton'
-import { getEmptyMatrix } from '../../common/utils'
-import { index } from 'mathjs'
+import { UserShiftData } from './models'
+import { boolean } from 'mathjs'
 
 const ShiftScreen = () => {
+    const [derivedConstraints, setDerivedConstraints] = useState<boolean[][][]>()
+    const [usersDataMap, setUsersDataMap] = useState<Map<string, UserShiftData>>(new Map())
     const { isEditing, EditAddButtonView } = useEditAddButton({})
+    const { list: names, selectedNameId, view: namesListView } = useShiftUsersListView(isEditing)
 
-    const {
-        list: names,
+    const { posts, hours, isOptimized, ShiftTableView, onOptimize } = useShiftTableView(
         selectedNameId,
-        view: namesListView,
-    } = useShiftUsersListView(isEditing)
+        isEditing,
+        names,
+        optimize,
+        derivedConstraints
+    )
 
-    const [constraints, setConstraints] = useState<boolean[][][]>()
-    const { posts, hours, isOptimized, ShiftTableView, onOptimize } =
-        useShiftTableView(
-            selectedNameId,
-            isEditing,
-            names,
-            optimize,
-            constraints
-        )
+    const defaultConstraints = useMemo(
+        () => getDefaultConstraints(posts.length - 1, hours.length),
+        [names, posts, hours]
+    )
+
+    const isPopulated = [...usersDataMap.keys()].length > 0
 
     useEffect(() => {
-        // if(!constraints){
-        setConstraints(
-            getDefaultConstraints(names.length, posts.length - 1, hours.length)
-        )
-        // }
-    }, [names, posts, hours])
+        setUsersDataMap((oldMap) => {
+            const newMap = new Map<string, UserShiftData>()
+            let oldVal
+            names.forEach((name) => {
+                const defaultUserData = {
+                    user: name,
+                    constraints: defaultConstraints,
+                    totalAssignments: 0,
+                }
+                oldVal = oldMap.get(name.id)
+                const newVal = oldVal ?? defaultUserData
+                newMap.set(name.id, newVal)
+                newMap.set('d', newVal)
+            })
+            return newMap
+        })
+    }, [names, hours, posts])
 
-    //FIXME
+    useEffect(() => {
+        if ([...usersDataMap.keys()].length == 0) {
+            return
+        }
+
+        const newDerivedConstraints = names.reduce((accumulator, current, index) => {
+            accumulator.push(usersDataMap.get(current.id)?.constraints)
+            return accumulator
+        }, [])
+
+        setDerivedConstraints(newDerivedConstraints)
+    }, [usersDataMap])
+
     const selectedIndex = useMemo(() => {
         let retIndex = -1
         retIndex = names.findIndex((ele) => ele.id === selectedNameId)
@@ -57,31 +73,36 @@ const ShiftScreen = () => {
         return retIndex
     }, [selectedNameId, names])
 
-    const rightView = useMemo(
-        () => (
-            <View>
-                <ShiftTableView />
-                {constraints && selectedIndex >= 0 && (
-                    <AvailabilityTableView
-                        availabilityData={constraints[selectedIndex]}
-                        hours={hours}
-                        posts={posts}
-                        onConstraintsChanged={function (
-                            data: boolean[][]
-                        ): void {
-                            setConstraints(() => {
-                                const newConstraints = JSON.parse(
-                                    JSON.stringify(constraints)
-                                )
-                                newConstraints[selectedIndex] = data
-                                return newConstraints
-                            })
-                        }}
-                    />
-                )}
-            </View>
-        ),
-        [selectedNameId, hours, posts, , isEditing, ShiftTableView]
+    isPopulated &&
+        selectedIndex >= 0 &&
+        console.log(
+            `teee-> names[selectedIndex].id: ${JSON.stringify(names[selectedIndex].id)}, usersDataMap.get(names[selectedIndex].id)?.constraints: ${JSON.stringify(usersDataMap.get(names[selectedIndex].id)?.constraints)}`
+        )
+    const rightView = (
+        <View>
+            {isPopulated && <ShiftTableView />}
+            {selectedIndex >= 0 && (
+                <AvailabilityTableView
+                    availabilityData={usersDataMap.get(names[selectedIndex].id)?.constraints}
+                    hours={hours}
+                    posts={posts}
+                    onConstraintsChanged={function (newConstraints: boolean[][]): void {
+                        console.log('test')
+                        const newUsersDataMap = new Map(usersDataMap)
+                        const userData = newUsersDataMap.get(names[selectedIndex].id)
+                        if (userData) {
+                            userData.constraints = newConstraints
+                            setUsersDataMap(newUsersDataMap)
+                        }
+                        // setConstraints(() => {
+                        //     const newConstraints = JSON.parse(JSON.stringify(constraints))
+                        //     newConstraints[selectedIndex] = data
+                        //     return newConstraints
+                        // })
+                    }}
+                />
+            )}
+        </View>
     )
 
     return (
@@ -89,11 +110,7 @@ const ShiftScreen = () => {
             <View style={styles.top}>
                 <EditAddButtonView style={{ width: '100%', flexGrow: 0 }} />
             </View>
-            <SplitScreenComp
-                leftPanel={namesListView}
-                rightPanel={rightView}
-                style={styles.body}
-            />
+            <SplitScreenComp leftPanel={namesListView} rightPanel={rightView} style={styles.body} />
             <Button style={styles.bottom} onPress={onOptimize}>
                 optimize
             </Button>
@@ -102,19 +119,12 @@ const ShiftScreen = () => {
 }
 
 //------------------------------------------functions--------------------------------------------------------
-const getDefaultConstraints = (
-    userAmount: number,
-    postAmount: number,
-    hoursAmount: number
-): boolean[][][] => {
+const getDefaultConstraints = (postAmount: number, hoursAmount: number): boolean[][] => {
     const defHoursCons = Array(hoursAmount).fill(true)
     const defPostsCon = Array(postAmount).fill(defHoursCons)
-    const defUserCons = Array(userAmount).fill(defPostsCon)
 
-    console.log(
-        `getDefaultConstraints-> defUserCons: ${JSON.stringify(defUserCons)}`
-    )
-    return defUserCons
+    // console.log(`getDefaultConstraints-> defUserCons: ${JSON.stringify(defUserCons)}`)
+    return defPostsCon
 }
 //------------------------------------------StyleSheet--------------------------------------------------------
 

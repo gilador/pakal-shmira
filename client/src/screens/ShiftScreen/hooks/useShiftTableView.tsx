@@ -1,10 +1,4 @@
-import {
-    Col,
-    Row,
-    Rows,
-    Table,
-    TableWrapper,
-} from 'react-native-reanimated-table'
+import { Col, Row, Rows, Table, TableWrapper } from 'react-native-reanimated-table'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 
@@ -24,13 +18,7 @@ export default function useShiftTableView(
     optimize: (constraints: boolean[][][]) => Promise<OptimizeShiftResponse>,
     constraints?: boolean[][][]
 ) {
-    const [posts, setPosts] = useState<(string | undefined)[]>([
-        undefined,
-        'ש.ג1',
-        'ש.ג2',
-        'מערבי',
-        'מזרחי',
-    ])
+    const [posts, setPosts] = useState<(string | undefined)[]>([undefined, 'ש.ג1', 'ש.ג2', 'מערבי', 'מזרחי'])
     const [hours, setHours] = useState<string[]>([
         '0600-1000',
         '1000-1400',
@@ -52,17 +40,11 @@ export default function useShiftTableView(
     }, [hours, posts])
 
     const shiftDataElements = useMemo(() => {
-      console.log(`useShiftTableView->useMemo-> shifts:${JSON.stringify(shifts)}`)
+        console.log(`useShiftTableView->useMemo-> shifts:${JSON.stringify(shifts)}`)
 
         let uiArray = (shifts ?? emptyCellsForSkeleton).map((array) =>
             array.map((user) => {
-                return (
-                    <NameCellView
-                        user={user.name}
-                        isDisable={true}
-                        isSelected={user.id === selectedNameId}
-                    />
-                )
+                return <NameCellView user={user.name} isDisable={true} isSelected={user.id === selectedNameId} />
             })
         )
         return uiArray
@@ -70,9 +52,7 @@ export default function useShiftTableView(
 
     const shitPostsRemoveElements = useMemo(() => {
         let uiArray = posts.map((post) => {
-            console.log(
-                `shiftDataElements->user.id:${post}, selectedNameId:${selectedNameId}`
-            )
+            console.log(`shiftDataElements->user.id:${post}, selectedNameId:${selectedNameId}`)
             const cb = () => {
                 setPosts((pre) => pre.filter((val) => val === post))
             }
@@ -90,8 +70,7 @@ export default function useShiftTableView(
 
         try {
             // Optimize user shifts asynchronously
-            const optimizedShift: OptimizeShiftResponse =
-                await optimize(constraints)
+            const optimizedShift: OptimizeShiftResponse = await optimize(constraints)
 
             {
                 //TODO validate response
@@ -100,10 +79,10 @@ export default function useShiftTableView(
             setIsOptimized(optimizedShift.isOptim)
             // Update shift data
 
-            const shifts = getEmptyMatrix<User>(
-                hours.length,
-                posts.length - 1,
-                { name: '', id: '' }
+            const shifts = getEmptyMatrix<User>(hours.length, posts.length - 1, { name: '', id: '' })
+
+            console.log(
+                `shifts:${JSON.stringify(shifts)},    names: ${JSON.stringify(names)},     optimizedShift.result: ${JSON.stringify(optimizedShift.result    )}`
             )
 
             optimizedShift.result.forEach((userShift, userIndex) => {
@@ -131,9 +110,7 @@ export default function useShiftTableView(
     const ShiftTableView = memo(() => (
         <View style={styles.container}>
             {isEditing && (
-                <TableWrapper
-                    borderStyle={{ borderWidth: 4, borderColor: 'white' }}
-                >
+                <TableWrapper borderStyle={{ borderWidth: 4, borderColor: 'white' }}>
                     <Row
                         data={shitPostsRemoveElements}
                         flexArr={flexHeadArray}
@@ -143,18 +120,9 @@ export default function useShiftTableView(
                 </TableWrapper>
             )}
             <Table borderStyle={{ borderWidth: 1 }}>
-                <Row
-                    data={posts}
-                    flexArr={flexHeadArray}
-                    style={styles.head}
-                    textStyle={styles.text}
-                />
+                <Row data={posts} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
                 <TableWrapper style={styles.wrapper}>
-                    <Col
-                        data={hours}
-                        style={styles.title}
-                        textStyle={styles.text}
-                    />
+                    <Col data={hours} style={styles.title} textStyle={styles.text} />
                     <Rows
                         data={shiftDataElements}
                         flexArr={flexHeadArray.slice(0, -1)}

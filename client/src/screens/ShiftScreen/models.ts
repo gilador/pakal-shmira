@@ -5,13 +5,13 @@ export type User = {
 
 export type UserShiftData = {
     user: User
-    assignments: boolean[][]
+    assignments?: boolean[][]
+    constraints: boolean[][]
     totalAssignments: number
 }
 
 export type ShiftBoard = {
     users: UserShiftData[]
-    constraints: boolean[][][]
     posts: (string | undefined)[]
     hours: string[]
     shifts?: User[][]

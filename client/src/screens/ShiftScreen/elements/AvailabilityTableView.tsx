@@ -27,13 +27,12 @@ const AvailabilityTableView = ({
 }: useAvailabilityTableProp) => {
     const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts])
 
-    const transposedMatrix = useMemo(
-        () => {
-            console.log(`AvailabilityTableView->transposedMatrix: ${JSON.stringify(transposedMatrix)}`)
-            return transposeMat(availabilityData)
-        },
-        [availabilityData]
-    )
+    const transposedMatrix = useMemo(() => {
+        console.log(
+            `AvailabilityTableView->transposedMatrix: ${JSON.stringify(transposedMatrix)}`
+        )
+        return transposeMat(availabilityData)
+    }, [availabilityData])
     // const transposedMatrix = transposeMat(availabilityData);
     const cb = (availability: boolean, index: [number, number]) => {
         const newData = JSON.parse(JSON.stringify(availabilityData))

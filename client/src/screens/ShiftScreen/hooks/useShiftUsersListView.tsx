@@ -19,14 +19,27 @@ export const ShiftListContext = createContext<ShiftListContextType>({
     selectedNameId: undefined,
 })
 
+// const mocked = [
+//   { user:{ name: 'אלון', id: '1' }, assignments: undefined, constraints: undefined, totalAssignments: 0},
+//   { user:{name: 'צביקה', id: '2' }, assignments: undefined, constraints: undefined, totalAssignments: 0},
+//   { user:{name: 'תמיר', id: '3' }, assignments: undefined, constraints: undefined, totalAssignments: 0},
+//   { user:{name: 'רחמים', id: '4'}, assignments: undefined, constraints: undefined, totalAssignments: 0},
+//   { user:{name: 'מתי', id: '5' }, assignments: undefined, constraints: undefined, totalAssignments: 0},
+//   { user:{name: 'כספי', id: '6' }, assignments: undefined, constraints: undefined, totalAssignments: 0},
+//   { user:{name: 'אליהו', id: '7' }, assignments: undefined, constraints: undefined, totalAssignments: 0},
+
 const mocked = [
-    { name: 'אלון', id: '1' },
-    { name: 'צביקה', id: '2' },
-    { name: 'תמיר', id: '3' },
-    { name: 'רחמים', id: '4' },
-    { name: 'מתי', id: '5' },
-    { name: 'כספי', id: '6' },
-    { name: 'אליהו', id: '7' },
+    { name: 'אלון', id: 1 + 'אלון' },
+    { name: 'צביקה', id: 2 + 'צביקה' },
+    { name: 'תמיר', id: 3 + 'תמיר' },
+    { name: 'רחמים', id: 4 + 'רחמים' },
+    { name: 'מתי', id: 5 + 'מתי' },
+    { name: 'כספי', id: 6 + 'כספי' },
+    { name: 'גדי', id: 8 + 'גדי' },
+    { name: 'יוסף', id: 7 + 'יוסף' },
+    { name: 'חיים', id: 9 + 'חיים' },
+    { name: 'אלון', id: 11 + 'אלון' },
+    { name: 'יששכר', id: 14 + 'יששכר' },
 ]
 
 export default function useShiftUsersListView(isEditing = false) {

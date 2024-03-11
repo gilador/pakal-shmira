@@ -23,9 +23,7 @@ describe('Name of the group', () => {
     //             totalAssignments: 0,
     //         },
     //     ]
-
     //     const result = translateUserShiftToConstraints(mockedUsersConstraints)
-
     //     expect(result).toEqual([
     //         [
     //             [1, 1, 0, 0],
