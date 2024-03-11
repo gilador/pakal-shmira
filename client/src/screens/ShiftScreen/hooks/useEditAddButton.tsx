@@ -18,14 +18,10 @@ export default function useEditAddButton({}: EditAddButtonProps) {
     const EditAddButtonView = memo(({ style }: EditAddButtonViewProps) => (
         <View style={style}>
             <IconButton
-                icon={
-                    isEditing ? 'checkbox-marked-circle' : 'square-edit-outline'
-                }
+                icon={isEditing ? 'checkbox-marked-circle' : 'square-edit-outline'}
                 onPress={() => {
                     setIsEditing((pre) => !pre)
-                    shiftListContext.onUserToggleSelected(
-                        shiftListContext.selectedNameId
-                    )
+                    shiftListContext.onUserToggleSelected(shiftListContext.selectedNameId)
                 }}
                 containerColor="lightgreen"
             />

@@ -20,10 +20,7 @@ const AvailabilityCellView = (props: NameCellViewProps) => {
             onHoverOut={() => {
                 setOpacity(1)
             }}
-            onPress={() =>
-                props.cb &&
-                props.cb(props.availability, [props.index[1], props.index[0]])
-            }
+            onPress={() => props.cb && props.cb(props.availability, [props.index[1], props.index[0]])}
             disabled={!props.cb}
         >
             <View style={getAvailabilityStyle(props.availability, opacity)} />
@@ -34,11 +31,7 @@ const AvailabilityCellView = (props: NameCellViewProps) => {
 //------------------------------------------functions--------------------------------------------------------
 
 function getAvailabilityStyle(availability: boolean, opacity: number): any[] {
-    return [
-        styles.container,
-        availability ? styles.available : {},
-        { opacity: opacity },
-    ]
+    return [styles.container, availability ? styles.available : {}, { opacity: opacity }]
 }
 
 //------------------------------------------StyleSheet--------------------------------------------------------

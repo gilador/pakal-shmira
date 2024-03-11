@@ -1,10 +1,4 @@
-import {
-    Col,
-    Row,
-    Rows,
-    Table,
-    TableWrapper,
-} from 'react-native-reanimated-table'
+import { Col, Row, Rows, Table, TableWrapper } from 'react-native-reanimated-table'
 import { StyleSheet, View } from 'react-native'
 import React, { useMemo } from 'react'
 
@@ -22,13 +16,7 @@ type ShiftTableViewProp = {
     isEditing?: boolean
 }
 
-const ShiftTableView = ({
-    selectedNameId,
-    posts,
-    hours,
-    shifts,
-    isEditing = false,
-}: ShiftTableViewProp) => {
+const ShiftTableView = ({ selectedNameId, posts, hours, shifts, isEditing = false }: ShiftTableViewProp) => {
     const emptyCellsForSkeleton: User[][] = useMemo(() => {
         return getEmptyMatrix<User>(hours.length, posts.length - 1, {
             name: '',
@@ -39,13 +27,7 @@ const ShiftTableView = ({
     const shiftDataElements = useMemo(() => {
         let uiArray = (shifts ?? emptyCellsForSkeleton).map((array) =>
             array.map((user) => {
-                return (
-                    <NameCellView
-                        user={user.name}
-                        isDisable={true}
-                        isSelected={user.id === selectedNameId}
-                    />
-                )
+                return <NameCellView user={user.name} isDisable={true} isSelected={user.id === selectedNameId} />
             })
         )
         return uiArray
@@ -53,9 +35,7 @@ const ShiftTableView = ({
 
     const shitPostsRemoveElements = useMemo(() => {
         let uiArray = posts.map((post) => {
-            console.log(
-                `shiftDataElements->user.id:${post}, selectedNameId:${selectedNameId}`
-            )
+            console.log(`shiftDataElements->user.id:${post}, selectedNameId:${selectedNameId}`)
             const index = posts.find
             const cb = () => {
                 posts = posts.filter((val) => val === post)
@@ -70,9 +50,7 @@ const ShiftTableView = ({
     return (
         <View style={styles.container}>
             {isEditing && (
-                <TableWrapper
-                    borderStyle={{ borderWidth: 4, borderColor: 'white' }}
-                >
+                <TableWrapper borderStyle={{ borderWidth: 4, borderColor: 'white' }}>
                     <Row
                         data={shitPostsRemoveElements}
                         flexArr={flexHeadArray}
@@ -82,18 +60,9 @@ const ShiftTableView = ({
                 </TableWrapper>
             )}
             <Table borderStyle={{ borderWidth: 1 }}>
-                <Row
-                    data={posts}
-                    flexArr={flexHeadArray}
-                    style={styles.head}
-                    textStyle={styles.text}
-                />
+                <Row data={posts} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
                 <TableWrapper style={styles.wrapper}>
-                    <Col
-                        data={hours}
-                        style={styles.title}
-                        textStyle={styles.text}
-                    />
+                    <Col data={hours} style={styles.title} textStyle={styles.text} />
                     <Rows
                         data={shiftDataElements}
                         flexArr={flexHeadArray.slice(0, -1)}

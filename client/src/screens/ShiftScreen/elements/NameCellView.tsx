@@ -1,11 +1,4 @@
-import {
-    StyleSheet,
-    View,
-    Text,
-    Pressable,
-    StyleProp,
-    ViewStyle,
-} from 'react-native'
+import { StyleSheet, View, Text, Pressable, StyleProp, ViewStyle } from 'react-native'
 import React, { memo } from 'react'
 
 import { User } from '@app/screens/shiftScreen/models'
@@ -19,21 +12,10 @@ export type NameCellViewProps = {
     style?: StyleProp<ViewStyle>
 }
 
-const NameCellView = ({
-    user,
-    cb,
-    isDisable = false,
-    isSelected = false,
-    style,
-}: NameCellViewProps) => {
+const NameCellView = ({ user, cb, isDisable = false, isSelected = false, style }: NameCellViewProps) => {
     console.log(`NameCellView->cb:${cb}`)
     return (
-        <Pressable
-            onPress={cb}
-            disabled={isDisable}
-            onHoverIn={({ nativeEvent: MouseEvent }) => {}}
-            style={style}
-        >
+        <Pressable onPress={cb} disabled={isDisable} onHoverIn={({ nativeEvent: MouseEvent }) => {}} style={style}>
             <Text style={getTextStyle(isSelected)}>{user}</Text>
         </Pressable>
     )

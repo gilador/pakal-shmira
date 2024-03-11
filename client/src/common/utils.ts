@@ -1,8 +1,4 @@
-export function getEmptyMatrix<T>(
-    cols: number,
-    rows: number,
-    fillObj: T
-): T[][] {
+export function getEmptyMatrix<T>(cols: number, rows: number, fillObj: T): T[][] {
     return Array(cols)
         .fill(undefined)
         .map(() => {

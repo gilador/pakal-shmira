@@ -32,11 +32,7 @@ function createTextStyle(fontProps: FontProps) {
     })
 }
 
-function textStyle(
-    { fontSize, lineHeight }: FontProps,
-    textColor: string,
-    fontFamily?: string
-) {
+function textStyle({ fontSize, lineHeight }: FontProps, textColor: string, fontFamily?: string) {
     return {
         fontSize,
         lineHeight,

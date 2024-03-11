@@ -51,15 +51,7 @@ export default function usePrint(printRef: React.RefObject<Node>): {
         print: () => {
             callPrint()
         },
-        printIcon: (
-            <AntDesign
-                name="printer"
-                size={50}
-                color="black"
-                onPress={callPrint}
-                style={styles.print}
-            />
-        ),
+        printIcon: <AntDesign name="printer" size={50} color="black" onPress={callPrint} style={styles.print} />,
     }
 }
 

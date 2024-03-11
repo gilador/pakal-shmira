@@ -11,7 +11,6 @@ import withLogs from '@app/components/HOC/withLogs'
 import useShiftTableView from './hooks/useShiftTableView'
 import useEditAddButton from './hooks/useEditAddButton'
 import { UserShiftData } from './models'
-import { boolean } from 'mathjs'
 
 const ShiftScreen = () => {
     const [derivedConstraints, setDerivedConstraints] = useState<boolean[][][]>()

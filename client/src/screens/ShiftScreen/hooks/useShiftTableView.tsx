@@ -82,7 +82,7 @@ export default function useShiftTableView(
             const shifts = getEmptyMatrix<User>(hours.length, posts.length - 1, { name: '', id: '' })
 
             console.log(
-                `shifts:${JSON.stringify(shifts)},    names: ${JSON.stringify(names)},     optimizedShift.result: ${JSON.stringify(optimizedShift.result    )}`
+                `shifts:${JSON.stringify(shifts)},    names: ${JSON.stringify(names)},     optimizedShift.result: ${JSON.stringify(optimizedShift.result)}`
             )
 
             optimizedShift.result.forEach((userShift, userIndex) => {

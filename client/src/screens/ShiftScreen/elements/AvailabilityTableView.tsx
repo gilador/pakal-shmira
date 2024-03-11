@@ -1,10 +1,4 @@
-import {
-    Col,
-    Row,
-    Rows,
-    Table,
-    TableWrapper,
-} from 'react-native-reanimated-table'
+import { Col, Row, Rows, Table, TableWrapper } from 'react-native-reanimated-table'
 import { StyleSheet, View } from 'react-native'
 import React, { useMemo } from 'react'
 
@@ -28,9 +22,7 @@ const AvailabilityTableView = ({
     const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts])
 
     const transposedMatrix = useMemo(() => {
-        console.log(
-            `AvailabilityTableView->transposedMatrix: ${JSON.stringify(transposedMatrix)}`
-        )
+        console.log(`AvailabilityTableView->transposedMatrix: ${JSON.stringify(transposedMatrix)}`)
         return transposeMat(availabilityData)
     }, [availabilityData])
     // const transposedMatrix = transposeMat(availabilityData);
@@ -42,31 +34,16 @@ const AvailabilityTableView = ({
 
     const shiftDataElements = transposedMatrix.map((array, postIndex) =>
         array.map((availability, hourIndex) => {
-            return (
-                <AvailabilityCellView
-                    availability={availability}
-                    index={[postIndex, hourIndex]}
-                    cb={cb}
-                />
-            )
+            return <AvailabilityCellView availability={availability} index={[postIndex, hourIndex]} cb={cb} />
         })
     )
 
     return (
         <View style={styles.container}>
             <Table borderStyle={{ borderWidth: 1 }}>
-                <Row
-                    data={posts}
-                    flexArr={flexHeadArray}
-                    style={styles.head}
-                    textStyle={styles.text}
-                />
+                <Row data={posts} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
                 <TableWrapper style={styles.wrapper}>
-                    <Col
-                        data={hours}
-                        style={styles.title}
-                        textStyle={styles.text}
-                    />
+                    <Col data={hours} style={styles.title} textStyle={styles.text} />
                     <Rows
                         data={shiftDataElements}
                         flexArr={flexHeadArray.slice(0, -1)}

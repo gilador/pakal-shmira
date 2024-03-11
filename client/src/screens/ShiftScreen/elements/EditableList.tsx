@@ -1,11 +1,4 @@
-import React, {
-    memo,
-    useContext,
-    useEffect,
-    useRef,
-    useState,
-    useTransition,
-} from 'react'
+import React, { memo, useContext, useEffect, useRef, useState, useTransition } from 'react'
 import { FlatList, StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 import { IconButton, TextInput } from 'react-native-paper'
 
@@ -25,9 +18,7 @@ type EditableListProps = {
 const EditableList = memo(({ list, isEditing }: EditableListProps) => {
     const shiftListContext = useContext(ShiftListContext)
 
-    const [textValue, setTextValue] = React.useState<string | undefined>(
-        undefined
-    )
+    const [textValue, setTextValue] = React.useState<string | undefined>(undefined)
     const textInputRef = useRef<any>(null)
 
     useEffect(() => {
@@ -60,9 +51,7 @@ const EditableList = memo(({ list, isEditing }: EditableListProps) => {
             <FlatList
                 style={styles.list}
                 data={list}
-                renderItem={({ item }) => (
-                    <EditableListItem user={item} isEditing={isEditing} />
-                )}
+                renderItem={({ item }) => <EditableListItem user={item} isEditing={isEditing} />}
             />
         </View>
     )

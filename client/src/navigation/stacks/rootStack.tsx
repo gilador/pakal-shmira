@@ -1,8 +1,8 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import ShiftScreen from '@app/screens/shiftScreen/ShiftScreen'
-import { RootStackParamList } from '../../../types'
 import NotFoundScreen from '@app/screens/NotFoundScreen'
+import { RootStackParamList } from '../../../types'
 import ModalScreen from '@app/screens/ModalScreen'
 
 /**
@@ -13,16 +13,9 @@ const Stack = createNativeStackNavigator<RootStackParamList>()
 
 export function RootNavigator() {
     return (
-        <Stack.Navigator
-            initialRouteName={'Main'}
-            screenOptions={{ headerShown: false }}
-        >
+        <Stack.Navigator initialRouteName={'Main'} screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Main" component={ShiftScreen} />
-            <Stack.Screen
-                name="NotFound"
-                component={NotFoundScreen}
-                options={{ title: 'Oops!' }}
-            />
+            <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
             <Stack.Group screenOptions={{ presentation: 'modal' }}>
                 <Stack.Screen name="Modal" component={ModalScreen} />
             </Stack.Group>

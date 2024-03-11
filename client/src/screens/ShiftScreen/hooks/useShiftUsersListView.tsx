@@ -45,15 +45,11 @@ const mocked = [
 export default function useShiftUsersListView(isEditing = false) {
     const [list, setList] = useState<User[]>(mocked)
 
-    const [selectedNameId, setSelectedNameId] = useState<string | undefined>(
-        undefined
-    )
+    const [selectedNameId, setSelectedNameId] = useState<string | undefined>(undefined)
 
     const toggleUserSelection = useCallback(
         (userNameId: string | undefined) => {
-            setSelectedNameId((selectedNameId) =>
-                selectedNameId === userNameId ? undefined : userNameId
-            )
+            setSelectedNameId((selectedNameId) => (selectedNameId === userNameId ? undefined : userNameId))
         },
         [list]
     )

@@ -10,11 +10,7 @@ export interface SplitScreenCompProps {
     style?: StyleProp<ViewStyle>
 }
 
-const SplitScreenComp = ({
-    leftPanel,
-    rightPanel,
-    style,
-}: SplitScreenCompProps): JSX.Element => {
+const SplitScreenComp = ({ leftPanel, rightPanel, style }: SplitScreenCompProps): JSX.Element => {
     const newRightPanel = React.cloneElement(rightPanel, {
         style: styles.rightPanel,
     })

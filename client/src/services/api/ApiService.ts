@@ -15,8 +15,7 @@ class ApiService {
             headers: {
                 contentType: 'application/json',
             },
-            paramsSerializer: (params: any) =>
-                qs.stringify(params, { arrayFormat: 'repeat' }),
+            paramsSerializer: (params: any) => qs.stringify(params, { arrayFormat: 'repeat' }),
         })
 
         this.authToken = ''
@@ -34,14 +33,10 @@ class ApiService {
         }
 
         this.axiosInstance.interceptors.request.use(requestMiddleware)
-        this.axiosInstance.interceptors.response.use(
-            this.responseMiddleware.bind(this)
-        )
+        this.axiosInstance.interceptors.response.use(this.responseMiddleware.bind(this))
     }
 
-    public async optimizeShift(
-        constraints: boolean[][][]
-    ): Promise<OptimizeShiftResponse> {
+    public async optimizeShift(constraints: boolean[][][]): Promise<OptimizeShiftResponse> {
         console.log('optimizeShift')
         const url = '/api/getOptimizedShift'
         const data = { constraints: constraints }
@@ -49,37 +44,18 @@ class ApiService {
         return response
     }
 
-    private async post(
-        url: string,
-        data?: any,
-        config?: AxiosRequestConfig
-    ): Promise<any> {
-        const response: AxiosResponse = await this.axiosInstance.post(
-            url,
-            data,
-            config
-        )
+    private async post(url: string, data?: any, config?: AxiosRequestConfig): Promise<any> {
+        const response: AxiosResponse = await this.axiosInstance.post(url, data, config)
         return response.data
     }
 
     private async get(url: string, config?: AxiosRequestConfig): Promise<any> {
-        const response: AxiosResponse = await this.axiosInstance.get(
-            url,
-            config
-        )
+        const response: AxiosResponse = await this.axiosInstance.get(url, config)
         return response.data
     }
 
-    private async patch(
-        url: string,
-        data?: any,
-        config?: AxiosRequestConfig
-    ): Promise<any> {
-        const response: AxiosResponse = await this.axiosInstance.patch(
-            url,
-            data,
-            config
-        )
+    private async patch(url: string, data?: any, config?: AxiosRequestConfig): Promise<any> {
+        const response: AxiosResponse = await this.axiosInstance.patch(url, data, config)
         return response.data
     }
 
