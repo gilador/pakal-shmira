@@ -4,20 +4,18 @@ import { StyleSheet, View } from 'react-native'
 
 import { IconButton } from 'react-native-paper'
 
-import { boolean } from 'mathjs'
-
 import { OptimizeShiftResponse } from '@app/services/api/models'
-import { ShiftBoard, User, UserShiftData } from '../models'
 import NameCellView from '../elements/NameCellView'
 import { getEmptyMatrix } from '@app/common/utils'
+import { User } from '../models'
 
 export default function useShiftTableView(
     selectedNameId: string | undefined,
     isEditing = false,
     names: User[],
-    optimize: (constraints: boolean[][][]) => Promise<OptimizeShiftResponse>,
-    constraints?: boolean[][][]
+    optimize: () => Promise<OptimizeShiftResponse | undefined>
 ) {
+    console.log(`ddd->duseShiftTableViewd`)
     const [posts, setPosts] = useState<(string | undefined)[]>([undefined, 'ש.ג1', 'ש.ג2', 'מערבי', 'מזרחי'])
     const [hours, setHours] = useState<string[]>([
         '0600-1000',
@@ -64,13 +62,13 @@ export default function useShiftTableView(
     const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts])
 
     const onOptimize = useCallback(async () => {
-        if (!constraints) {
-            return //todo throw
-        }
-
         try {
             // Optimize user shifts asynchronously
-            const optimizedShift: OptimizeShiftResponse = await optimize(constraints)
+            const optimizedShift = await optimize()
+
+            if (!optimizedShift) {
+                return
+            }
 
             {
                 //TODO validate response
@@ -81,12 +79,7 @@ export default function useShiftTableView(
 
             const shifts = getEmptyMatrix<User>(hours.length, posts.length - 1, { name: '', id: '' })
 
-            console.log(
-                `shifts:${JSON.stringify(shifts)},    names: ${JSON.stringify(names)},     optimizedShift.result: ${JSON.stringify(optimizedShift.result)}`
-            )
-
             optimizedShift.result.forEach((userShift, userIndex) => {
-                // let total = 0
                 userShift.forEach((hourArray, hourIndex) => {
                     hourArray.forEach((post, postIndex) => {
                         if (post) {
@@ -94,18 +87,16 @@ export default function useShiftTableView(
                             console.log(
                                 `onOptimize->foreach->userIndex: ${userIndex}, postIndex:${postIndex}, hourIndex:${hourIndex}, names[userIndex]: ${JSON.stringify(names[userIndex])}`
                             )
-                            // total++
                         }
                     })
                 })
-                // userShift.totalAssignments = total
             })
             setShifts(shifts)
         } catch (error) {
             console.error('Error occurred while optimizing shifts:', error)
             // Handle error appropriately, e.g., show error message to the user
         }
-    }, [constraints, names])
+    }, [names, optimize])
 
     const ShiftTableView = memo(() => (
         <View style={styles.container}>

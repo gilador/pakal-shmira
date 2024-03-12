@@ -15,8 +15,9 @@ import ApiService from '../api'
 //   //TODO add isOptim:false promise rejection
 //   return OptimizeShiftResponseToUserAssignedShifts(optResponse, users)
 // }
-export async function optimize(constraints: boolean[][][]): Promise<OptimizeShiftResponse> {
-    return ApiService.optimizeShift(constraints)
+export async function optimize(constraints: boolean[][][] | undefined): Promise<OptimizeShiftResponse | undefined> {
+    console.log(`optimize-> constraints: ${constraints}`)
+    return constraints ? ApiService.optimizeShift(constraints) : undefined
 }
 
 // export function translateUserShiftToConstraints(

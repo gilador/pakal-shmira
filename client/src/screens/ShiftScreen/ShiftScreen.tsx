@@ -18,12 +18,14 @@ const ShiftScreen = () => {
     const { isEditing, EditAddButtonView } = useEditAddButton({})
     const { list: names, selectedNameId, view: namesListView } = useShiftUsersListView(isEditing)
 
+    console.log(`ShiftScreen-> derivedConstraints: ${derivedConstraints}`)
     const { posts, hours, isOptimized, ShiftTableView, onOptimize } = useShiftTableView(
         selectedNameId,
         isEditing,
         names,
-        optimize,
-        derivedConstraints
+        () => {
+            return optimize(derivedConstraints)
+        }
     )
 
     const defaultConstraints = useMemo(
@@ -46,7 +48,6 @@ const ShiftScreen = () => {
                 oldVal = oldMap.get(name.id)
                 const newVal = oldVal ?? defaultUserData
                 newMap.set(name.id, newVal)
-                newMap.set('d', newVal)
             })
             return newMap
         })
@@ -57,10 +58,13 @@ const ShiftScreen = () => {
             return
         }
 
-        const newDerivedConstraints = names.reduce((accumulator, current, index) => {
-            accumulator.push(usersDataMap.get(current.id)?.constraints)
-            return accumulator
-        }, [])
+        const newDerivedConstraints = names.reduce(
+            (accumulator, current, index) => {
+                accumulator.push(usersDataMap.get(current.id)?.constraints ?? ([] as boolean[][]))
+                return accumulator
+            },
+            [] as boolean[][][]
+        )
 
         setDerivedConstraints(newDerivedConstraints)
     }, [usersDataMap])
