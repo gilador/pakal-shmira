@@ -36,17 +36,13 @@ describe('deriveUserDataMap', () => {
 
         // Act
 
-        const result = deriveUserDataMap(names, defaultConstraints, oldMap);
+        const result = deriveUserDataMap(names, defaultConstraints, oldMap)
 
         // Assert
         expect(result.size).toBe(2)
         expect(result.get('1')).toEqual({
             user: { id: '1', name: 'John' },
-            constraints: [
-                [
-                    { postID: '1', hourID: '1', availability: true },
-                ],
-            ],
+            constraints: [[{ postID: '1', hourID: '1', availability: true }]],
             totalAssignments: 1,
         })
         expect(result.get('2')).toEqual({

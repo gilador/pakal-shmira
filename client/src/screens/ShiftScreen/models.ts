@@ -4,8 +4,8 @@ export type User = {
 }
 
 export type Constraint = {
-    availability: boolean,
-    postID: string,
+    availability: boolean
+    postID: string
     hourID: string
 }
 
@@ -16,7 +16,6 @@ export type UserShiftData = {
     totalAssignments: number
 }
 
-
 export type ShiftBoard = {
     users: UserShiftData[]
     posts: UniqueString[]
@@ -25,6 +24,6 @@ export type ShiftBoard = {
 }
 
 export type UniqueString = {
-    id: string,
+    id: string
     value: string
 }

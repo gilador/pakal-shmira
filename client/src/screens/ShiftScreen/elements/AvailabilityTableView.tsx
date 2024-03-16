@@ -20,7 +20,6 @@ const AvailabilityTableView = ({
     availabilityData = [],
     onConstraintsChanged,
 }: AvailabilityTableProp) => {
-
     const transposedMatrix: Constraint[][] = useMemo(() => {
         console.log(`AvailabilityTableView->transposedMatrix: ${JSON.stringify(transposedMatrix)}`)
         return transposeMat(availabilityData)

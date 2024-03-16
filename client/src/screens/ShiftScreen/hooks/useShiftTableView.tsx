@@ -29,8 +29,7 @@ export default function useShiftTableView(
         getUniqueString('2000-2400'),
         getUniqueString('0000-0400'),
     ])
-    const postsElements = useMemo(() => [undefined, ...posts].map((post) => post?.value ?? ''), [posts])
-    const hoursElements = useMemo(() => hours.map((post) => post.value), [hours])
+
     // const [userShiftData, setUserShiftData] = useState<UserShiftData[]>()
     const [shifts, setShifts] = useState<User[][] | undefined>()
     console.log(`useShiftTableView-> shifts:${JSON.stringify(shifts)}`)
@@ -63,10 +62,6 @@ export default function useShiftTableView(
             return <IconButton icon={'close-circle'} onPress={cb} />
         })
         return uiArray
-    }, [posts])
-
-    const flexHeadArray = useMemo(() => {
-        return Array(postsElements.length).fill(1)
     }, [posts])
 
     const onOptimize = useCallback(async () => {
@@ -105,7 +100,10 @@ export default function useShiftTableView(
             // Handle error appropriately, e.g., show error message to the user
         }
     }, [names, optimize])
-    console.log(`ShiftTableView->isEditing:${isEditing}`)
+
+    const postsElements = useMemo(() => [undefined, ...posts].map((post) => post?.value ?? ''), [posts])
+    const hoursElements = useMemo(() => hours.map((post) => post.value), [hours])
+    const flexHeadArray = useMemo(() => Array(postsElements.length).fill(1), [posts])
 
     const ShiftTableView = memo(() => (
         <View style={styles.container}>
