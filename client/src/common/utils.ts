@@ -1,3 +1,5 @@
+import { UniqueString } from "@app/screens/shiftScreen/models"
+
 export function getEmptyMatrix<T>(cols: number, rows: number, fillObj: T): T[][] {
     return Array(cols)
         .fill(undefined)
@@ -27,4 +29,13 @@ export function transposeMat(mat: any[][]) {
 export function extractWords(inputString: string): string[] {
     const words = inputString.split(/\s+/)
     return words.filter((word) => word.trim().length > 0)
+}
+
+
+export function getUniqueString(value: string): UniqueString {
+    const id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    return {
+        id: value + id,
+        value: value,
+    }
 }

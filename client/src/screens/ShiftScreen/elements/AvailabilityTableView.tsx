@@ -4,13 +4,14 @@ import React, { useMemo } from 'react'
 
 import AvailabilityCellView from './AvailabilityCellView'
 import { transposeMat } from '../../../common/utils'
+import { Constraint, UniqueString } from '../models'
 import withLogs from '@app/components/HOC/withLogs'
 
-type useAvailabilityTableProp = {
-    hours: string[]
-    posts: (string | undefined)[]
-    availabilityData?: boolean[][]
-    onConstraintsChanged: (data: boolean[][]) => void
+type AvailabilityTableProp = {
+    hours: UniqueString[]
+    posts: UniqueString[]
+    availabilityData?: Constraint[][]
+    onConstraintsChanged: (data: Constraint[][]) => void
 }
 
 const AvailabilityTableView = ({
@@ -18,34 +19,45 @@ const AvailabilityTableView = ({
     hours,
     availabilityData = [],
     onConstraintsChanged,
-}: useAvailabilityTableProp) => {
+}: AvailabilityTableProp) => {
     const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts])
 
-    const transposedMatrix = useMemo(() => {
+    const transposedMatrix: Constraint[][] = useMemo(() => {
         console.log(`AvailabilityTableView->transposedMatrix: ${JSON.stringify(transposedMatrix)}`)
         return transposeMat(availabilityData)
     }, [availabilityData])
     // const transposedMatrix = transposeMat(availabilityData);
     const cb = (availability: boolean, index: [number, number]) => {
-        const newData = JSON.parse(JSON.stringify(availabilityData))
-        newData[index[0]][index[1]] = !availability
+        const newData: Constraint[][] = JSON.parse(JSON.stringify(availabilityData))
+        newData[index[0]][index[1]].availability = !availability
         onConstraintsChanged(newData)
     }
 
-    const shiftDataElements = transposedMatrix.map((array, postIndex) =>
-        array.map((availability, hourIndex) => {
-            return <AvailabilityCellView availability={availability} index={[postIndex, hourIndex]} cb={cb} />
-        })
-    )
+    const shiftDataNamesElements = useMemo(() => {
+        return transposedMatrix.map((array, postIndex) =>
+            array.map((availability, hourIndex) => {
+                return (
+                    <AvailabilityCellView
+                        availability={availability.availability}
+                        index={[postIndex, hourIndex]}
+                        cb={cb}
+                    />
+                )
+            })
+        )
+    }, [transposedMatrix])
+
+    const postsElements = useMemo(() => posts.map((post) => post.value), [posts])
+    const hoursElements = useMemo(() => hours.map((post) => post.value), [hours])
 
     return (
         <View style={styles.container}>
             <Table borderStyle={{ borderWidth: 1 }}>
-                <Row data={posts} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
+                <Row data={postsElements} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
                 <TableWrapper style={styles.wrapper}>
-                    <Col data={hours} style={styles.title} textStyle={styles.text} />
+                    <Col data={hoursElements} style={styles.title} textStyle={styles.text} />
                     <Rows
-                        data={shiftDataElements}
+                        data={shiftDataNamesElements}
                         flexArr={flexHeadArray.slice(0, -1)}
                         style={styles.row}
                         textStyle={styles.text}

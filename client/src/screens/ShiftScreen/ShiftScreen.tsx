@@ -8,12 +8,12 @@ import useShiftUsersListView from './hooks/useShiftUsersListView'
 import SplitScreenComp from '@app/components/SplitScreenComp'
 import withLogs from '@app/components/HOC/withLogs'
 
+import { Constraint, UniqueString, User, UserShiftData } from './models'
 import useShiftTableView from './hooks/useShiftTableView'
 import useEditAddButton from './hooks/useEditAddButton'
-import { UserShiftData } from './models'
 
 const ShiftScreen = () => {
-    const [derivedConstraints, setDerivedConstraints] = useState<boolean[][][]>()
+    const [derivedConstraints, setDerivedConstraints] = useState<Constraint[][][]>()
     const [usersDataMap, setUsersDataMap] = useState<Map<string, UserShiftData>>(new Map())
     const { isEditing, EditAddButtonView } = useEditAddButton({})
     const { list: names, selectedNameId, view: namesListView } = useShiftUsersListView(isEditing)
@@ -28,28 +28,14 @@ const ShiftScreen = () => {
         }
     )
 
-    const defaultConstraints = useMemo(
-        () => getDefaultConstraints(posts.length - 1, hours.length),
-        [names, posts, hours]
-    )
+    const defaultConstraints: Constraint[][] = useMemo(() => getDefaultConstraints(posts, hours), [names, posts, hours])
 
-    const isPopulated = [...usersDataMap.keys()].length > 0
+    const isPopulated = [...usersDataMap.keys()].length > 0 //useMemo
 
     useEffect(() => {
+        console.log(`ShiftScreen-> useEffect-> posts: ${JSON.stringify(posts)}`)
         setUsersDataMap((oldMap) => {
-            const newMap = new Map<string, UserShiftData>()
-            let oldVal
-            names.forEach((name) => {
-                const defaultUserData = {
-                    user: name,
-                    constraints: defaultConstraints,
-                    totalAssignments: 0,
-                }
-                oldVal = oldMap.get(name.id)
-                const newVal = oldVal ?? defaultUserData
-                newMap.set(name.id, newVal)
-            })
-            return newMap
+            return deriveUserDataMap(names, defaultConstraints, oldMap)
         })
     }, [names, hours, posts])
 
@@ -57,15 +43,13 @@ const ShiftScreen = () => {
         if ([...usersDataMap.keys()].length == 0) {
             return
         }
-
         const newDerivedConstraints = names.reduce(
-            (accumulator, current, index) => {
-                accumulator.push(usersDataMap.get(current.id)?.constraints ?? ([] as boolean[][]))
+            (accumulator, current) => {
+                accumulator.push(usersDataMap.get(current.id)?.constraints ?? ([] as Constraint[][]))
                 return accumulator
             },
-            [] as boolean[][][]
+            [] as Constraint[][][]
         )
-
         setDerivedConstraints(newDerivedConstraints)
     }, [usersDataMap])
 
@@ -89,7 +73,7 @@ const ShiftScreen = () => {
                     availabilityData={usersDataMap.get(names[selectedIndex].id)?.constraints}
                     hours={hours}
                     posts={posts}
-                    onConstraintsChanged={function (newConstraints: boolean[][]): void {
+                    onConstraintsChanged={function (newConstraints: Constraint[][]): void {
                         console.log('test')
                         const newUsersDataMap = new Map(usersDataMap)
                         const userData = newUsersDataMap.get(names[selectedIndex].id)
@@ -122,12 +106,65 @@ const ShiftScreen = () => {
 }
 
 //------------------------------------------functions--------------------------------------------------------
-const getDefaultConstraints = (postAmount: number, hoursAmount: number): boolean[][] => {
-    const defHoursCons = Array(hoursAmount).fill(true)
-    const defPostsCon = Array(postAmount).fill(defHoursCons)
+export function deriveUserDataMap(
+    names: User[],
+    defaultConstraints: Constraint[][],
+    oldMap: Map<string, UserShiftData>
+) {
+    const result = new Map<string, UserShiftData>()
 
+    // Loop through each name
+    names.forEach(({ id, name }) => {
+        // Get existing shift data if present
+        const existingShiftData = oldMap.get(id)
+        let userConstraints = defaultConstraints
+
+        //Intersect exiting constraints with the new default constraints
+        if (existingShiftData) {
+            userConstraints = existingShiftData.constraints.reduce((acc, userConstraintArr) => {
+                const intersectionArr = userConstraintArr.filter((userConstraintItem) => {
+                    return defaultConstraints.some((defaultConstraint) => {
+                        return defaultConstraint.some((defaultConstraintItem) => {
+                            return (
+                                userConstraintItem.postID === defaultConstraintItem.postID &&
+                                userConstraintItem.hourID === defaultConstraintItem.hourID
+                            )
+                        })
+                    })
+                })
+                acc.push(intersectionArr)
+                return acc
+            }, [] as Constraint[][])
+        }
+
+        // Determine total assignments
+        const totalAssignments = existingShiftData ? existingShiftData.totalAssignments : 0
+
+        // Create user shift data
+        const userData: UserShiftData = {
+            user: { id, name },
+            constraints: userConstraints,
+            totalAssignments,
+        }
+
+        // Add user shift data to result map
+        result.set(id, userData)
+    })
+
+    return result
+}
+
+function getDefaultConstraints(posts: UniqueString[], hours: UniqueString[]): Constraint[][] {
+    const defaultConstraints: Constraint[][] = []
+    posts.forEach((post) => {
+        const defaultPostsConstraints: Constraint[] = []
+        hours.forEach((hour) => {
+            defaultPostsConstraints.push({ availability: true, postID: post.id, hourID: hour.id })
+        })
+        defaultConstraints.push(defaultPostsConstraints)
+    })
     // console.log(`getDefaultConstraints-> defUserCons: ${JSON.stringify(defUserCons)}`)
-    return defPostsCon
+    return defaultConstraints
 }
 //------------------------------------------StyleSheet--------------------------------------------------------
 

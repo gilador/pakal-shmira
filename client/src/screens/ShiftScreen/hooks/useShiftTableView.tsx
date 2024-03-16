@@ -4,10 +4,10 @@ import { StyleSheet, View } from 'react-native'
 
 import { IconButton } from 'react-native-paper'
 
+import { getEmptyMatrix, getUniqueString } from '@app/common/utils'
 import { OptimizeShiftResponse } from '@app/services/api/models'
 import NameCellView from '../elements/NameCellView'
-import { getEmptyMatrix } from '@app/common/utils'
-import { User } from '../models'
+import { UniqueString, User } from '../models'
 
 export default function useShiftTableView(
     selectedNameId: string | undefined,
@@ -15,23 +15,30 @@ export default function useShiftTableView(
     names: User[],
     optimize: () => Promise<OptimizeShiftResponse | undefined>
 ) {
-    console.log(`ddd->duseShiftTableViewd`)
-    const [posts, setPosts] = useState<(string | undefined)[]>([undefined, 'ש.ג1', 'ש.ג2', 'מערבי', 'מזרחי'])
-    const [hours, setHours] = useState<string[]>([
-        '0600-1000',
-        '1000-1400',
-        '1400-1600',
-        '1600-2000',
-        '2000-2400',
-        '0000-0400',
+    const [posts, setPosts] = useState<UniqueString[]>([
+        getUniqueString('ש.ג1'),
+        getUniqueString('ש.ג2'),
+        getUniqueString('מערבי'),
+        getUniqueString('מזרחי'),
     ])
+    const [hours, setHours] = useState<UniqueString[]>([
+        getUniqueString('0600-1000'),
+        getUniqueString('1000-1400'),
+        getUniqueString('1400-1600'),
+        getUniqueString('1600-2000'),
+        getUniqueString('2000-2400'),
+        getUniqueString('0000-0400'),
+    ])
+    const postsElements = useMemo(() => [undefined, ...posts].map((post) => post?.value ?? ''), [posts])
+
+    const hoursElements = useMemo(() => hours.map((post) => post.value), [hours])
     // const [userShiftData, setUserShiftData] = useState<UserShiftData[]>()
     const [shifts, setShifts] = useState<User[][] | undefined>()
     console.log(`useShiftTableView-> shifts:${JSON.stringify(shifts)}`)
     const [isOptimized, setIsOptimized] = React.useState<boolean>(false)
 
     const emptyCellsForSkeleton: User[][] = useMemo(() => {
-        return getEmptyMatrix<User>(hours.length, posts.length - 1, {
+        return getEmptyMatrix<User>(hours.length, posts.length, {
             name: '',
             id: '',
         })
@@ -46,20 +53,22 @@ export default function useShiftTableView(
             })
         )
         return uiArray
-    }, [shifts, selectedNameId])
+    }, [shifts, selectedNameId, posts])
 
     const shitPostsRemoveElements = useMemo(() => {
         let uiArray = posts.map((post) => {
             console.log(`shiftDataElements->user.id:${post}, selectedNameId:${selectedNameId}`)
             const cb = () => {
-                setPosts((pre) => pre.filter((val) => val === post))
+                setPosts((pre) => pre.filter((val) => val !== post))
             }
             return <IconButton icon={'close-circle'} onPress={cb} />
         })
         return uiArray
     }, [posts])
 
-    const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts])
+    const flexHeadArray = useMemo(() => {
+        return Array(postsElements.length).fill(1)
+    }, [posts])
 
     const onOptimize = useCallback(async () => {
         try {
@@ -77,7 +86,7 @@ export default function useShiftTableView(
             setIsOptimized(optimizedShift.isOptim)
             // Update shift data
 
-            const shifts = getEmptyMatrix<User>(hours.length, posts.length - 1, { name: '', id: '' })
+            const shifts = getEmptyMatrix<User>(hours.length, posts.length, { name: '', id: '' })
 
             optimizedShift.result.forEach((userShift, userIndex) => {
                 userShift.forEach((hourArray, hourIndex) => {
@@ -104,16 +113,16 @@ export default function useShiftTableView(
                 <TableWrapper borderStyle={{ borderWidth: 4, borderColor: 'white' }}>
                     <Row
                         data={shitPostsRemoveElements}
-                        flexArr={flexHeadArray}
+                        flexArr={flexHeadArray.slice(0, -2)}
                         style={styles.head2}
                         textStyle={styles.text}
                     />
                 </TableWrapper>
             )}
             <Table borderStyle={{ borderWidth: 1 }}>
-                <Row data={posts} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
+                <Row data={postsElements} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
                 <TableWrapper style={styles.wrapper}>
-                    <Col data={hours} style={styles.title} textStyle={styles.text} />
+                    <Col data={hoursElements} style={styles.title} textStyle={styles.text} />
                     <Rows
                         data={shiftDataElements}
                         flexArr={flexHeadArray.slice(0, -1)}
