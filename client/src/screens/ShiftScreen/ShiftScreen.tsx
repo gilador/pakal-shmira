@@ -49,7 +49,7 @@ const ShiftScreen = () => {
                 return accumulator
             },
             [] as Constraint[][][]
-        )
+        )   
         setDerivedConstraints(newDerivedConstraints)
     }, [usersDataMap])
 

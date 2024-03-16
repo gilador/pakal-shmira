@@ -20,7 +20,6 @@ const AvailabilityTableView = ({
     availabilityData = [],
     onConstraintsChanged,
 }: AvailabilityTableProp) => {
-    const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts])
 
     const transposedMatrix: Constraint[][] = useMemo(() => {
         console.log(`AvailabilityTableView->transposedMatrix: ${JSON.stringify(transposedMatrix)}`)
@@ -47,8 +46,9 @@ const AvailabilityTableView = ({
         )
     }, [transposedMatrix])
 
-    const postsElements = useMemo(() => posts.map((post) => post.value), [posts])
+    const postsElements = useMemo(() => [undefined, ...posts].map((post) => post?.value ?? ''), [posts])
     const hoursElements = useMemo(() => hours.map((post) => post.value), [hours])
+    const flexHeadArray = useMemo(() => Array(postsElements.length).fill(1), [posts])
 
     return (
         <View style={styles.container}>

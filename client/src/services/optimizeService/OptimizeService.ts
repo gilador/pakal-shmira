@@ -5,7 +5,7 @@ import ApiService from '../api'
 function transformConstraintsToBool(constraints: Constraint[][][] | undefined): boolean[][][] {
     const boolConstraints: boolean[][][] | undefined = constraints?.map((constraint1: Constraint[][]) =>
         constraint1.map((constraint2: Constraint[]) =>
-            constraint2.map((constraint3: Constraint) => Boolean(constraint3))
+            constraint2.map((constraint3: Constraint) => Boolean(constraint3.availability))
         )
     )
     return boolConstraints ?? []
@@ -14,5 +14,7 @@ function transformConstraintsToBool(constraints: Constraint[][][] | undefined): 
 export async function optimize(constraints: Constraint[][][] | undefined): Promise<OptimizeShiftResponse | undefined> {
     console.log(`optimize-> constraints: ${constraints}`)
     const boolConstraints = transformConstraintsToBool(constraints)
-    return constraints ? ApiService.optimizeShift(boolConstraints) : undefined
+    console.log(`optimize-> boolConstraints: ${boolConstraints}`)
+    const ret = await ApiService.optimizeShift(boolConstraints)
+    return constraints ? ret : undefined
 }
