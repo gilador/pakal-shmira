@@ -5,6 +5,7 @@ import { memo, useContext } from 'react'
 import { ShiftListContext } from '../hooks/useShiftUsersListView'
 import NameCellView from './NameCellView'
 import { User } from '../models'
+import CloseButton from './CloseButton'
 
 type ItemProps = {
     user: User
@@ -26,11 +27,7 @@ const EditableListItem = ({ user, isEditing }: ItemProps) => {
                 style={styles.nameCell}
             />
             {isEditing && (
-                <IconButton
-                    style={styles.cellButton}
-                    icon={'close-circle'}
-                    onPress={() => shiftListContext.onUserRemoved(user.id)}
-                />
+                <CloseButton cb={() => shiftListContext.onUserRemoved(user.id)} />
             )}
         </View>
     )

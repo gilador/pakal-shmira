@@ -1,13 +1,10 @@
-import React, { memo, useContext, useEffect, useRef, useState, useTransition } from 'react'
-import { FlatList, StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
-import { IconButton, TextInput } from 'react-native-paper'
+import React, { memo, useContext, useEffect, useRef } from 'react'
+import { FlatList, StyleSheet, View } from 'react-native'
+import { TextInput } from 'react-native-paper'
 
-import NameCellView from '@app/screens/shiftScreen/elements/NameCellView'
 import { ShiftListContext } from '../hooks/useShiftUsersListView'
-import useEditAddButton from '../hooks/useEditAddButton'
 import { User } from '@app/screens/shiftScreen/models'
 import EditableListItem from './EditableListItem'
-import { colors } from '@app/styles'
 
 type EditableListProps = {
     list: User[]

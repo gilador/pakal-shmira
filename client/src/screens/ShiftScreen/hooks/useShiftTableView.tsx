@@ -8,6 +8,8 @@ import { getEmptyMatrix, getUniqueString } from '@app/common/utils'
 import { OptimizeShiftResponse } from '@app/services/api/models'
 import NameCellView from '../elements/NameCellView'
 import { UniqueString, User } from '../models'
+import { colors } from '@app/styles'
+import CloseButton from '../elements/CloseButton'
 
 export default function useShiftTableView(
     selectedNameId: string | undefined,
@@ -102,7 +104,7 @@ export default function useShiftTableView(
                     return pre.length > 1 ? pre.filter((val) => val !== post) : pre
                 })
             }
-            return <IconButton icon={'close-circle'} onPress={cb} />
+            return <CloseButton cb={cb} />
         })
         return uiArray
     }, [posts])
@@ -164,4 +166,5 @@ const styles = StyleSheet.create({
     row: { height: 50 },
     text: { textAlign: 'center' },
     wrapper: { flexDirection: 'row' },
+    removeButton: { alignSelf: 'center', tintColor: 'red' },
 })
