@@ -34,6 +34,10 @@ const AvailabilityTableView = ({
     const shiftDataNamesElements = useMemo(() => {
         return transposedMatrix.map((array, postIndex) =>
             array.map((availability, hourIndex) => {
+                console.log(`AvailabilityTableView->availability: ${JSON.stringify(availability)}`)
+                if(availability === undefined){
+                    console.log('undefined availability')
+                }
                 return (
                     <AvailabilityCellView
                         availability={availability.availability}

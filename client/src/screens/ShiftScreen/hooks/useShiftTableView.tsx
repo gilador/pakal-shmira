@@ -53,17 +53,6 @@ export default function useShiftTableView(
         return uiArray
     }, [shifts, selectedNameId, posts])
 
-    const shitPostsRemoveElements = useMemo(() => {
-        let uiArray = posts.map((post) => {
-            console.log(`shiftDataElements->user.id:${post}, selectedNameId:${selectedNameId}`)
-            const cb = () => {
-                setPosts((pre) => pre.filter((val) => val !== post))
-            }
-            return <IconButton icon={'close-circle'} onPress={cb} />
-        })
-        return uiArray
-    }, [posts])
-
     const onOptimize = useCallback(async () => {
         try {
             // Optimize user shifts asynchronously
@@ -104,7 +93,19 @@ export default function useShiftTableView(
     const postsElements = useMemo(() => [undefined, ...posts].map((post) => post?.value ?? ''), [posts])
     const hoursElements = useMemo(() => hours.map((post) => post.value), [hours])
     const flexHeadArray = useMemo(() => Array(postsElements.length).fill(1), [posts])
-
+    const shitPostsRemoveElements = useMemo(() => {
+        let uiArray = [undefined, ...posts].map((post) => {
+            if (post === undefined) return
+            console.log(`shiftDataElements->user.id:${post}, selectedNameId:${selectedNameId}`)
+            const cb = () => {
+                setPosts((pre) => {
+                    return pre.length > 1 ? pre.filter((val) => val !== post) : pre
+                })
+            }
+            return <IconButton icon={'close-circle'} onPress={cb} />
+        })
+        return uiArray
+    }, [posts])
     const ShiftTableView = memo(() => (
         <View style={styles.container}>
             {isEditing && (

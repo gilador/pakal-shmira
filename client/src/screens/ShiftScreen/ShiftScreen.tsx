@@ -18,7 +18,6 @@ const ShiftScreen = () => {
     const { isEditing, EditAddButtonView } = useEditAddButton({})
     const { list: names, selectedNameId, view: namesListView } = useShiftUsersListView(isEditing)
 
-    console.log(`ShiftScreen-> derivedConstraints: ${derivedConstraints}`)
     const { posts, hours, isOptimized, ShiftTableView, onOptimize } = useShiftTableView(
         selectedNameId,
         isEditing,
@@ -33,7 +32,6 @@ const ShiftScreen = () => {
     const isPopulated = [...usersDataMap.keys()].length > 0 //useMemo
 
     useEffect(() => {
-        console.log(`ShiftScreen-> useEffect-> posts: ${JSON.stringify(posts)}`)
         setUsersDataMap((oldMap) => {
             return deriveUserDataMap(names, defaultConstraints, oldMap)
         })
@@ -60,11 +58,6 @@ const ShiftScreen = () => {
         return retIndex
     }, [selectedNameId, names])
 
-    isPopulated &&
-        selectedIndex >= 0 &&
-        console.log(
-            `teee-> names[selectedIndex].id: ${JSON.stringify(names[selectedIndex].id)}, usersDataMap.get(names[selectedIndex].id)?.constraints: ${JSON.stringify(usersDataMap.get(names[selectedIndex].id)?.constraints)}`
-        )
     const rightView = (
         <View>
             {isPopulated && <ShiftTableView />}
@@ -81,11 +74,6 @@ const ShiftScreen = () => {
                             userData.constraints = newConstraints
                             setUsersDataMap(newUsersDataMap)
                         }
-                        // setConstraints(() => {
-                        //     const newConstraints = JSON.parse(JSON.stringify(constraints))
-                        //     newConstraints[selectedIndex] = data
-                        //     return newConstraints
-                        // })
                     }}
                 />
             )}
@@ -132,7 +120,7 @@ export function deriveUserDataMap(
                         })
                     })
                 })
-                acc.push(intersectionArr)
+                intersectionArr && intersectionArr.length > 0 && acc.push(intersectionArr)
                 return acc
             }, [] as Constraint[][])
         }
