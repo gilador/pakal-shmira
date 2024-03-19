@@ -65,8 +65,7 @@ export default function useShiftUsersListView(isEditing = false) {
         }))
 
         setList((preList) => {
-            preList.push(...ret)
-            return [...preList]
+            return [...ret, ...preList]
         })
     }
 
