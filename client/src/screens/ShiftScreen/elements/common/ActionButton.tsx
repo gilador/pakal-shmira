@@ -16,7 +16,7 @@ type CloseButtonProps = {
     style?: StyleProp<ViewStyle>
 }
 
-const ActionEditButton = ({ type, cb, style }: CloseButtonProps) => {
+const ActionButton = ({ type, cb, style }: CloseButtonProps) => {
     return (
         <IconButton
             icon={getIcon(type)}
@@ -57,4 +57,4 @@ const styles = StyleSheet.create({
     container: { alignSelf: 'center' },
 })
 
-export default memo(ActionEditButton)
+export default memo(ActionButton)

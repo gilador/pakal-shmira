@@ -8,6 +8,7 @@ import { UniqueString, User } from '../models'
 
 import React, { useState, useMemo, useCallback } from 'react'
 
+import ActionButton, { IconType } from '../elements/common/ActionButton'
 import { OptimizeShiftResponse } from '@app/services/api/models'
 import NameCellView from '../elements/common/NameCellView'
 import TableView from '../elements/common/TableView'
@@ -61,9 +62,9 @@ export default function useShiftTableView(
             console.log(`shiftDataElements->user.id:${post}, selectedNameId:${selectedNameId}`)
             const cb = () => {
                 setPosts((pre) => pre.filter((val) => val?.id !== post?.id))
-                setShifts((prev)=>removePostFromShifts(prev, postIndex - 1))
+                setShifts((prev) => removePostFromShifts(prev, postIndex - 1))
             }
-            return <IconButton icon={'close-circle'} onPress={cb} />
+            return <ActionButton type={IconType.close} cb={cb} />
         })
         return uiArray
     }, [posts])
@@ -73,11 +74,11 @@ export default function useShiftTableView(
     const ShiftTable = (
         <View style={styles.container}>
             {isEditing && (
-                <TableWrapper borderStyle={{ borderWidth: 4, borderColor: 'white' }}>
+                <TableWrapper>
                     <Row
                         data={shitPostsRemoveElements}
                         flexArr={flexHeadArray}
-                        style={styles.head2}
+                        style={styles.removeHeader}
                         textStyle={styles.text}
                     />
                 </TableWrapper>
@@ -141,10 +142,10 @@ function removePostFromShifts(posts: User[][] | undefined, postIndex: number) {
 const styles = StyleSheet.create({
     container: {
         flex: 10,
-        padding: 16,
-        paddingTop: 30,
+        paddingHorizontal: 16,
         backgroundColor: '#fff',
     },
+    removeHeader: {},
     head2: {
         height: 50,
         backgroundColor: '#f1f8ff',

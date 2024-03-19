@@ -10,11 +10,11 @@ import withLogs from '@app/components/HOC/withLogs'
 
 import { Constraint, UniqueString, User, UserShiftData } from './models'
 import useShiftTableView from './hooks/useShiftTableView'
-import useEditAddButton from './hooks/useEditAddButton'
+import useEditModeButton from './hooks/useEditModeButton'
 const ShiftScreen = () => {
     const [derivedConstraints, setDerivedConstraints] = useState<Constraint[][][]>()
     const [usersDataMap, setUsersDataMap] = useState<Map<string, UserShiftData>>(new Map())
-    const { isEditing, EditAddButtonView } = useEditAddButton({})
+    const { isEditing, EditAddButtonView } = useEditModeButton({})
     const { list: names, selectedNameId, view: namesListView } = useShiftUsersListView(isEditing)
 
     const {

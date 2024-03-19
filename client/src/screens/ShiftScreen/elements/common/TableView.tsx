@@ -41,8 +41,6 @@ const TableView = ({ posts, hours, uiArray }: TableViewProp) => {
 const styles = StyleSheet.create({
     container: {
         flex: 10,
-        padding: 16,
-        paddingTop: 30,
         backgroundColor: '#fff',
     },
     head: { height: 50, backgroundColor: '#f1f8ff', textAlign: 'center' },

@@ -10,7 +10,7 @@ type EditAddButtonViewProps = {
     style?: StyleProp<ViewStyle>
 }
 
-export default function useEditAddButton({}: EditAddButtonProps) {
+export default function useEditModeButton({}: EditAddButtonProps) {
     const shiftListContext = useContext(ShiftListContext)
 
     const [isEditing, setIsEditing] = useState(false)
