@@ -1,9 +1,10 @@
 import { IconSource } from 'react-native-paper/lib/typescript/components/Icon'
-import { IconButton } from 'react-native-paper'
 import { StyleProp, StyleSheet, ViewStyle } from 'react-native'
-import { colors } from '@app/styles'
+import { IconButton } from 'react-native-paper'
 import { memo } from 'react'
 import React from 'react'
+
+import { colors } from '@app/styles'
 
 export enum IconType {
     close,
@@ -16,7 +17,14 @@ type CloseButtonProps = {
 }
 
 const ActionEditButton = ({ type, cb, style }: CloseButtonProps) => {
-    return <IconButton icon={getIcon(type)} onPress={cb} style={[style, styles.container]} iconColor={getIconColors(type)} />
+    return (
+        <IconButton
+            icon={getIcon(type)}
+            onPress={cb}
+            style={[style, styles.container]}
+            iconColor={getIconColors(type)}
+        />
+    )
 }
 
 //------------------------------------------functions--------------------------------------------------------

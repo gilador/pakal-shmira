@@ -1,6 +1,6 @@
+import { Col, Row, Rows, Table, TableWrapper } from 'react-native-reanimated-table'
 import React, { ReactNode, useMemo } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { Col, Row, Rows, Table, TableWrapper } from 'react-native-reanimated-table'
 
 import withLogs from '@app/components/HOC/withLogs'
 import { UniqueString } from '../../models'

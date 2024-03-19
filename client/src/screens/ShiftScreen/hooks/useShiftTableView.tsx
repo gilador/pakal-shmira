@@ -6,8 +6,9 @@ import { IconButton } from 'react-native-paper'
 import { getEmptyMatrix } from '@app/common/utils'
 import { UniqueString, User } from '../models'
 
-import { OptimizeShiftResponse } from '@app/services/api/models'
 import React, { useState, useMemo, useCallback } from 'react'
+
+import { OptimizeShiftResponse } from '@app/services/api/models'
 import NameCellView from '../elements/common/NameCellView'
 import TableView from '../elements/common/TableView'
 import { getUniqueString } from '@app/common/utils'
@@ -60,7 +61,7 @@ export default function useShiftTableView(
             console.log(`shiftDataElements->user.id:${post}, selectedNameId:${selectedNameId}`)
             const cb = () => {
                 setPosts((pre) => pre.filter((val) => val?.id !== post?.id))
-                removePostFromShifts(postIndex)
+                setShifts((prev)=>removePostFromShifts(prev, postIndex - 1))
             }
             return <IconButton icon={'close-circle'} onPress={cb} />
         })
@@ -107,9 +108,6 @@ export default function useShiftTableView(
                     hourArray.forEach((post, postIndex) => {
                         if (post) {
                             shifts[postIndex][hourIndex] = names[userIndex]
-                            console.log(
-                                `onOptimize->foreach->userIndex: ${userIndex}, postIndex:${postIndex}, hourIndex:${hourIndex}, names[userIndex]: ${JSON.stringify(names[userIndex])}`
-                            )
                         }
                     })
                 })
@@ -128,19 +126,16 @@ export default function useShiftTableView(
         ShiftTable,
         onOptimize,
     }
-
-    function removePostFromShifts(postIndex: number) {
-        setShifts((prevShifts) => {
-            if (!prevShifts) return prevShifts;
-            const newShifts = prevShifts.map((array) => {
-                return array.filter((_, index) => index !== postIndex);
-            });
-            return newShifts;
-        });
-    }
 }
 
 //------------------------------------------functions--------------------------------------------------------
+function removePostFromShifts(posts: User[][] | undefined, postIndex: number) {
+    if (!posts) return posts
+    const newShifts = posts.map((hours) => {
+        return hours.filter((_posts, index) => index !== postIndex)
+    })
+    return newShifts
+}
 
 //------------------------------------------StyleSheet--------------------------------------------------------
 const styles = StyleSheet.create({
@@ -158,6 +153,3 @@ const styles = StyleSheet.create({
     },
     text: { textAlign: 'center' },
 })
-
-
-
