@@ -39,7 +39,6 @@ export default function usePrint(printRef: React.RefObject<Node>): {
                 cpy.style.width = '100%'
                 cpy.style.height = '100%'
                 ;(cpy.childNodes[0] as HTMLElement).style.borderWidth = '0'
-                console.log(`gilad->eeeeeeeee`)
             }
 
             return cpy as React.ReactInstance

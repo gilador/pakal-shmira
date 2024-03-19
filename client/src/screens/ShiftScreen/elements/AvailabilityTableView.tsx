@@ -6,6 +6,7 @@ import AvailabilityCellView from './AvailabilityCellView'
 import { transposeMat } from '../../../common/utils'
 import { Constraint, UniqueString } from '../models'
 import withLogs from '@app/components/HOC/withLogs'
+import TableView from './common/TableView'
 
 type AvailabilityTableProp = {
     hours: UniqueString[]
@@ -20,11 +21,13 @@ const AvailabilityTableView = ({
     availabilityData = [],
     onConstraintsChanged,
 }: AvailabilityTableProp) => {
+    console.log(`AvailabilityTableView->availabilityData: ${JSON.stringify(availabilityData)}`)
+
     const transposedMatrix: Constraint[][] = useMemo(() => {
-        console.log(`AvailabilityTableView->transposedMatrix: ${JSON.stringify(transposedMatrix)}`)
+        // console.log(`AvailabilityTableView->transposedMatrix: ${JSON.stringify(availabilityData)}`)
         return transposeMat(availabilityData)
     }, [availabilityData])
-    // const transposedMatrix = transposeMat(availabilityData);
+
     const cb = (availability: boolean, index: [number, number]) => {
         const newData: Constraint[][] = JSON.parse(JSON.stringify(availabilityData))
         newData[index[0]][index[1]].availability = !availability
@@ -35,7 +38,7 @@ const AvailabilityTableView = ({
         return transposedMatrix.map((array, postIndex) =>
             array.map((availability, hourIndex) => {
                 console.log(`AvailabilityTableView->availability: ${JSON.stringify(availability)}`)
-                if(availability === undefined){
+                if (availability === undefined) {
                     console.log('undefined availability')
                 }
                 return (
@@ -49,24 +52,9 @@ const AvailabilityTableView = ({
         )
     }, [transposedMatrix])
 
-    const postsElements = useMemo(() => [undefined, ...posts].map((post) => post?.value ?? ''), [posts])
-    const hoursElements = useMemo(() => hours.map((post) => post.value), [hours])
-    const flexHeadArray = useMemo(() => Array(postsElements.length).fill(1), [posts])
-
     return (
         <View style={styles.container}>
-            <Table borderStyle={{ borderWidth: 1 }}>
-                <Row data={postsElements} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
-                <TableWrapper style={styles.wrapper}>
-                    <Col data={hoursElements} style={styles.title} textStyle={styles.text} />
-                    <Rows
-                        data={shiftDataNamesElements}
-                        flexArr={flexHeadArray.slice(0, -1)}
-                        style={styles.row}
-                        textStyle={styles.text}
-                    />
-                </TableWrapper>
-            </Table>
+            <TableView posts={posts} hours={hours} uiArray={shiftDataNamesElements} />
         </View>
     )
 }
@@ -82,11 +70,6 @@ const styles = StyleSheet.create({
         paddingTop: 30,
         backgroundColor: '#fff',
     },
-    head: { height: 50, backgroundColor: '#f1f8ff', textAlign: 'center' },
-    title: { flex: 1, backgroundColor: '#f6f8fa' },
-    row: { height: 50 },
-    text: { textAlign: 'center' },
-    wrapper: { flexDirection: 'row' },
 })
 
 export default withLogs(AvailabilityTableView)

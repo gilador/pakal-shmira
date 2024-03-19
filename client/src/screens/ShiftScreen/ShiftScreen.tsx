@@ -11,21 +11,20 @@ import withLogs from '@app/components/HOC/withLogs'
 import { Constraint, UniqueString, User, UserShiftData } from './models'
 import useShiftTableView from './hooks/useShiftTableView'
 import useEditAddButton from './hooks/useEditAddButton'
-
 const ShiftScreen = () => {
     const [derivedConstraints, setDerivedConstraints] = useState<Constraint[][][]>()
     const [usersDataMap, setUsersDataMap] = useState<Map<string, UserShiftData>>(new Map())
     const { isEditing, EditAddButtonView } = useEditAddButton({})
     const { list: names, selectedNameId, view: namesListView } = useShiftUsersListView(isEditing)
 
-    const { posts, hours, isOptimized, ShiftTableView, onOptimize } = useShiftTableView(
-        selectedNameId,
-        isEditing,
-        names,
-        () => {
-            return optimize(derivedConstraints)
-        }
-    )
+    const {
+        posts,
+        hours,
+        ShiftTable: ShiftTableView,
+        onOptimize,
+    } = useShiftTableView(selectedNameId, isEditing, names, () => {
+        return optimize(derivedConstraints)
+    })
 
     const defaultConstraints: Constraint[][] = useMemo(() => getDefaultConstraints(posts, hours), [names, posts, hours])
 
@@ -48,19 +47,24 @@ const ShiftScreen = () => {
             },
             [] as Constraint[][][]
         )
+        console.log('newDerivedConstraints: ', newDerivedConstraints)
         setDerivedConstraints(newDerivedConstraints)
     }, [usersDataMap])
 
     const selectedIndex = useMemo(() => {
         let retIndex = -1
         retIndex = names.findIndex((ele) => ele.id === selectedNameId)
-        console.log(`selectedIndex->retIndex:${retIndex}, selectedNameId:${selectedNameId}`)
+        // console.log(`selectedIndex->retIndex:${retIndex}, selectedNameId:${selectedNameId}`)
         return retIndex
     }, [selectedNameId, names])
 
+    // console.log(
+    //     `ShiftScreen->user const:${JSON.stringify(usersDataMap.get(names[selectedIndex].id)?.constraints)}, selectedIndex:${selectedIndex}`
+    // )
+
     const rightView = (
         <View>
-            {isPopulated && <ShiftTableView />}
+            {isPopulated && names.length > 0 && ShiftTableView}
             {selectedIndex >= 0 && (
                 <AvailabilityTableView
                     availabilityData={usersDataMap.get(names[selectedIndex].id)?.constraints}

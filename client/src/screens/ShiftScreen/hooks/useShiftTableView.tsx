@@ -1,15 +1,16 @@
-import { Col, Row, Rows, Table, TableWrapper } from 'react-native-reanimated-table'
-import React, { memo, useCallback, useMemo, useState } from 'react'
+import { Row, TableWrapper } from 'react-native-reanimated-table'
 import { StyleSheet, View } from 'react-native'
 
 import { IconButton } from 'react-native-paper'
 
-import { getEmptyMatrix, getUniqueString } from '@app/common/utils'
-import { OptimizeShiftResponse } from '@app/services/api/models'
-import NameCellView from '../elements/NameCellView'
+import { getEmptyMatrix } from '@app/common/utils'
 import { UniqueString, User } from '../models'
-import { colors } from '@app/styles'
-import CloseButton from '../elements/CloseButton'
+
+import { OptimizeShiftResponse } from '@app/services/api/models'
+import React, { useState, useMemo, useCallback } from 'react'
+import NameCellView from '../elements/common/NameCellView'
+import TableView from '../elements/common/TableView'
+import { getUniqueString } from '@app/common/utils'
 
 export default function useShiftTableView(
     selectedNameId: string | undefined,
@@ -32,11 +33,9 @@ export default function useShiftTableView(
         getUniqueString('0000-0400'),
     ])
 
-    // const [userShiftData, setUserShiftData] = useState<UserShiftData[]>()
     const [shifts, setShifts] = useState<User[][] | undefined>()
     console.log(`useShiftTableView-> shifts:${JSON.stringify(shifts)}`)
     const [isOptimized, setIsOptimized] = React.useState<boolean>(false)
-
     const emptyCellsForSkeleton: User[][] = useMemo(() => {
         return getEmptyMatrix<User>(hours.length, posts.length, {
             name: '',
@@ -45,16 +44,46 @@ export default function useShiftTableView(
     }, [hours, posts])
 
     const shiftDataElements = useMemo(() => {
-        console.log(`useShiftTableView->useMemo-> shifts:${JSON.stringify(shifts)}`)
-
         let uiArray = (shifts ?? emptyCellsForSkeleton).map((array) =>
             array.map((user) => {
-                return <NameCellView user={user.name} isDisable={true} isSelected={user.id === selectedNameId} />
+                return <NameCellView user={user.name} isDisable={true} isSelected={user?.id === selectedNameId} />
             })
         )
         return uiArray
-    }, [shifts, selectedNameId, posts])
+    }, [shifts, emptyCellsForSkeleton, selectedNameId])
 
+    const shitPostsRemoveElements = useMemo(() => {
+        let uiArray = [undefined, ...posts].map((post, postIndex) => {
+            if (!post) {
+                return
+            }
+            console.log(`shiftDataElements->user.id:${post}, selectedNameId:${selectedNameId}`)
+            const cb = () => {
+                setPosts((pre) => pre.filter((val) => val?.id !== post?.id))
+                removePostFromShifts(postIndex)
+            }
+            return <IconButton icon={'close-circle'} onPress={cb} />
+        })
+        return uiArray
+    }, [posts])
+
+    const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts])
+
+    const ShiftTable = (
+        <View style={styles.container}>
+            {isEditing && (
+                <TableWrapper borderStyle={{ borderWidth: 4, borderColor: 'white' }}>
+                    <Row
+                        data={shitPostsRemoveElements}
+                        flexArr={flexHeadArray}
+                        style={styles.head2}
+                        textStyle={styles.text}
+                    />
+                </TableWrapper>
+            )}
+            <TableView posts={posts} hours={hours} uiArray={shiftDataElements} />
+        </View>
+    )
     const onOptimize = useCallback(async () => {
         try {
             // Optimize user shifts asynchronously
@@ -92,62 +121,28 @@ export default function useShiftTableView(
         }
     }, [names, optimize])
 
-    const postsElements = useMemo(() => [undefined, ...posts].map((post) => post?.value ?? ''), [posts])
-    const hoursElements = useMemo(() => hours.map((post) => post.value), [hours])
-    const flexHeadArray = useMemo(() => Array(postsElements.length).fill(1), [posts])
-    const shitPostsRemoveElements = useMemo(() => {
-        let uiArray = [undefined, ...posts].map((post) => {
-            if (post === undefined) return
-            console.log(`shiftDataElements->user.id:${post}, selectedNameId:${selectedNameId}`)
-            const cb = () => {
-                setPosts((pre) => {
-                    return pre.length > 1 ? pre.filter((val) => val !== post) : pre
-                })
-            }
-            return <CloseButton cb={cb} />
-        })
-        return uiArray
-    }, [posts])
-    const ShiftTableView = memo(() => (
-        <View style={styles.container}>
-            {isEditing && (
-                <TableWrapper borderStyle={{ borderWidth: 4, borderColor: 'white' }}>
-                    <Row
-                        data={shitPostsRemoveElements}
-                        flexArr={flexHeadArray.slice(0, -2)}
-                        style={styles.head2}
-                        textStyle={styles.text}
-                    />
-                </TableWrapper>
-            )}
-            <Table borderStyle={{ borderWidth: 1 }}>
-                <Row data={postsElements} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
-                <TableWrapper style={styles.wrapper}>
-                    <Col data={hoursElements} style={styles.title} textStyle={styles.text} />
-                    <Rows
-                        data={shiftDataElements}
-                        flexArr={flexHeadArray.slice(0, -1)}
-                        style={styles.row}
-                        textStyle={styles.text}
-                    />
-                </TableWrapper>
-            </Table>
-        </View>
-    ))
-
     return {
         posts,
         hours,
         isOptimized,
-        ShiftTableView,
+        ShiftTable,
         onOptimize,
+    }
+
+    function removePostFromShifts(postIndex: number) {
+        setShifts((prevShifts) => {
+            if (!prevShifts) return prevShifts;
+            const newShifts = prevShifts.map((array) => {
+                return array.filter((_, index) => index !== postIndex);
+            });
+            return newShifts;
+        });
     }
 }
 
 //------------------------------------------functions--------------------------------------------------------
 
 //------------------------------------------StyleSheet--------------------------------------------------------
-
 const styles = StyleSheet.create({
     container: {
         flex: 10,
@@ -161,10 +156,8 @@ const styles = StyleSheet.create({
         borderRadius: 0,
         borderBlockColor: 'white',
     },
-    head: { height: 50, backgroundColor: '#f1f8ff', textAlign: 'center' },
-    title: { flex: 1, backgroundColor: '#f6f8fa' },
-    row: { height: 50 },
     text: { textAlign: 'center' },
-    wrapper: { flexDirection: 'row' },
-    removeButton: { alignSelf: 'center', tintColor: 'red' },
 })
+
+
+

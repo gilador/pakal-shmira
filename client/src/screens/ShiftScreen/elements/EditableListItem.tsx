@@ -3,9 +3,9 @@ import { View, StyleSheet } from 'react-native'
 import { memo, useContext } from 'react'
 
 import { ShiftListContext } from '../hooks/useShiftUsersListView'
-import NameCellView from './NameCellView'
+import ActionEditButton, { IconType } from './ActionEditButton'
+import NameCellView from './common/NameCellView'
 import { User } from '../models'
-import CloseButton from './CloseButton'
 
 type ItemProps = {
     user: User
@@ -26,9 +26,7 @@ const EditableListItem = ({ user, isEditing }: ItemProps) => {
                 isDisable={isEditing}
                 style={styles.nameCell}
             />
-            {isEditing && (
-                <CloseButton cb={() => shiftListContext.onUserRemoved(user.id)} />
-            )}
+            {isEditing && <ActionEditButton type={IconType.close} cb={() => shiftListContext.onUserRemoved(user.id)} />}
         </View>
     )
 }
