@@ -1,12 +1,10 @@
 import { Row, TableWrapper } from 'react-native-reanimated-table'
 import { StyleSheet, View } from 'react-native'
 
-import { IconButton } from 'react-native-paper'
-
 import { getEmptyMatrix } from '@app/common/utils'
 import { UniqueString, User } from '../models'
 
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 
 import ActionButton, { IconType } from '../elements/common/ActionButton'
 import { OptimizeShiftResponse } from '@app/services/api/models'
@@ -14,50 +12,49 @@ import NameCellView from '../elements/common/NameCellView'
 import TableView from '../elements/common/TableView'
 import { getUniqueString } from '@app/common/utils'
 
+const mockedPosts = [
+    getUniqueString('ש.ג1'),
+    getUniqueString('ש.ג2'),
+    getUniqueString('מערבי'),
+    getUniqueString('מזרחי'),
+]
+const mockedHours = [
+    getUniqueString('0600-1000'),
+    getUniqueString('1000-1400'),
+    getUniqueString('1400-1600'),
+    getUniqueString('1600-2000'),
+    getUniqueString('2000-2400'),
+    getUniqueString('0000-0400'),
+]
+
 export default function useShiftTableView(
     selectedNameId: string | undefined,
     isEditing = false,
     names: User[],
     callOptimizeAPI: () => Promise<OptimizeShiftResponse | undefined>
 ) {
-    const [posts, setPosts] = useState<UniqueString[]>([
-        getUniqueString('ש.ג1'),
-        getUniqueString('ש.ג2'),
-        getUniqueString('מערבי'),
-        getUniqueString('מזרחי'),
-    ])
-    const [hours, setHours] = useState<UniqueString[]>([
-        getUniqueString('0600-1000'),
-        getUniqueString('1000-1400'),
-        getUniqueString('1400-1600'),
-        getUniqueString('1600-2000'),
-        getUniqueString('2000-2400'),
-        getUniqueString('0000-0400'),
-    ])
-
+    const [posts, setPosts] = useState<UniqueString[]>(mockedPosts)
+    const [hours, setHours] = useState<UniqueString[]>(mockedHours)
     const [shifts, setShifts] = useState<User[][] | undefined>()
     console.log(`useShiftTableView-> shifts:${JSON.stringify(shifts)}`)
     const [isOptimized, setIsOptimized] = React.useState<boolean>(false)
+
     const emptyCellsForSkeleton: User[][] = useMemo(() => {
         return getEmptyMatrix<User>(hours.length, posts.length, {
             name: '',
             id: '',
         })
     }, [hours, posts])
-
-    const shiftDataElements = useMemo(() => {
-        let uiArray = (shifts ?? emptyCellsForSkeleton).map((array) =>
-            array.map((user) => {
-                return <NameCellView user={user.name} isDisable={true} isSelected={user?.id === selectedNameId} />
-            })
-        )
-        return uiArray
-    }, [shifts, emptyCellsForSkeleton, selectedNameId])
-
-    const shitPostsRemoveElements = useMemo(()=>generateRemoveElements(posts, setPosts, setShifts), [posts])
-
+    const shiftDataElements = useMemo(
+        () => generateShiftDataElements(shifts, emptyCellsForSkeleton, selectedNameId, setShifts),
+        [shifts, emptyCellsForSkeleton, selectedNameId]
+    )
+    const shitPostsRemoveElements = useMemo(() => generateRemoveElements(posts, setPosts, setShifts), [posts])
     const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts])
-
+    const onOptimize = useCallback(
+        () => calcOptimizeShifts(names, hours, posts, callOptimizeAPI, setIsOptimized, setShifts),
+        [names, hours, posts, callOptimizeAPI]
+    )
     const ShiftTable = (
         <View style={styles.container}>
             {isEditing && (
@@ -73,18 +70,6 @@ export default function useShiftTableView(
             <TableView posts={posts} hours={hours} uiArray={shiftDataElements} />
         </View>
     )
-    const onOptimize = useCallback(
-        () =>
-            calcOptimizeShifts(
-                names,
-                hours,
-                posts,
-                callOptimizeAPI,
-                setIsOptimized,
-                setShifts
-            ),
-        [names, hours, posts, callOptimizeAPI]
-    );
 
     return {
         posts,
@@ -103,8 +88,25 @@ function removePostFromShifts(posts: User[][] | undefined, postIndex: number) {
     })
     return newShifts
 }
+function generateShiftDataElements(
+    shifts: User[][] | undefined,
+    emptyCellsForSkeleton: User[][],
+    selectedNameId: string | undefined,
+    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>
+) {
+    let uiArray = (shifts ?? emptyCellsForSkeleton).map((array) =>
+        array.map((user) => {
+            return <NameCellView user={user.name} isDisable={true} isSelected={user?.id === selectedNameId} />
+        })
+    )
+    return uiArray
+}
 
-function generateRemoveElements(posts: UniqueString[], setPosts: React.Dispatch<React.SetStateAction<UniqueString[]>>, setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>){
+function generateRemoveElements(
+    posts: UniqueString[],
+    setPosts: React.Dispatch<React.SetStateAction<UniqueString[]>>,
+    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>
+) {
     let uiArray = [undefined, ...posts].map((post, postIndex) => {
         if (!post) {
             return
@@ -128,36 +130,36 @@ async function calcOptimizeShifts(
 ) {
     try {
         // Optimize user shifts asynchronously
-        const optimizedShift = await callOptimizeAPI();
+        const optimizedShift = await callOptimizeAPI()
 
         if (!optimizedShift) {
-            return;
+            return
         }
 
         {
             //TODO validate response
         }
 
-        setIsOptimized(optimizedShift.isOptim);
+        setIsOptimized(optimizedShift.isOptim)
         // Update shift data
 
         const shifts = getEmptyMatrix<User>(hours.length, posts.length, {
             name: '',
             id: '',
-        });
+        })
 
         optimizedShift.result.forEach((userShift, userIndex) => {
             userShift.forEach((hourArray, hourIndex) => {
                 hourArray.forEach((post, postIndex) => {
                     if (post) {
-                        shifts[postIndex][hourIndex] = names[userIndex];
+                        shifts[postIndex][hourIndex] = names[userIndex]
                     }
-                });
-            });
-        });
-        setShifts(shifts);
+                })
+            })
+        })
+        setShifts(shifts)
     } catch (error) {
-        console.error('Error occurred while optimizing shifts:', error);
+        console.error('Error occurred while optimizing shifts:', error)
         // Handle error appropriately, e.g., show error message to the user
     }
 }

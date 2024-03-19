@@ -33,7 +33,7 @@ def index():
 
 @app.route('/api/getOptimizedShift', methods=['POST'])
 def get_optimized_shift():
-    # print(f'app->get_optimized_Shift->request.json:{request.json}')
+    print(f'app->get_optimized_Shift->request.json:{request.json}')
     availability_matrix = request.json.get('constraints')
     # print(f'app->get_optimized_shift->availability_matrix: {availability_matrix}')
     optim_result = shit_opt_service.solve_shift_optimization(availability_matrix)
