@@ -18,7 +18,7 @@ export default function useShiftTableView(
     selectedNameId: string | undefined,
     isEditing = false,
     names: User[],
-    optimize: () => Promise<OptimizeShiftResponse | undefined>
+    callOptimizeAPI: () => Promise<OptimizeShiftResponse | undefined>
 ) {
     const [posts, setPosts] = useState<UniqueString[]>([
         getUniqueString('ש.ג1'),
@@ -86,39 +86,18 @@ export default function useShiftTableView(
             <TableView posts={posts} hours={hours} uiArray={shiftDataElements} />
         </View>
     )
-    const onOptimize = useCallback(async () => {
-        try {
-            // Optimize user shifts asynchronously
-            const optimizedShift = await optimize()
-
-            if (!optimizedShift) {
-                return
-            }
-
-            {
-                //TODO validate response
-            }
-
-            setIsOptimized(optimizedShift.isOptim)
-            // Update shift data
-
-            const shifts = getEmptyMatrix<User>(hours.length, posts.length, { name: '', id: '' })
-
-            optimizedShift.result.forEach((userShift, userIndex) => {
-                userShift.forEach((hourArray, hourIndex) => {
-                    hourArray.forEach((post, postIndex) => {
-                        if (post) {
-                            shifts[postIndex][hourIndex] = names[userIndex]
-                        }
-                    })
-                })
-            })
-            setShifts(shifts)
-        } catch (error) {
-            console.error('Error occurred while optimizing shifts:', error)
-            // Handle error appropriately, e.g., show error message to the user
-        }
-    }, [names, optimize])
+    const onOptimize = useCallback(
+        () =>
+            calcOptimizeShifts(
+                names,
+                hours,
+                posts,
+                callOptimizeAPI,
+                setIsOptimized,
+                setShifts
+            ),
+        [names, hours, posts, callOptimizeAPI]
+    );
 
     return {
         posts,
@@ -136,6 +115,50 @@ function removePostFromShifts(posts: User[][] | undefined, postIndex: number) {
         return hours.filter((_posts, index) => index !== postIndex)
     })
     return newShifts
+}
+
+async function calcOptimizeShifts(
+    names: User[],
+    hours: UniqueString[],
+    posts: UniqueString[],
+    callOptimizeAPI: () => Promise<OptimizeShiftResponse | undefined>,
+    setIsOptimized: React.Dispatch<React.SetStateAction<boolean>>,
+    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>
+) {
+    try {
+        // Optimize user shifts asynchronously
+        const optimizedShift = await callOptimizeAPI();
+
+        if (!optimizedShift) {
+            return;
+        }
+
+        {
+            //TODO validate response
+        }
+
+        setIsOptimized(optimizedShift.isOptim);
+        // Update shift data
+
+        const shifts = getEmptyMatrix<User>(hours.length, posts.length, {
+            name: '',
+            id: '',
+        });
+
+        optimizedShift.result.forEach((userShift, userIndex) => {
+            userShift.forEach((hourArray, hourIndex) => {
+                hourArray.forEach((post, postIndex) => {
+                    if (post) {
+                        shifts[postIndex][hourIndex] = names[userIndex];
+                    }
+                });
+            });
+        });
+        setShifts(shifts);
+    } catch (error) {
+        console.error('Error occurred while optimizing shifts:', error);
+        // Handle error appropriately, e.g., show error message to the user
+    }
 }
 
 //------------------------------------------StyleSheet--------------------------------------------------------
