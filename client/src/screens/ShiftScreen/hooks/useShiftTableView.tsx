@@ -54,20 +54,7 @@ export default function useShiftTableView(
         return uiArray
     }, [shifts, emptyCellsForSkeleton, selectedNameId])
 
-    const shitPostsRemoveElements = useMemo(() => {
-        let uiArray = [undefined, ...posts].map((post, postIndex) => {
-            if (!post) {
-                return
-            }
-            console.log(`shiftDataElements->user.id:${post}, selectedNameId:${selectedNameId}`)
-            const cb = () => {
-                setPosts((pre) => pre.filter((val) => val?.id !== post?.id))
-                setShifts((prev) => removePostFromShifts(prev, postIndex - 1))
-            }
-            return <ActionButton type={IconType.close} cb={cb} />
-        })
-        return uiArray
-    }, [posts])
+    const shitPostsRemoveElements = useMemo(()=>generateRemoveElements(posts, setPosts, setShifts), [posts])
 
     const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts])
 
@@ -115,6 +102,20 @@ function removePostFromShifts(posts: User[][] | undefined, postIndex: number) {
         return hours.filter((_posts, index) => index !== postIndex)
     })
     return newShifts
+}
+
+function generateRemoveElements(posts: UniqueString[], setPosts: React.Dispatch<React.SetStateAction<UniqueString[]>>, setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>){
+    let uiArray = [undefined, ...posts].map((post, postIndex) => {
+        if (!post) {
+            return
+        }
+        const cb = () => {
+            setPosts((pre) => pre.filter((val) => val?.id !== post?.id))
+            setShifts((prev) => removePostFromShifts(prev, postIndex - 1))
+        }
+        return <ActionButton type={IconType.close} cb={cb} />
+    })
+    return uiArray
 }
 
 async function calcOptimizeShifts(
