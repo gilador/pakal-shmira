@@ -54,13 +54,8 @@ const ShiftScreen = () => {
     const selectedIndex = useMemo(() => {
         let retIndex = -1
         retIndex = names.findIndex((ele) => ele.id === selectedNameId)
-        // console.log(`selectedIndex->retIndex:${retIndex}, selectedNameId:${selectedNameId}`)
         return retIndex
     }, [selectedNameId, names])
-
-    // console.log(
-    //     `ShiftScreen->user const:${JSON.stringify(usersDataMap.get(names[selectedIndex].id)?.constraints)}, selectedIndex:${selectedIndex}`
-    // )
 
     const rightView = (
         <View>
