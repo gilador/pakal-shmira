@@ -4,16 +4,14 @@ import { IconButton } from 'react-native-paper'
 
 import { ShiftListContext } from './useShiftUsersListView'
 
-type EditAddButtonProps = {}
-
 type EditAddButtonViewProps = {
     style?: StyleProp<ViewStyle>
 }
 
-export default function useEditModeButton({}: EditAddButtonProps) {
+export default function useEditModeButton(initialEditMode = false) {
     const shiftListContext = useContext(ShiftListContext)
 
-    const [isEditing, setIsEditing] = useState(false)
+    const [isEditing, setIsEditing] = useState(initialEditMode)
 
     const EditAddButtonView = memo(({ style }: EditAddButtonViewProps) => (
         <View style={style}>

@@ -21,7 +21,7 @@ const ActionButton = ({ type, cb, style }: CloseButtonProps) => {
         <IconButton
             icon={getIcon(type)}
             onPress={cb}
-            style={[style, styles.container]}
+            style={[styles.container, style]}
             iconColor={getIconColors(type)}
         />
     )

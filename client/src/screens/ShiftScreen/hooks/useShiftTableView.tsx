@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native'
 import { getEmptyMatrix } from '@app/common/utils'
 import { UniqueString, User } from '../models'
 
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useMemo, useState } from 'react'
 
 import ActionButton, { IconType } from '../elements/common/ActionButton'
 import { OptimizeShiftResponse } from '@app/services/api/models'
@@ -57,16 +57,10 @@ export default function useShiftTableView(
     )
     const ShiftTable = (
         <View style={styles.container}>
-            {isEditing && (
-                <TableWrapper>
-                    <Row
-                        data={shitPostsRemoveElements}
-                        flexArr={flexHeadArray}
-                        style={styles.removeHeader}
-                        textStyle={styles.text}
-                    />
-                </TableWrapper>
-            )}
+            {isEditing &&
+                generateEditTopBarElements(shitPostsRemoveElements, flexHeadArray, () => {
+                    alert('hi')
+                })}
             <TableView posts={posts} hours={hours} uiArray={shiftDataElements} />
         </View>
     )
@@ -100,6 +94,29 @@ function generateShiftDataElements(
         })
     )
     return uiArray
+}
+
+function generateEditTopBarElements(
+    shitPostsRemoveElements: ReactNode[],
+    flexHeadArray: number[],
+    addPostCB: () => void
+) {
+    return (
+        <View>
+            <View style={styles.addPostContainer}>
+                <ActionButton style={styles.actionButton} type={IconType.add} cb={addPostCB} />
+            </View>
+
+            <TableWrapper style={styles.tableWrapper}>
+                <Row
+                    data={shitPostsRemoveElements}
+                    flexArr={flexHeadArray}
+                    style={styles.removeHeader}
+                    textStyle={styles.text}
+                />
+            </TableWrapper>
+        </View>
+    )
 }
 
 function generateRemoveElements(
@@ -167,16 +184,18 @@ async function calcOptimizeShifts(
 //------------------------------------------StyleSheet--------------------------------------------------------
 const styles = StyleSheet.create({
     container: {
-        flex: 10,
-        paddingHorizontal: 16,
-        backgroundColor: '#fff',
+        flex: 15,
+        paddingHorizontal: 100,
+        overflow: 'scroll',
     },
     removeHeader: {},
     head2: {
         height: 50,
         backgroundColor: '#f1f8ff',
         borderRadius: 0,
-        borderBlockColor: 'white',
     },
     text: { textAlign: 'center' },
+    actionButton: { alignSelf: 'flex-end', overflow: 'visible' },
+    tableWrapper: { overflow: 'visible', width: '100%' },
+    addPostContainer: { position: 'absolute', end: -50, top: 50, width: '100%' },
 })

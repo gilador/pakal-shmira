@@ -14,7 +14,7 @@ import useEditModeButton from './hooks/useEditModeButton'
 const ShiftScreen = () => {
     const [derivedConstraints, setDerivedConstraints] = useState<Constraint[][][]>()
     const [usersDataMap, setUsersDataMap] = useState<Map<string, UserShiftData>>(new Map())
-    const { isEditing, EditAddButtonView } = useEditModeButton({})
+    const { isEditing, EditAddButtonView } = useEditModeButton(true)
     const { list: names, selectedNameId, view: namesListView } = useShiftUsersListView(isEditing)
 
     const {
@@ -58,7 +58,7 @@ const ShiftScreen = () => {
     }, [selectedNameId, names])
 
     const rightView = (
-        <View>
+        <View style={{ overflow: 'visible' }}>
             {isPopulated && names.length > 0 && ShiftTableView}
             {selectedIndex >= 0 && (
                 <AvailabilityTableView
