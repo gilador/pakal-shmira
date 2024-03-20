@@ -58,10 +58,14 @@ export default function useShiftTableView(
     const ShiftTable = (
         <View style={styles.container}>
             {isEditing &&
-                generateEditTopBarElements(shitPostsRemoveElements, flexHeadArray, () => {
+                generatePostEditTopBarView(shitPostsRemoveElements, flexHeadArray, () => {
                     alert('hi')
                 })}
-            <TableView posts={posts} hours={hours} uiArray={shiftDataElements} />
+            <TableView posts={posts} hours={hours} uiArray={shiftDataElements} style={{ zIndex: -1 }} />
+            {isEditing &&
+                generateHoursEditView(() => {
+                    alert('hi')
+                })}
         </View>
     )
 
@@ -96,25 +100,35 @@ function generateShiftDataElements(
     return uiArray
 }
 
-function generateEditTopBarElements(
+function generatePostEditTopBarView(
     shitPostsRemoveElements: ReactNode[],
     flexHeadArray: number[],
     addPostCB: () => void
 ) {
     return (
         <View>
-            <View style={styles.addPostContainer}>
-                <ActionButton style={styles.actionButton} type={IconType.add} cb={addPostCB} />
+            <View style={styles.addPostButtonContainer}>
+                <ActionButton style={styles.addPostButton} type={IconType.add} cb={addPostCB} />
             </View>
 
-            <TableWrapper style={styles.tableWrapper}>
+            <TableWrapper>
                 <Row
                     data={shitPostsRemoveElements}
                     flexArr={flexHeadArray}
-                    style={styles.removeHeader}
+                    style={styles.removePostButtonsContainer}
                     textStyle={styles.text}
                 />
             </TableWrapper>
+        </View>
+    )
+}
+
+function generateHoursEditView(addHourCB: () => void) {
+    return (
+        <View>
+            <View style={styles.addHourButtonContainer}>
+                <ActionButton style={styles.addHourButton} type={IconType.add} cb={addHourCB} />
+            </View>
         </View>
     )
 }
@@ -132,7 +146,7 @@ function generateRemoveElements(
             setPosts((pre) => pre.filter((val) => val?.id !== post?.id))
             setShifts((prev) => removePostFromShifts(prev, postIndex - 1))
         }
-        return <ActionButton type={IconType.close} cb={cb} />
+        return <ActionButton type={IconType.close} cb={cb} style={styles.removePostButton} />
     })
     return uiArray
 }
@@ -188,14 +202,16 @@ const styles = StyleSheet.create({
         paddingHorizontal: 100,
         overflow: 'scroll',
     },
-    removeHeader: {},
     head2: {
         height: 50,
         backgroundColor: '#f1f8ff',
         borderRadius: 0,
     },
     text: { textAlign: 'center' },
-    actionButton: { alignSelf: 'flex-end', overflow: 'visible' },
-    tableWrapper: { overflow: 'visible', width: '100%' },
-    addPostContainer: { position: 'absolute', end: -50, top: 50, width: '100%' },
+    removePostButtonsContainer: { bottom: -25, zIndex: 1 },
+    addPostButtonContainer: { position: 'absolute', end: -31, top: 50, width: '100%' },
+    addHourButtonContainer: { position: 'absolute', top: -21, width: '100%' },
+    addPostButton: { alignSelf: 'flex-end', overflow: 'visible' },
+    addHourButton: { alignSelf: 'flex-start', overflow: 'visible' },
+    removePostButton: {},
 })

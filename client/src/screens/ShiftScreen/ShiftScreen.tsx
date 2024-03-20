@@ -66,7 +66,6 @@ const ShiftScreen = () => {
                     hours={hours}
                     posts={posts}
                     onConstraintsChanged={function (newConstraints: Constraint[][]): void {
-                        console.log('test')
                         const newUsersDataMap = new Map(usersDataMap)
                         const userData = newUsersDataMap.get(names[selectedIndex].id)
                         if (userData) {
