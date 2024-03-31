@@ -3,6 +3,7 @@ import { FlatList, StyleSheet, View } from 'react-native'
 import { TextInput } from 'react-native-paper'
 
 import { ShiftListContext } from '../hooks/useShiftUsersListView'
+import withLogging from '@app/common/components/HOC/withLogs'
 import { User } from '@app/screens/shiftScreen/models'
 import EditableListItem from './EditableListItem'
 
@@ -12,7 +13,7 @@ type EditableListProps = {
 }
 
 //-----
-const EditableList = memo(({ list, isEditing }: EditableListProps) => {
+const EditableList = ({ list, isEditing }: EditableListProps) => {
     const shiftListContext = useContext(ShiftListContext)
 
     const [textValue, setTextValue] = React.useState<string | undefined>(undefined)
@@ -52,7 +53,7 @@ const EditableList = memo(({ list, isEditing }: EditableListProps) => {
             />
         </View>
     )
-})
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -88,4 +89,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default EditableList
+export default withLogging(EditableList)

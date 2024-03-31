@@ -1,14 +1,14 @@
 import { Col, Row, Rows, Table, TableWrapper } from 'react-native-reanimated-table'
+import React, { MemoExoticComponent, ReactNode, memo, useMemo } from 'react'
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
-import React, { ReactNode, useMemo } from 'react'
 
-import withLogs from '@app/components/HOC/withLogs'
+import withLogs from '@app/common/components/HOC/withLogs'
 import { UniqueString } from '../../models'
 
 type TableViewProp = {
     hours: UniqueString[]
     posts: UniqueString[]
-    uiArray: ReactNode[][]
+    uiArray: ReactNode[][] | (() => React.JSX.Element)[][]
     style?: StyleProp<ViewStyle>
 }
 
@@ -50,4 +50,4 @@ const styles = StyleSheet.create({
     wrapper: { flexDirection: 'row' },
 })
 
-export default withLogs(TableView)
+export default memo(TableView)

@@ -54,7 +54,7 @@ function getIconColors(type: IconType): string | undefined {
 //------------------------------------------StyleSheet--------------------------------------------------------
 
 const styles = StyleSheet.create({
-    container: { alignSelf: 'center'},
+    container: { alignSelf: 'center' },
 })
 
 export default memo(ActionButton)

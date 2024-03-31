@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useState } from 'react'
+import React, { createContext, useCallback, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 
 import EditableList from '@app/screens/shiftScreen/elements/EditableList'
@@ -19,15 +19,6 @@ export const ShiftListContext = createContext<ShiftListContextType>({
     selectedNameId: undefined,
 })
 
-// const mocked = [
-//   { user:{ name: 'אלון', id: '1' }, assignments: undefined, constraints: undefined, totalAssignments: 0},
-//   { user:{name: 'צביקה', id: '2' }, assignments: undefined, constraints: undefined, totalAssignments: 0},
-//   { user:{name: 'תמיר', id: '3' }, assignments: undefined, constraints: undefined, totalAssignments: 0},
-//   { user:{name: 'רחמים', id: '4'}, assignments: undefined, constraints: undefined, totalAssignments: 0},
-//   { user:{name: 'מתי', id: '5' }, assignments: undefined, constraints: undefined, totalAssignments: 0},
-//   { user:{name: 'כספי', id: '6' }, assignments: undefined, constraints: undefined, totalAssignments: 0},
-//   { user:{name: 'אליהו', id: '7' }, assignments: undefined, constraints: undefined, totalAssignments: 0},
-
 const mocked = [
     { name: 'אלון', id: 1 + 'אלון' },
     { name: 'צביקה', id: 2 + 'צביקה' },
@@ -38,8 +29,7 @@ const mocked = [
     { name: 'גדי', id: 8 + 'גדי' },
     { name: 'יוסף', id: 7 + 'יוסף' },
     { name: 'חיים', id: 9 + 'חיים' },
-    { name: 'אלון', id: 11 + 'אלון' },
-    { name: 'יששכר', id: 14 + 'יששכר' },
+    { name: 'יששכר', id: 10 + 'יששכר' },
 ]
 
 export default function useShiftUsersListView(isEditing = false) {
@@ -51,9 +41,8 @@ export default function useShiftUsersListView(isEditing = false) {
         (userNameId: string | undefined) => {
             setSelectedNameId((selectedNameId) => (selectedNameId === userNameId ? undefined : userNameId))
         },
-        [list]
+        [JSON.stringify(list)]
     )
-
     const onAdd = (user: string | undefined) => {
         if (!user) {
             return
@@ -86,12 +75,15 @@ export default function useShiftUsersListView(isEditing = false) {
         selectedNameId: selectedNameId,
     }
 
-    const ShiftResourceListView = (
-        <View style={styles.container}>
-            <ShiftListContext.Provider value={context}>
-                <EditableList list={list} isEditing={isEditing} />
-            </ShiftListContext.Provider>
-        </View>
+    const ShiftResourceListView = useMemo(
+        () => (
+            <View style={styles.container}>
+                <ShiftListContext.Provider value={context}>
+                    <EditableList list={list} isEditing={isEditing} />
+                </ShiftListContext.Provider>
+            </View>
+        ),
+        [JSON.stringify(list), isEditing, selectedNameId]
     )
 
     return {

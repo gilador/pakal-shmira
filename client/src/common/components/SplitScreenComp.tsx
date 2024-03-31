@@ -2,7 +2,7 @@ import { StyleSheet, View, StyleProp, ViewStyle } from 'react-native'
 import React from 'react'
 
 import withLogs from './HOC/withLogs'
-import { colors } from '../styles'
+import { colors } from '../../styles'
 
 export interface SplitScreenCompProps {
     leftPanel: JSX.Element

@@ -1,8 +1,7 @@
-import { StyleSheet, View, Text, Pressable, StyleProp, ViewStyle } from 'react-native'
+import { Pressable, StyleProp, StyleSheet, Text, ViewStyle } from 'react-native'
 import React, { memo } from 'react'
 
-import { User } from '@app/screens/shiftScreen/models'
-import withLogs from '@app/components/HOC/withLogs'
+import withLogs from '@app/common/components/HOC/withLogs'
 
 export type NameCellViewProps = {
     user: string
@@ -13,7 +12,6 @@ export type NameCellViewProps = {
 }
 
 const NameCellView = ({ user, cb, isDisable = false, isSelected = false, style }: NameCellViewProps) => {
-    console.log(`NameCellView->cb:${cb}, user: ${user}, isDisable:${isDisable}, isSelected:${isSelected}`)
     return (
         <Pressable onPress={cb} disabled={isDisable} onHoverIn={({ nativeEvent: MouseEvent }) => {}} style={style}>
             <Text style={getTextStyle(isSelected)}>{user}</Text>
@@ -33,7 +31,7 @@ const styles = StyleSheet.create({
     title: {
         padding: 7,
         textAlign: 'center',
-        textAlignVertical: 'center',
+        verticalAlign: 'middle',
         height: '100%',
     },
     selected: { backgroundColor: 'pink' },

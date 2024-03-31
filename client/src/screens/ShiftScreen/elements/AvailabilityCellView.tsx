@@ -1,15 +1,15 @@
 import { Pressable, StyleSheet, View } from 'react-native'
 import { memo, useState } from 'react'
 
-import withLogs from '@app/components/HOC/withLogs'
+import withLogs from '@app/common/components/HOC/withLogs'
 
-export type NameCellViewProps = {
+export type AvailabilityCellViewProps = {
     availability: boolean
     index: [number, number]
     cb?: (availability: boolean, index: [number, number]) => void
 }
 
-const AvailabilityCellView = (props: NameCellViewProps) => {
+const AvailabilityCellView = (props: AvailabilityCellViewProps) => {
     const [opacity, setOpacity] = useState(1)
 
     return (
@@ -47,4 +47,4 @@ const styles = StyleSheet.create({
     hover: { backgroundColor: 'pink' },
 })
 
-export default memo(withLogs(AvailabilityCellView))
+export default memo(AvailabilityCellView)

@@ -14,6 +14,7 @@ type ItemProps = {
 
 const EditableListItem = ({ user, isEditing }: ItemProps) => {
     const shiftListContext = useContext(ShiftListContext)
+    console.log(`EditableListItem-> shiftListContext.selectedNameId:${shiftListContext.selectedNameId}`)
 
     return (
         <View style={styles.itemContainer}>

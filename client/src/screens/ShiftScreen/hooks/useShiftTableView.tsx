@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native'
 import { getEmptyMatrix } from '@app/common/utils'
 import { UniqueString, User } from '../models'
 
-import React, { ReactNode, useCallback, useMemo, useState } from 'react'
+import React, { ReactNode, memo, useCallback, useMemo, useState } from 'react'
 
 import ActionButton, { IconType } from '../elements/common/ActionButton'
 import { OptimizeShiftResponse } from '@app/services/api/models'
@@ -35,7 +35,7 @@ export default function useShiftTableView(
 ) {
     const [posts, setPosts] = useState<UniqueString[]>(mockedPosts)
     const [hours, setHours] = useState<UniqueString[]>(mockedHours)
-    const [shifts, setShifts] = useState<User[][] | undefined>()
+    const [shifts, setShifts] = useState<User[][]>()
     console.log(`useShiftTableView-> shifts:${JSON.stringify(shifts)}`)
     const [isOptimized, setIsOptimized] = React.useState<boolean>(false)
 
@@ -44,29 +44,39 @@ export default function useShiftTableView(
             name: '',
             id: '',
         })
-    }, [hours, posts])
+    }, [JSON.stringify(hours), JSON.stringify(posts)])
     const shiftDataElements = useMemo(
         () => generateShiftDataElements(shifts, emptyCellsForSkeleton, selectedNameId, setShifts),
-        [shifts, emptyCellsForSkeleton, selectedNameId]
+        [JSON.stringify(shifts), emptyCellsForSkeleton, selectedNameId]
     )
-    const shitPostsRemoveElements = useMemo(() => generateRemoveElements(posts, setPosts, setShifts), [posts])
-    const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [posts])
+    const postEditTopBarView = React.useMemo(() => {
+        const flexHeadArray = Array(posts.length).fill(1)
+        const shitPostsRemoveElements = generateRemoveElements(posts, setPosts, setShifts)
+        return generatePostEditTopBarView(shitPostsRemoveElements, flexHeadArray, () => {
+            setPosts((prev) => [...prev, getUniqueString('שם חדש')])
+        })
+    }, [JSON.stringify(posts), shifts])
+
+    const hoursEditView = React.useMemo(() => {
+        return generateHoursEditView(() => {
+            setHours((prev) => [...prev, getUniqueString('שעה חדשה')])
+        })
+    }, [])
+
+    // const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [JSON.stringify(posts)])
     const onOptimize = useCallback(
         () => calcOptimizeShifts(names, hours, posts, callOptimizeAPI, setIsOptimized, setShifts),
-        [names, hours, posts, callOptimizeAPI]
+        [JSON.stringify(names), JSON.stringify(hours), JSON.stringify(posts), callOptimizeAPI]
     )
-    const ShiftTable = (
-        <View style={styles.container}>
-            {isEditing &&
-                generatePostEditTopBarView(shitPostsRemoveElements, flexHeadArray, () => {
-                    alert('hi')
-                })}
-            <TableView posts={posts} hours={hours} uiArray={shiftDataElements} style={{ zIndex: -1 }} />
-            {isEditing &&
-                generateHoursEditView(() => {
-                    alert('hi')
-                })}
-        </View>
+    const ShiftTable = useMemo(
+        () => (
+            <View style={styles.container}>
+                {isEditing && postEditTopBarView}
+                <TableView posts={posts} hours={hours} uiArray={shiftDataElements} style={{ zIndex: -1 }} />
+                {isEditing && hoursEditView}
+            </View>
+        ),
+        [isEditing, posts, hours, shiftDataElements]
     )
 
     return {
@@ -82,8 +92,11 @@ export default function useShiftTableView(
 function removePostFromShifts(posts: User[][] | undefined, postIndex: number) {
     if (!posts) return posts
     const newShifts = posts.map((hours) => {
-        return hours.filter((_posts, index) => index !== postIndex)
+        return hours.filter((_posts, index) => {
+            return index !== postIndex
+        })
     })
+
     return newShifts
 }
 function generateShiftDataElements(

@@ -2,10 +2,10 @@ import { Col, Row, Rows, Table, TableWrapper } from 'react-native-reanimated-tab
 import { StyleSheet, View } from 'react-native'
 import React, { useMemo } from 'react'
 
+import withLogs from '@app/common/components/HOC/withLogs'
 import AvailabilityCellView from './AvailabilityCellView'
 import { transposeMat } from '../../../common/utils'
 import { Constraint, UniqueString } from '../models'
-import withLogs from '@app/components/HOC/withLogs'
 import TableView from './common/TableView'
 
 type AvailabilityTableProp = {
@@ -41,6 +41,7 @@ const AvailabilityTableView = ({
                 if (availability === undefined) {
                     console.log('undefined availability')
                 }
+
                 return (
                     <AvailabilityCellView
                         availability={availability.availability}

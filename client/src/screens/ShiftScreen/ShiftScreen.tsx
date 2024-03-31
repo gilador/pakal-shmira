@@ -3,75 +3,60 @@ import { StyleSheet, View } from 'react-native'
 import { Button } from 'react-native-paper'
 
 import { optimize } from '@app/services/optimizeService/OptimizeService'
+import SplitScreenComp from '@app/common/components/SplitScreenComp'
 import AvailabilityTableView from './elements/AvailabilityTableView'
 import useShiftUsersListView from './hooks/useShiftUsersListView'
-import SplitScreenComp from '@app/components/SplitScreenComp'
-import withLogs from '@app/components/HOC/withLogs'
+import withLogs from '@app/common/components/HOC/withLogs'
 
-import { Constraint, UniqueString, User, UserShiftData } from './models'
+import { Constraint, ShiftMap, UniqueString, User, UserShiftData } from './models'
 import useShiftTableView from './hooks/useShiftTableView'
 import useEditModeButton from './hooks/useEditModeButton'
 const ShiftScreen = () => {
-    const [derivedConstraints, setDerivedConstraints] = useState<Constraint[][][]>()
-    const [usersDataMap, setUsersDataMap] = useState<Map<string, UserShiftData>>(new Map())
-    const { isEditing, EditAddButtonView } = useEditModeButton(true)
+    const [shiftMap, setShiftMap] = useState<ShiftMap>(new ShiftMap())
+    const { isEditing, EditAddButtonView } = useEditModeButton()
     const { list: names, selectedNameId, view: namesListView } = useShiftUsersListView(isEditing)
-
     const {
         posts,
         hours,
         ShiftTable: ShiftTableView,
         onOptimize,
     } = useShiftTableView(selectedNameId, isEditing, names, () => {
-        return optimize(derivedConstraints)
+        return optimize(getDerivedConstraints(names, shiftMap))
     })
-
     const defaultConstraints: Constraint[][] = useMemo(() => getDefaultConstraints(posts, hours), [names, posts, hours])
 
-    const isPopulated = [...usersDataMap.keys()].length > 0 //useMemo
-
     useEffect(() => {
-        setUsersDataMap((oldMap) => {
+        setShiftMap((oldMap) => {
             return deriveUserDataMap(names, defaultConstraints, oldMap)
         })
-    }, [names, hours, posts])
-
-    useEffect(() => {
-        if ([...usersDataMap.keys()].length == 0) {
-            return
-        }
-        const newDerivedConstraints = names.reduce(
-            (accumulator, current) => {
-                accumulator.push(usersDataMap.get(current.id)?.constraints ?? ([] as Constraint[][]))
-                return accumulator
-            },
-            [] as Constraint[][][]
-        )
-        console.log('newDerivedConstraints: ', newDerivedConstraints)
-        setDerivedConstraints(newDerivedConstraints)
-    }, [usersDataMap])
+    }, [JSON.stringify(names), hours, posts])
 
     const selectedIndex = useMemo(() => {
         let retIndex = -1
         retIndex = names.findIndex((ele) => ele.id === selectedNameId)
         return retIndex
-    }, [selectedNameId, names])
+    }, [selectedNameId, JSON.stringify(names)])
 
     const rightView = (
         <View style={{ overflow: 'visible' }}>
-            {isPopulated && names.length > 0 && ShiftTableView}
+            {shiftMap.usersSize() > 0 && names.length > 0 && ShiftTableView}
             {selectedIndex >= 0 && (
                 <AvailabilityTableView
-                    availabilityData={usersDataMap.get(names[selectedIndex].id)?.constraints}
+                    availabilityData={JSON.parse(
+                        JSON.stringify(shiftMap.getUser(names[selectedIndex].id)?.constraints)
+                    )}
                     hours={hours}
                     posts={posts}
-                    onConstraintsChanged={function (newConstraints: Constraint[][]): void {
-                        const newUsersDataMap = new Map(usersDataMap)
-                        const userData = newUsersDataMap.get(names[selectedIndex].id)
-                        if (userData) {
-                            userData.constraints = newConstraints
-                            setUsersDataMap(newUsersDataMap)
-                        }
+                    onConstraintsChanged={(newConstraints: Constraint[][]) => {
+                        setShiftMap((prev) => {
+                            const newShiftMap = prev.copy()
+                            const uerShiftData = prev.getUser(names[selectedIndex].id)
+                            if (uerShiftData) {
+                                uerShiftData.constraints = newConstraints
+                                newShiftMap.updateUser(uerShiftData)
+                            }
+                            return newShiftMap
+                        })
                     }}
                 />
             )}
@@ -92,52 +77,40 @@ const ShiftScreen = () => {
 }
 
 //------------------------------------------functions--------------------------------------------------------
-export function deriveUserDataMap(
-    names: User[],
-    defaultConstraints: Constraint[][],
-    oldMap: Map<string, UserShiftData>
-) {
-    const result = new Map<string, UserShiftData>()
-
+export function deriveUserDataMap(names: User[], defaultConstraints: Constraint[][], oldMap: ShiftMap): ShiftMap {
+    const newMap = new ShiftMap()
     // Loop through each name
-    names.forEach(({ id, name }) => {
+    names.forEach(({ id: userId, name }) => {
         // Get existing shift data if present
-        const existingShiftData = oldMap.get(id)
-        let userConstraints = defaultConstraints
+        const existingShiftData = oldMap.getUser(userId)
+        // let userConstraints = defaultConstraints
+        let newUserConstraints = JSON.parse(JSON.stringify(defaultConstraints))
 
-        //Intersect exiting constraints with the new default constraints
-        if (existingShiftData) {
-            userConstraints = existingShiftData.constraints.reduce((acc, userConstraintArr) => {
-                const intersectionArr = userConstraintArr.filter((userConstraintItem) => {
-                    return defaultConstraints.some((defaultConstraint) => {
-                        return defaultConstraint.some((defaultConstraintItem) => {
-                            return (
-                                userConstraintItem.postID === defaultConstraintItem.postID &&
-                                userConstraintItem.hourID === defaultConstraintItem.hourID
-                            )
-                        })
-                    })
-                })
-                intersectionArr && intersectionArr.length > 0 && acc.push(intersectionArr)
-                return acc
-            }, [] as Constraint[][])
-        }
+        newUserConstraints.forEach((newHourConstraint: Constraint[]) => {
+            newHourConstraint.forEach((newPostConstraint) => {
+                const id = userId + newPostConstraint.postID + newPostConstraint.hourID
+                const oldShift = oldMap.getShift(id)
+                newPostConstraint.availability = (oldShift && oldShift.availability) ?? newPostConstraint.availability
+            })
+        })
 
         // Determine total assignments
         const totalAssignments = existingShiftData ? existingShiftData.totalAssignments : 0
 
         // Create user shift data
         const userData: UserShiftData = {
-            user: { id, name },
-            constraints: userConstraints,
+            user: { id: userId, name },
+            constraints: newUserConstraints,
             totalAssignments,
         }
 
         // Add user shift data to result map
-        result.set(id, userData)
+        //FIXME: no need to recrate the map, just the constraints
+        newMap.addUser(userData)
     })
+    // console.log('deriveUserDataMap after: -> result.size:', newMap.usersSize())
 
-    return result
+    return newMap
 }
 
 function getDefaultConstraints(posts: UniqueString[], hours: UniqueString[]): Constraint[][] {
@@ -151,6 +124,16 @@ function getDefaultConstraints(posts: UniqueString[], hours: UniqueString[]): Co
     })
     // console.log(`getDefaultConstraints-> defUserCons: ${JSON.stringify(defUserCons)}`)
     return defaultConstraints
+}
+
+function getDerivedConstraints(names: User[], shiftMap: ShiftMap): Constraint[][][] {
+    return names.reduce(
+        (accumulator, current) => {
+            accumulator.push(shiftMap.getUser(current.id)?.constraints ?? ([] as Constraint[][]))
+            return accumulator
+        },
+        [] as Constraint[][][]
+    )
 }
 //------------------------------------------StyleSheet--------------------------------------------------------
 
