@@ -6,29 +6,31 @@ import withLogs from '@app/common/components/HOC/withLogs'
 import { UniqueString } from '../../models'
 
 type TableViewProp = {
-    hours: UniqueString[]
-    posts: UniqueString[]
-    uiArray: ReactNode[][] | (() => React.JSX.Element)[][]
+    verticalHeaderViews: ReactNode[] | (() => ReactNode)[]
+    horizontalHeaderViews: ReactNode[] | (() => ReactNode)[]
+    tableElementViews?: ReactNode[][] | (() => ReactNode)[][]
     style?: StyleProp<ViewStyle>
 }
 
-const TableView = ({ posts, hours, uiArray, style }: TableViewProp) => {
-    const postsElements = useMemo(() => [undefined, ...posts].map((post) => post?.value ?? ''), [posts])
-    const hoursElements = useMemo(() => hours.map((post) => post.value), [hours])
-    const flexHeadArray = useMemo(() => Array(postsElements.length).fill(1), [posts])
+const TableView = ({ horizontalHeaderViews, verticalHeaderViews, tableElementViews, style }: TableViewProp) => {
+    // const postsElements = useMemo(() => [undefined, ...posts].map((post) => post?.value ?? ''), [posts])
+    // const hoursElements = useMemo(() => hours.map((post) => post.value), [hours])
+    const flexHeadArray = useMemo(() => Array(horizontalHeaderViews.length).fill(1), [horizontalHeaderViews])
 
     return (
         <View style={[styles.container, style]}>
-            <Table borderStyle={{ borderWidth: 1 }}>
-                <Row data={postsElements} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
+            <Table borderStyle={{ borderWidth: 1 }} style={{ overflow: 'visible' }}>
+                <Row data={horizontalHeaderViews} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
                 <TableWrapper style={styles.wrapper}>
-                    <Col data={hoursElements} style={styles.title} textStyle={styles.text} />
-                    <Rows
-                        data={uiArray}
-                        flexArr={flexHeadArray.slice(0, -1)}
-                        style={styles.row}
-                        textStyle={styles.text}
-                    />
+                    <Col data={verticalHeaderViews} style={styles.title} textStyle={styles.text} />
+                    {tableElementViews && (
+                        <Rows
+                            data={tableElementViews}
+                            flexArr={flexHeadArray.slice(0, -1)}
+                            style={styles.row}
+                            textStyle={styles.text}
+                        />
+                    )}
                 </TableWrapper>
             </Table>
         </View>
@@ -41,12 +43,13 @@ const TableView = ({ posts, hours, uiArray, style }: TableViewProp) => {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#fff',
+        backgroundColor: '#00FF0000',
+        overflow: 'visible',
     },
-    head: { height: 50, backgroundColor: '#f1f8ff', textAlign: 'center' },
-    title: { flex: 1, backgroundColor: '#f6f8fa' },
-    row: { height: 50 },
+    head: { height: 50, backgroundColor: '#00FF0000', textAlign: 'center', overflow: 'visible' },
+    title: { flex: 1, backgroundColor: '#00FF0000' },
     text: { textAlign: 'center' },
+    row: { height: 50 },
     wrapper: { flexDirection: 'row' },
 })
 

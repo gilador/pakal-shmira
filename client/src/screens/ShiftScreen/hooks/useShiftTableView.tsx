@@ -1,10 +1,10 @@
-import { Row, TableWrapper } from 'react-native-reanimated-table'
-import { StyleSheet, View } from 'react-native'
+import { Col, Row, TableWrapper } from 'react-native-reanimated-table'
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 
 import { getEmptyMatrix } from '@app/common/utils'
 import { UniqueString, User } from '../models'
 
-import React, { ReactNode, memo, useCallback, useMemo, useState } from 'react'
+import React, { Fragment, ReactNode, memo, useCallback, useMemo, useState } from 'react'
 
 import ActionButton, { IconType } from '../elements/common/ActionButton'
 import { OptimizeShiftResponse } from '@app/services/api/models'
@@ -45,38 +45,61 @@ export default function useShiftTableView(
             id: '',
         })
     }, [JSON.stringify(hours), JSON.stringify(posts)])
-    const shiftDataElements = useMemo(
+
+    const postHeaderViews = useMemo(
+        () => generateHeaderViews([{ id: 'fakePostForSpace', value: '' }, ...posts]),
+        [JSON.stringify(posts)]
+    )
+    const removePostViews = useMemo(
+        () =>
+            generateRemoveElements(
+                [{ id: 'fakePostForSpace', value: '' }, ...posts],
+                setPosts,
+                setShifts,
+                styles.removePostButton,
+                removeShiftsByPost
+            ),
+        [JSON.stringify(posts)]
+    )
+    const removeHoursViews = useMemo(
+        () => generateRemoveElements(hours, setHours, setShifts, styles.removeHourButton, removeShiftsByHour),
+        [JSON.stringify(hours)]
+    )
+
+    const hoursHeaderViews = useMemo(() => generateHeaderViews(hours), [JSON.stringify(hours)])
+    const shiftDataViews = useMemo(
         () => generateShiftDataElements(shifts, emptyCellsForSkeleton, selectedNameId, setShifts),
         [JSON.stringify(shifts), emptyCellsForSkeleton, selectedNameId]
     )
-    const postEditTopBarView = React.useMemo(() => {
-        const flexHeadArray = Array(posts.length).fill(1)
-        const shitPostsRemoveElements = generateRemoveElements(posts, setPosts, setShifts)
-        return generatePostEditTopBarView(shitPostsRemoveElements, flexHeadArray, () => {
-            setPosts((prev) => [...prev, getUniqueString('שם חדש')])
-        })
-    }, [JSON.stringify(posts), shifts])
 
-    const hoursEditView = React.useMemo(() => {
-        return generateHoursEditView(() => {
-            setHours((prev) => [...prev, getUniqueString('שעה חדשה')])
-        })
-    }, [])
-
-    // const flexHeadArray = useMemo(() => Array(posts.length).fill(1), [JSON.stringify(posts)])
     const onOptimize = useCallback(
         () => calcOptimizeShifts(names, hours, posts, callOptimizeAPI, setIsOptimized, setShifts),
         [JSON.stringify(names), JSON.stringify(hours), JSON.stringify(posts), callOptimizeAPI]
     )
     const ShiftTable = useMemo(
         () => (
-            <View style={styles.container}>
-                {isEditing && postEditTopBarView}
-                <TableView posts={posts} hours={hours} uiArray={shiftDataElements} style={{ zIndex: -1 }} />
-                {isEditing && hoursEditView}
-            </View>
+            <Fragment>
+                {/* {isEditing && postEditTopBarView} */}
+                {/* {isEditing && hourEditSideBarView} */}
+                {/* <TableView posts={posts} hours={hours} style={{ zIndex: 1 }} /> */}
+                <View style={styles.addPostButtonContainer}>
+                    <ActionButton style={styles.addPostButton} type={IconType.add} cb={() => {}} />
+                </View>
+                <TableView
+                    horizontalHeaderViews={removePostViews}
+                    verticalHeaderViews={removeHoursViews}
+                    tableElementViews={shiftDataViews}
+                    style={styles.table}
+                />
+                <TableView
+                    horizontalHeaderViews={postHeaderViews}
+                    verticalHeaderViews={hoursHeaderViews}
+                    tableElementViews={shiftDataViews}
+                    style={[styles.table, { zIndex: -1 }]}
+                />
+            </Fragment>
         ),
-        [isEditing, posts, hours, shiftDataElements]
+        [isEditing, posts, hours, shiftDataViews]
     )
 
     return {
@@ -89,9 +112,9 @@ export default function useShiftTableView(
 }
 
 //------------------------------------------functions--------------------------------------------------------
-function removePostFromShifts(posts: User[][] | undefined, postIndex: number) {
-    if (!posts) return posts
-    const newShifts = posts.map((hours) => {
+function removeShiftsByPost(shifts: User[][] | undefined, postIndex: number): User[][] | undefined {
+    if (!shifts) return shifts
+    const newShifts = shifts.map((hours) => {
         return hours.filter((_posts, index) => {
             return index !== postIndex
         })
@@ -99,6 +122,22 @@ function removePostFromShifts(posts: User[][] | undefined, postIndex: number) {
 
     return newShifts
 }
+
+function removeShiftsByHour(shifts: User[][] | undefined, hourIndex: number) {
+    if (!shifts) return shifts
+    const newShifts = shifts.filter((hours, index) => {
+        return hourIndex !== index
+    })
+
+    return newShifts
+}
+
+function generateHeaderViews(array: UniqueString[]): ReactNode[] {
+    return [...array].map((post) => {
+        return <NameCellView user={post.value} isDisable={true} />
+    })
+}
+
 function generateShiftDataElements(
     shifts: User[][] | undefined,
     emptyCellsForSkeleton: User[][],
@@ -113,53 +152,22 @@ function generateShiftDataElements(
     return uiArray
 }
 
-function generatePostEditTopBarView(
-    shitPostsRemoveElements: ReactNode[],
-    flexHeadArray: number[],
-    addPostCB: () => void
-) {
-    return (
-        <View>
-            <View style={styles.addPostButtonContainer}>
-                <ActionButton style={styles.addPostButton} type={IconType.add} cb={addPostCB} />
-            </View>
-
-            <TableWrapper>
-                <Row
-                    data={shitPostsRemoveElements}
-                    flexArr={flexHeadArray}
-                    style={styles.removePostButtonsContainer}
-                    textStyle={styles.text}
-                />
-            </TableWrapper>
-        </View>
-    )
-}
-
-function generateHoursEditView(addHourCB: () => void) {
-    return (
-        <View>
-            <View style={styles.addHourButtonContainer}>
-                <ActionButton style={styles.addHourButton} type={IconType.add} cb={addHourCB} />
-            </View>
-        </View>
-    )
-}
-
 function generateRemoveElements(
-    posts: UniqueString[],
-    setPosts: React.Dispatch<React.SetStateAction<UniqueString[]>>,
-    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>
+    titles: UniqueString[],
+    setTitles: React.Dispatch<React.SetStateAction<UniqueString[]>>,
+    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>,
+    style: StyleProp<ViewStyle>,
+    removeShift: (shifts: User[][] | undefined, index: number) => User[][] | undefined
 ) {
-    let uiArray = [undefined, ...posts].map((post, postIndex) => {
-        if (!post) {
+    let uiArray = titles.map((title, titleIndex) => {
+        if (!title.value) {
             return
         }
         const cb = () => {
-            setPosts((pre) => pre.filter((val) => val?.id !== post?.id))
-            setShifts((prev) => removePostFromShifts(prev, postIndex - 1))
+            setTitles((pre) => pre.filter((val) => val?.id !== title?.id))
+            setShifts((prev) => removeShift(prev, titleIndex))
         }
-        return <ActionButton type={IconType.close} cb={cb} style={styles.removePostButton} />
+        return <ActionButton type={IconType.close} cb={cb} style={style} />
     })
     return uiArray
 }
@@ -221,10 +229,13 @@ const styles = StyleSheet.create({
         borderRadius: 0,
     },
     text: { textAlign: 'center' },
+    title: { flex: 1, backgroundColor: '#f6f8fa' },
     removePostButtonsContainer: { bottom: -25, zIndex: 1 },
     addPostButtonContainer: { position: 'absolute', end: -31, top: 50, width: '100%' },
     addHourButtonContainer: { position: 'absolute', top: -21, width: '100%' },
-    addPostButton: { alignSelf: 'flex-end', overflow: 'visible' },
-    addHourButton: { alignSelf: 'flex-start', overflow: 'visible' },
-    removePostButton: {},
+    addPostButton: { alignSelf: 'flex-end', end: 100 },
+    addHourButton: { alignSelf: 'flex-start' },
+    removePostButton: { position: 'absolute', top: -25 },
+    removeHourButton: { position: 'absolute', left: -25 },
+    table: { position: 'absolute', top: 0, left: 0, width: '100%', paddingHorizontal: 100 },
 })

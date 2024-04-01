@@ -55,7 +55,11 @@ const AvailabilityTableView = ({
 
     return (
         <View style={styles.container}>
-            <TableView posts={posts} hours={hours} uiArray={shiftDataNamesElements} />
+            <TableView
+                horizontalHeaderViews={posts}
+                verticalHeaderViews={hours}
+                tableElementViews={shiftDataNamesElements}
+            />
         </View>
     )
 }
