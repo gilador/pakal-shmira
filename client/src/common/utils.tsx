@@ -1,4 +1,8 @@
-import { UniqueString } from '@app/screens/shiftScreen/models'
+import ActionButton, { IconType } from '@app/common/components/ActionButton'
+import NameCellView from '@app/screens/shiftScreen/elements/common/NameCellView'
+import { UniqueString, User } from '@app/screens/shiftScreen/models'
+import { ReactNode } from 'react'
+import { StyleProp, ViewStyle } from 'react-native'
 
 export function getEmptyMatrix<T>(cols: number, rows: number, fillObj: T): T[][] {
     return Array(cols)
@@ -37,4 +41,10 @@ export function getUniqueString(value: string): UniqueString {
         id: value + id,
         value: value,
     }
+}
+
+export function generateHeaderViews(array: UniqueString[]): ReactNode[] {
+    return [...array].map((post) => {
+        return <NameCellView user={post.value} isDisable={true} />
+    })
 }

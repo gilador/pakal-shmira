@@ -1,8 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native'
 import { memo, useState } from 'react'
 
-import withLogs from '@app/common/components/HOC/withLogs'
-
 export type AvailabilityCellViewProps = {
     availability: boolean
     index: [number, number]
@@ -38,8 +36,6 @@ function getAvailabilityStyle(availability: boolean, opacity: number): any[] {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 10,
-        padding: 16,
         paddingTop: 30,
         backgroundColor: 'red',
     },

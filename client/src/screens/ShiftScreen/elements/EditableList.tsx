@@ -49,6 +49,7 @@ const EditableList = ({ list, isEditing }: EditableListProps) => {
             <FlatList
                 style={styles.list}
                 data={list}
+                keyExtractor={(item) => item.id}
                 renderItem={({ item }) => <EditableListItem user={item} isEditing={isEditing} />}
             />
         </View>

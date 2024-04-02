@@ -2,8 +2,8 @@ import { IconButton } from 'react-native-paper'
 import { View, StyleSheet } from 'react-native'
 import { memo, useContext } from 'react'
 
+import ActionButton, { IconType } from '../../../common/components/ActionButton'
 import { ShiftListContext } from '../hooks/useShiftUsersListView'
-import ActionButton, { IconType } from './common/ActionButton'
 import NameCellView from './common/NameCellView'
 import { User } from '../models'
 

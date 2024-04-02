@@ -12,14 +12,14 @@ export interface SplitScreenCompProps {
 
 const SplitScreenComp = ({ leftPanel, rightPanel, style }: SplitScreenCompProps): JSX.Element => {
     const newRightPanel = React.cloneElement(rightPanel, {
-        style: styles.rightPanel,
+        style: [styles.rightPanel, rightPanel.props.style],
     })
     const newLeftPanel = React.cloneElement(leftPanel, {
         style: styles.leftPanel,
     })
 
     return (
-        <View style={[style, styles.container]}>
+        <View style={[styles.container, style]}>
             {newLeftPanel}
             <View style={styles.separator} />
             {newRightPanel}
@@ -34,8 +34,6 @@ const SplitScreenComp = ({ leftPanel, rightPanel, style }: SplitScreenCompProps)
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
-        backgroundColor: 'pink  ',
-        overflow: 'visible',
     },
     leftPanel: {
         flex: 1,
@@ -49,7 +47,6 @@ const styles = StyleSheet.create({
     rightPanel: {
         flexGrow: 5,
         flexShrink: 1,
-        overflow: 'visible',
     },
 })
 

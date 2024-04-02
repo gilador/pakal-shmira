@@ -1,12 +1,12 @@
 import { Col, Row, TableWrapper } from 'react-native-reanimated-table'
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 
-import { getEmptyMatrix } from '@app/common/utils'
+import { generateHeaderViews, getEmptyMatrix } from '@app/common/utils'
 import { UniqueString, User } from '../models'
 
-import React, { Fragment, ReactNode, memo, useCallback, useMemo, useState } from 'react'
+import React, { Fragment, ReactNode, memo, useCallback, useLayoutEffect, useMemo, useState } from 'react'
 
-import ActionButton, { IconType } from '../elements/common/ActionButton'
+import ActionButton, { IconType } from '@app/common/components/ActionButton'
 import { OptimizeShiftResponse } from '@app/services/api/models'
 import NameCellView from '../elements/common/NameCellView'
 import TableView from '../elements/common/TableView'
@@ -38,10 +38,20 @@ export default function useShiftTableView(
     const [shifts, setShifts] = useState<User[][]>()
     console.log(`useShiftTableView-> shifts:${JSON.stringify(shifts)}`)
     const [isOptimized, setIsOptimized] = React.useState<boolean>(false)
+    const [tableHeight, setTableHeight] = React.useState(0)
+
+    React.useLayoutEffect(() => {
+        const updateSize = () => {
+            setTableHeight(window.innerHeight)
+        }
+        window.addEventListener('resize', updateSize)
+        updateSize()
+        return () => window.removeEventListener('resize', updateSize)
+    }, [])
 
     const emptyCellsForSkeleton: User[][] = useMemo(() => {
         return getEmptyMatrix<User>(hours.length, posts.length, {
-            name: '',
+            name: ' ',
             id: '',
         })
     }, [JSON.stringify(hours), JSON.stringify(posts)])
@@ -78,26 +88,37 @@ export default function useShiftTableView(
     )
     const ShiftTable = useMemo(
         () => (
-            <Fragment>
-                {/* {isEditing && postEditTopBarView} */}
-                {/* {isEditing && hourEditSideBarView} */}
-                {/* <TableView posts={posts} hours={hours} style={{ zIndex: 1 }} /> */}
-                <View style={styles.addPostButtonContainer}>
-                    <ActionButton style={styles.addPostButton} type={IconType.add} cb={() => {}} />
-                </View>
+            <View style={{ flex: 1, overflow: 'visible' }}>
+                {isEditing && (
+                    <View style={styles.addPostButtonContainer}>
+                        <ActionButton
+                            style={styles.addPostButton}
+                            type={IconType.add}
+                            cb={() => setPosts((prev) => [...prev, getUniqueString('עמדה חדשה')])}
+                        />
+                    </View>
+                )}
                 <TableView
-                    horizontalHeaderViews={removePostViews}
-                    verticalHeaderViews={removeHoursViews}
+                    horizontalHeaderViews={postHeaderViews}
+                    verticalHeaderViews={hoursHeaderViews}
                     tableElementViews={shiftDataViews}
-                    style={styles.table}
+                    style={[styles.table, { zIndex: -1, overflow: 'scroll' }]}
                 />
                 <TableView
                     horizontalHeaderViews={postHeaderViews}
                     verticalHeaderViews={hoursHeaderViews}
                     tableElementViews={shiftDataViews}
-                    style={[styles.table, { zIndex: -1 }]}
+                    style={{ display: 'none', height: tableHeight }}
                 />
-            </Fragment>
+                {isEditing && (
+                    <TableView
+                        horizontalHeaderViews={removePostViews}
+                        verticalHeaderViews={removeHoursViews}
+                        tableElementViews={shiftDataViews}
+                        style={[styles.table, { zIndex: -1 }]}
+                    />
+                )}
+            </View>
         ),
         [isEditing, posts, hours, shiftDataViews]
     )
@@ -125,17 +146,11 @@ function removeShiftsByPost(shifts: User[][] | undefined, postIndex: number): Us
 
 function removeShiftsByHour(shifts: User[][] | undefined, hourIndex: number) {
     if (!shifts) return shifts
-    const newShifts = shifts.filter((hours, index) => {
+    const newShifts = shifts.filter((_hour, index) => {
         return hourIndex !== index
     })
 
     return newShifts
-}
-
-function generateHeaderViews(array: UniqueString[]): ReactNode[] {
-    return [...array].map((post) => {
-        return <NameCellView user={post.value} isDisable={true} />
-    })
 }
 
 function generateShiftDataElements(
@@ -225,13 +240,12 @@ const styles = StyleSheet.create({
     },
     head2: {
         height: 50,
-        backgroundColor: '#f1f8ff',
         borderRadius: 0,
     },
     text: { textAlign: 'center' },
-    title: { flex: 1, backgroundColor: '#f6f8fa' },
+    title: { flex: 1 },
     removePostButtonsContainer: { bottom: -25, zIndex: 1 },
-    addPostButtonContainer: { position: 'absolute', end: -31, top: 50, width: '100%' },
+    addPostButtonContainer: { position: 'absolute', end: -31, top: 50, width: '100%', zIndex: -1 },
     addHourButtonContainer: { position: 'absolute', top: -21, width: '100%' },
     addPostButton: { alignSelf: 'flex-end', end: 100 },
     addHourButton: { alignSelf: 'flex-start' },

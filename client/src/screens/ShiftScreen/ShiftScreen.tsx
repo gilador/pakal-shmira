@@ -11,6 +11,7 @@ import withLogs from '@app/common/components/HOC/withLogs'
 import { Constraint, ShiftMap, UniqueString, User, UserShiftData } from './models'
 import useShiftTableView from './hooks/useShiftTableView'
 import useEditModeButton from './hooks/useEditModeButton'
+import { colors } from '@app/styles'
 const ShiftScreen = () => {
     const [shiftMap, setShiftMap] = useState<ShiftMap>(new ShiftMap())
     const { isEditing, EditAddButtonView } = useEditModeButton()
@@ -38,8 +39,9 @@ const ShiftScreen = () => {
     }, [selectedNameId, JSON.stringify(names)])
 
     const rightView = (
-        <View style={{ overflow: 'visible' }}>
+        <View style={{ flexDirection: 'column', flexShrink: 1 }}>
             {shiftMap.usersSize() > 0 && names.length > 0 && ShiftTableView}
+
             {selectedIndex >= 0 && (
                 <AvailabilityTableView
                     availabilityData={JSON.parse(
@@ -69,7 +71,7 @@ const ShiftScreen = () => {
                 <EditAddButtonView style={{ width: '100%', flexGrow: 0 }} />
             </View>
             <SplitScreenComp leftPanel={namesListView} rightPanel={rightView} style={styles.body} />
-            <Button style={styles.bottom} onPress={onOptimize}>
+            <Button style={styles.bottom} onPress={onOptimize} textColor={colors.white}>
                 optimize
             </Button>
         </View>
@@ -143,7 +145,6 @@ const styles = StyleSheet.create({
         flexShrink: 1,
         flexGrow: 1,
         flexBasis: 'auto',
-        backgroundColor: 'white',
         padding: 2,
     },
     top: {
@@ -155,8 +156,7 @@ const styles = StyleSheet.create({
     body: {
         flexGrow: 1,
         flexBasis: 'auto',
-        flexShrink: 1,
-        backgroundColor: 'lightblue',
+        flexShrink: 2,
         margin: 5,
     },
     bottom: {
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
         flexBasis: 'auto',
         width: 300,
         alignSelf: 'flex-start',
-        backgroundColor: 'lightgreen',
+        backgroundColor: colors.military_green,
     },
     rightContainer: {
         flexDirection: 'column',

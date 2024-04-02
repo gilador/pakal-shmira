@@ -1,10 +1,9 @@
-import { Col, Row, Rows, Table, TableWrapper } from 'react-native-reanimated-table'
 import { StyleSheet, View } from 'react-native'
 import React, { useMemo } from 'react'
 
+import { generateHeaderViews, transposeMat } from '../../../common/utils'
 import withLogs from '@app/common/components/HOC/withLogs'
 import AvailabilityCellView from './AvailabilityCellView'
-import { transposeMat } from '../../../common/utils'
 import { Constraint, UniqueString } from '../models'
 import TableView from './common/TableView'
 
@@ -21,10 +20,12 @@ const AvailabilityTableView = ({
     availabilityData = [],
     onConstraintsChanged,
 }: AvailabilityTableProp) => {
-    console.log(`AvailabilityTableView->availabilityData: ${JSON.stringify(availabilityData)}`)
-
+    const postHeaderViews = useMemo(
+        () => generateHeaderViews([{ id: 'fakePostForSpace', value: '' }, ...posts]),
+        [JSON.stringify(posts)]
+    )
+    const hoursHeaderViews = useMemo(() => generateHeaderViews(hours), [JSON.stringify(hours)])
     const transposedMatrix: Constraint[][] = useMemo(() => {
-        // console.log(`AvailabilityTableView->transposedMatrix: ${JSON.stringify(availabilityData)}`)
         return transposeMat(availabilityData)
     }, [availabilityData])
 
@@ -37,11 +38,6 @@ const AvailabilityTableView = ({
     const shiftDataNamesElements = useMemo(() => {
         return transposedMatrix.map((array, postIndex) =>
             array.map((availability, hourIndex) => {
-                console.log(`AvailabilityTableView->availability: ${JSON.stringify(availability)}`)
-                if (availability === undefined) {
-                    console.log('undefined availability')
-                }
-
                 return (
                     <AvailabilityCellView
                         availability={availability.availability}
@@ -56,9 +52,10 @@ const AvailabilityTableView = ({
     return (
         <View style={styles.container}>
             <TableView
-                horizontalHeaderViews={posts}
-                verticalHeaderViews={hours}
+                horizontalHeaderViews={postHeaderViews}
+                verticalHeaderViews={hoursHeaderViews}
                 tableElementViews={shiftDataNamesElements}
+                style={{ paddingHorizontal: 100 }}
             />
         </View>
     )
@@ -70,10 +67,11 @@ const AvailabilityTableView = ({
 
 const styles = StyleSheet.create({
     container: {
-        flex: 10,
+        flex: 1,
+        flexShrink: 1,
         padding: 16,
         paddingTop: 30,
-        backgroundColor: '#fff',
+        overflow: 'scroll',
     },
 })
 

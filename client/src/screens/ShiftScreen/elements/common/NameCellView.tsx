@@ -29,10 +29,8 @@ function getTextStyle(isSelected: boolean): any[] {
 
 const styles = StyleSheet.create({
     title: {
-        padding: 7,
         textAlign: 'center',
         verticalAlign: 'middle',
-        height: '100%',
     },
     selected: { backgroundColor: 'pink' },
 })
