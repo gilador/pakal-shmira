@@ -1,10 +1,11 @@
 import { IconSource } from 'react-native-paper/lib/typescript/components/Icon'
+import { memo, useLayoutEffect, useMemo, useState } from 'react'
 import { StyleProp, StyleSheet, ViewStyle } from 'react-native'
 import { IconButton } from 'react-native-paper'
-import { memo } from 'react'
 import React from 'react'
 
 import { colors } from '@app/styles'
+import { View } from './Themed'
 
 export enum IconType {
     close,
@@ -13,17 +14,31 @@ export enum IconType {
 type CloseButtonProps = {
     type: IconType
     cb: () => void
+    center?: boolean
     style?: StyleProp<ViewStyle>
 }
 
-const ActionButton = ({ type, cb, style }: CloseButtonProps) => {
+const ActionButton = ({ type, cb, style, center = false }: CloseButtonProps) => {
+    const [compDim, setCompDim] = useState<readonly [number, number]>([0, 0])
+    const [comLeft, compTop] = useMemo(() => {
+        return [compDim[0] / 2 - 5, compDim[1] / 2 - 5]
+    }, [compDim])
+
     return (
-        <IconButton
-            icon={getIcon(type)}
-            onPress={cb}
-            style={[styles.container, style]}
-            iconColor={getIconColors(type)}
-        />
+        <View
+            onLayout={(event) => {
+                setCompDim([event.nativeEvent.layout.width, event.nativeEvent.layout.height])
+            }}
+            style={[style, { backgroundColor: 'transparent' }]}
+        >
+            <View style={[styles.whiteBackgroundFill, { left: comLeft, top: compTop }]} />
+            <IconButton
+                icon={getIcon(type)}
+                onPress={cb}
+                iconColor={getIconColors(type)}
+                style={{ alignSelf: 'center' }}
+            />
+        </View>
     )
 }
 
@@ -54,7 +69,12 @@ function getIconColors(type: IconType): string | undefined {
 //------------------------------------------StyleSheet--------------------------------------------------------
 
 const styles = StyleSheet.create({
-    container: { alignSelf: 'center' },
+    whiteBackgroundFill: {
+        position: 'absolute',
+        backgroundColor: 'white',
+        width: 10,
+        height: 10,
+    },
 })
 
 export default memo(ActionButton)

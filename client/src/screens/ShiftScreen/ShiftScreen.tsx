@@ -12,6 +12,7 @@ import { Constraint, ShiftMap, UniqueString, User, UserShiftData } from './model
 import useShiftTableView from './hooks/useShiftTableView'
 import useEditModeButton from './hooks/useEditModeButton'
 import { colors } from '@app/styles'
+
 const ShiftScreen = () => {
     const [shiftMap, setShiftMap] = useState<ShiftMap>(new ShiftMap())
     const { isEditing, EditAddButtonView } = useEditModeButton()

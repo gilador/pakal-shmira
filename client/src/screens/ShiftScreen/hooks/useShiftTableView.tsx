@@ -1,16 +1,13 @@
-import { Col, Row, TableWrapper } from 'react-native-reanimated-table'
+import React, { useCallback, useMemo, useState, useLayoutEffect } from 'react'
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 
-import { generateHeaderViews, getEmptyMatrix } from '@app/common/utils'
-import { UniqueString, User } from '../models'
-
-import React, { Fragment, ReactNode, memo, useCallback, useLayoutEffect, useMemo, useState } from 'react'
-
 import ActionButton, { IconType } from '@app/common/components/ActionButton'
+import { generateHeaderViews, getEmptyMatrix } from '@app/common/utils'
 import { OptimizeShiftResponse } from '@app/services/api/models'
 import NameCellView from '../elements/common/NameCellView'
 import TableView from '../elements/common/TableView'
 import { getUniqueString } from '@app/common/utils'
+import { User, UniqueString } from '../models'
 
 const mockedPosts = [
     getUniqueString('ש.ג1'),
@@ -40,7 +37,7 @@ export default function useShiftTableView(
     const [isOptimized, setIsOptimized] = React.useState<boolean>(false)
     const [tableHeight, setTableHeight] = React.useState(0)
 
-    React.useLayoutEffect(() => {
+    useLayoutEffect(() => {
         const updateSize = () => {
             setTableHeight(window.innerHeight)
         }
@@ -78,7 +75,7 @@ export default function useShiftTableView(
 
     const hoursHeaderViews = useMemo(() => generateHeaderViews(hours), [JSON.stringify(hours)])
     const shiftDataViews = useMemo(
-        () => generateShiftDataElements(shifts, emptyCellsForSkeleton, selectedNameId, setShifts),
+        () => generateShiftDataElements(shifts, emptyCellsForSkeleton, selectedNameId),
         [JSON.stringify(shifts), emptyCellsForSkeleton, selectedNameId]
     )
 
@@ -90,13 +87,11 @@ export default function useShiftTableView(
         () => (
             <View style={{ flex: 1, overflow: 'visible' }}>
                 {isEditing && (
-                    <View style={styles.addPostButtonContainer}>
-                        <ActionButton
-                            style={styles.addPostButton}
-                            type={IconType.add}
-                            cb={() => setPosts((prev) => [...prev, getUniqueString('עמדה חדשה')])}
-                        />
-                    </View>
+                    <ActionButton
+                        style={styles.addPostButton}
+                        type={IconType.add}
+                        cb={() => setPosts((prev) => [...prev, getUniqueString('עמדה חדשה')])}
+                    />
                 )}
                 <TableView
                     horizontalHeaderViews={postHeaderViews}
@@ -115,6 +110,7 @@ export default function useShiftTableView(
                         horizontalHeaderViews={removePostViews}
                         verticalHeaderViews={removeHoursViews}
                         tableElementViews={shiftDataViews}
+                        hideGrid
                         style={[styles.table, { zIndex: -1 }]}
                     />
                 )}
@@ -157,7 +153,6 @@ function generateShiftDataElements(
     shifts: User[][] | undefined,
     emptyCellsForSkeleton: User[][],
     selectedNameId: string | undefined,
-    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>
 ) {
     let uiArray = (shifts ?? emptyCellsForSkeleton).map((array) =>
         array.map((user) => {
@@ -182,7 +177,7 @@ function generateRemoveElements(
             setTitles((pre) => pre.filter((val) => val?.id !== title?.id))
             setShifts((prev) => removeShift(prev, titleIndex))
         }
-        return <ActionButton type={IconType.close} cb={cb} style={style} />
+        return <ActionButton type={IconType.close} cb={cb} style={style}/>
     })
     return uiArray
 }
@@ -245,11 +240,10 @@ const styles = StyleSheet.create({
     text: { textAlign: 'center' },
     title: { flex: 1 },
     removePostButtonsContainer: { bottom: -25, zIndex: 1 },
-    addPostButtonContainer: { position: 'absolute', end: -31, top: 50, width: '100%', zIndex: -1 },
     addHourButtonContainer: { position: 'absolute', top: -21, width: '100%' },
-    addPostButton: { alignSelf: 'flex-end', end: 100 },
+    addPostButton: { alignSelf: 'flex-end', end: 70 },
     addHourButton: { alignSelf: 'flex-start' },
-    removePostButton: { position: 'absolute', top: -25 },
+    removePostButton: { position: 'absolute', top: -25, width: '100%', minHeight: 40},
     removeHourButton: { position: 'absolute', left: -25 },
     table: { position: 'absolute', top: 0, left: 0, width: '100%', paddingHorizontal: 100 },
 })

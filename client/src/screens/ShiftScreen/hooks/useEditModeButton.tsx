@@ -23,7 +23,7 @@ export default function useEditModeButton(initialEditMode = false) {
                     shiftListContext.onUserToggleSelected(shiftListContext.selectedNameId)
                 }}
                 containerColor={colors.military_green}
-                iconColor='white'
+                iconColor="white"
             />
         </View>
     ))

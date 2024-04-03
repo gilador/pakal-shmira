@@ -13,7 +13,12 @@ export type NameCellViewProps = {
 
 const NameCellView = ({ user, cb, isDisable = false, isSelected = false, style }: NameCellViewProps) => {
     return (
-        <Pressable onPress={cb} disabled={isDisable} onHoverIn={({ nativeEvent: MouseEvent }) => {}} style={style}>
+        <Pressable
+            onPress={cb}
+            disabled={isDisable}
+            onHoverIn={({ nativeEvent: MouseEvent }) => {}}
+            style={[style, { minHeight: 40, justifyContent: 'center' }]}
+        >
             <Text style={getTextStyle(isSelected)}>{user}</Text>
         </Pressable>
     )

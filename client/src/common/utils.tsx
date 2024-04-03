@@ -1,8 +1,9 @@
-import ActionButton, { IconType } from '@app/common/components/ActionButton'
-import NameCellView from '@app/screens/shiftScreen/elements/common/NameCellView'
-import { UniqueString, User } from '@app/screens/shiftScreen/models'
-import { ReactNode } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
+import { ReactNode } from 'react'
+
+import NameCellView from '@app/screens/shiftScreen/elements/common/NameCellView'
+import ActionButton, { IconType } from '@app/common/components/ActionButton'
+import { UniqueString, User } from '@app/screens/shiftScreen/models'
 
 export function getEmptyMatrix<T>(cols: number, rows: number, fillObj: T): T[][] {
     return Array(cols)
