@@ -32,12 +32,7 @@ const ActionButton = ({ type, cb, style, center = false }: CloseButtonProps) => 
             style={[style, { backgroundColor: 'transparent' }]}
         >
             <View style={[styles.whiteBackgroundFill, { left: comLeft, top: compTop }]} />
-            <IconButton
-                icon={getIcon(type)}
-                onPress={cb}
-                iconColor={getIconColors(type)}
-                style={{ alignSelf: 'center' }}
-            />
+            <IconButton icon={getIcon(type)} onPress={cb} iconColor={getIconColors(type)} style={styles.icon} />
         </View>
     )
 }
@@ -75,6 +70,7 @@ const styles = StyleSheet.create({
         width: 10,
         height: 10,
     },
+    icon: { width: 'auto', height: 'auto', margin: 0, padding: 0 },
 })
 
 export default memo(ActionButton)

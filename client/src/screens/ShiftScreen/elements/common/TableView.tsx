@@ -2,12 +2,17 @@ import { Col, Row, Rows, Table, TableWrapper } from 'react-native-reanimated-tab
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 import React, { ReactNode, memo, useMemo } from 'react'
 
+import ActionButton, { IconType } from '@app/common/components/ActionButton'
+
 type TableViewProp = {
-    verticalHeaderViews: (ReactNode | React.JSX.Element)[] | (() => ReactNode | React.JSX.Element)[]
-    horizontalHeaderViews: (ReactNode | React.JSX.Element)[] | (() => ReactNode | React.JSX.Element)[]
-    tableElementViews?: (ReactNode | React.JSX.Element)[][] | (() => ReactNode | React.JSX.Element)[][]
+    verticalHeaderViews: (ReactNode | undefined)[]
+    horizontalHeaderViews: (ReactNode | undefined)[]
+    tableElementViews?: ReactNode[][]
     hideGrid?: boolean
     style?: StyleProp<ViewStyle>
+    enableEdit?: boolean
+    onRemoveHeader?: (index: number) => any
+    onRemoveSideHeader?: (index: number) => any
 }
 
 const TableView = ({
@@ -16,15 +21,32 @@ const TableView = ({
     tableElementViews,
     style,
     hideGrid,
+    enableEdit,
+    onRemoveHeader,
+    onRemoveSideHeader,
 }: TableViewProp) => {
-    const flexHeadArray = useMemo(() => Array(horizontalHeaderViews.length).fill(1), [horizontalHeaderViews])
+    const sideHeaders = useMemo(() => {
+        return enableEdit && onRemoveSideHeader
+            ? verticalHeaderViews.map((header, index) => {
+                  return removableHeaderCell(header, () => onRemoveSideHeader(index), styles.removeSideTopHeader)
+              })
+            : verticalHeaderViews
+    }, [enableEdit, verticalHeaderViews])
+    const topHeaders = useMemo(() => {
+        return enableEdit && onRemoveHeader
+            ? horizontalHeaderViews.map((header, index) => {
+                  return removableHeaderCell(header, () => onRemoveHeader(index), styles.removeTopHeader)
+              })
+            : horizontalHeaderViews
+    }, [enableEdit, horizontalHeaderViews])
+    const flexHeadArray = useMemo(() => Array(topHeaders.length).fill(1), [topHeaders])
 
     return (
         <View style={[styles.container, style]}>
             <Table borderStyle={!hideGrid ? { borderWidth: 1 } : {}}>
-                <Row data={horizontalHeaderViews} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
+                <Row data={topHeaders} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
                 <TableWrapper style={styles.wrapper}>
-                    <Col data={verticalHeaderViews} style={styles.title} textStyle={styles.text} />
+                    <Col data={sideHeaders} style={styles.title} textStyle={styles.text} />
                     {tableElementViews && (
                         <Rows
                             data={tableElementViews}
@@ -40,6 +62,20 @@ const TableView = ({
 }
 
 //------------------------------------------functions--------------------------------------------------------
+function removableHeaderCell(
+    wrappedComponent: ReactNode,
+    onRemove: () => void,
+    style: StyleProp<ViewStyle>
+): ReactNode {
+    return wrappedComponent ? (
+        <View style={{ overflow: 'visible', position: 'absolute', alignSelf: 'center' }}>
+            {wrappedComponent}
+            <ActionButton type={IconType.close} cb={onRemove} style={style} />
+        </View>
+    ) : (
+        <View />
+    )
+}
 
 //------------------------------------------StyleSheet--------------------------------------------------------
 
@@ -50,6 +86,8 @@ const styles = StyleSheet.create({
     text: { textAlign: 'center' },
     row: { minHeight: 30, textAlign: 'center' },
     wrapper: { flexDirection: 'row' },
+    removeTopHeader: { position: 'absolute', top: -20, overflow: 'visible' },
+    removeSideTopHeader: { position: 'absolute', left: -20, overflow: 'visible' },
 })
 
 export default memo(TableView)

@@ -1,13 +1,12 @@
-import React, { useCallback, useMemo, useState, useLayoutEffect } from 'react'
-import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
+import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react'
+import { StyleSheet, View } from 'react-native'
 
+import { generateHeaderViews, getEmptyMatrix, getUniqueString } from '@app/common/utils'
 import ActionButton, { IconType } from '@app/common/components/ActionButton'
-import { generateHeaderViews, getEmptyMatrix } from '@app/common/utils'
 import { OptimizeShiftResponse } from '@app/services/api/models'
 import NameCellView from '../elements/common/NameCellView'
-import TableView from '../elements/common/TableView'
-import { getUniqueString } from '@app/common/utils'
-import { User, UniqueString } from '../models'
+import TableView2 from '../elements/common/TableView'
+import { UniqueString, User } from '../models'
 
 const mockedPosts = [
     getUniqueString('ש.ג1'),
@@ -35,16 +34,6 @@ export default function useShiftTableView(
     const [shifts, setShifts] = useState<User[][]>()
     console.log(`useShiftTableView-> shifts:${JSON.stringify(shifts)}`)
     const [isOptimized, setIsOptimized] = React.useState<boolean>(false)
-    const [tableHeight, setTableHeight] = React.useState(0)
-
-    useLayoutEffect(() => {
-        const updateSize = () => {
-            setTableHeight(window.innerHeight)
-        }
-        window.addEventListener('resize', updateSize)
-        updateSize()
-        return () => window.removeEventListener('resize', updateSize)
-    }, [])
 
     const emptyCellsForSkeleton: User[][] = useMemo(() => {
         return getEmptyMatrix<User>(hours.length, posts.length, {
@@ -53,26 +42,7 @@ export default function useShiftTableView(
         })
     }, [JSON.stringify(hours), JSON.stringify(posts)])
 
-    const postHeaderViews = useMemo(
-        () => generateHeaderViews([{ id: 'fakePostForSpace', value: '' }, ...posts]),
-        [JSON.stringify(posts)]
-    )
-    const removePostViews = useMemo(
-        () =>
-            generateRemoveElements(
-                [{ id: 'fakePostForSpace', value: '' }, ...posts],
-                setPosts,
-                setShifts,
-                styles.removePostButton,
-                removeShiftsByPost
-            ),
-        [JSON.stringify(posts)]
-    )
-    const removeHoursViews = useMemo(
-        () => generateRemoveElements(hours, setHours, setShifts, styles.removeHourButton, removeShiftsByHour),
-        [JSON.stringify(hours)]
-    )
-
+    const postHeaderViews = useMemo(() => generateHeaderViews([undefined, ...posts]), [JSON.stringify(posts)])
     const hoursHeaderViews = useMemo(() => generateHeaderViews(hours), [JSON.stringify(hours)])
     const shiftDataViews = useMemo(
         () => generateShiftDataElements(shifts, emptyCellsForSkeleton, selectedNameId),
@@ -93,27 +63,20 @@ export default function useShiftTableView(
                         cb={() => setPosts((prev) => [...prev, getUniqueString('עמדה חדשה')])}
                     />
                 )}
-                <TableView
+                <TableView2
                     horizontalHeaderViews={postHeaderViews}
                     verticalHeaderViews={hoursHeaderViews}
                     tableElementViews={shiftDataViews}
                     style={[styles.table, { zIndex: -1, overflow: 'scroll' }]}
+                    onRemoveHeader={(index) => {
+                        removeShift(index, setPosts, setShifts, removeShiftsByPost)
+                    }}
+                    onRemoveSideHeader={(index) => {
+                        removeShift(index, setHours, setShifts, removeShiftsByHour)
+                    }}
+                    enableEdit={isEditing}
                 />
-                {/* <TableView
-                    horizontalHeaderViews={postHeaderViews}
-                    verticalHeaderViews={hoursHeaderViews}
-                    tableElementViews={shiftDataViews}
-                    style={{ display: 'none', height: tableHeight }}
-                /> */}
-                {isEditing && (
-                    <TableView
-                        horizontalHeaderViews={removePostViews}
-                        verticalHeaderViews={removeHoursViews}
-                        tableElementViews={shiftDataViews}
-                        hideGrid
-                        style={[styles.table, { zIndex: -1 }]}
-                    />
-                )}
+
                 {isEditing && (
                     <ActionButton
                         style={styles.addHourButton}
@@ -136,8 +99,18 @@ export default function useShiftTableView(
 }
 
 //------------------------------------------functions--------------------------------------------------------
+function removeShift(
+    index: number,
+    setTitles: React.Dispatch<React.SetStateAction<UniqueString[]>>,
+    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>,
+    removeShiftBy: (shifts: User[][] | undefined, index: number) => User[][] | undefined
+) {
+    console.log(`removeShift-> index:${index}`)
+    setTitles((pre) => pre.toSpliced(index - 1, 1))
+    setShifts((prev) => removeShiftBy(prev, index - 1))
+}
+
 function removeShiftsByPost(shifts: User[][] | undefined, postIndex: number): User[][] | undefined {
-    console.log(`removeShiftsByPost-> postIndex:${postIndex}`)
     if (!shifts) return shifts
     const newShifts = shifts.map((hours) => {
         return hours.filter((_posts, index) => {
@@ -167,26 +140,6 @@ function generateShiftDataElements(
             return <NameCellView user={user.name} isDisable={true} isSelected={user?.id === selectedNameId} />
         })
     )
-    return uiArray
-}
-
-function generateRemoveElements(
-    titles: UniqueString[],
-    setTitles: React.Dispatch<React.SetStateAction<UniqueString[]>>,
-    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>,
-    style: StyleProp<ViewStyle>,
-    removeShift: (shifts: User[][] | undefined, index: number) => User[][] | undefined
-) {
-    let uiArray = titles.map((title, titleIndex) => {
-        if (!title.value) {
-            return
-        }
-        const cb = () => {
-            setTitles((pre) => pre.filter((val) => val?.id !== title?.id))
-            setShifts((prev) => removeShift(prev, titleIndex -1))
-        }
-        return <ActionButton type={IconType.close} cb={cb} style={style} />
-    })
     return uiArray
 }
 

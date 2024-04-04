@@ -44,8 +44,8 @@ export function getUniqueString(value: string): UniqueString {
     }
 }
 
-export function generateHeaderViews(array: UniqueString[]): ReactNode[] {
-    return [...array].map((post) => {
-        return <NameCellView user={post.value} isDisable={true} />
+export function generateHeaderViews(array: (UniqueString | undefined)[]): (ReactNode | undefined)[] {
+    return array.map((post) => {
+        return post ? <NameCellView user={post.value} isDisable={true} /> : undefined
     })
 }

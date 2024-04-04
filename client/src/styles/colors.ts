@@ -1,5 +1,5 @@
 const colors = {
-    green: '#4B5320'
+    green: '#4B5320',
 }
 
 export default {
@@ -18,4 +18,3 @@ export default {
     blue_corp: '#007AFF',
     military_green: colors.green,
 }
-
