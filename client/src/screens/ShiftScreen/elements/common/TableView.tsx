@@ -10,7 +10,13 @@ type TableViewProp = {
     style?: StyleProp<ViewStyle>
 }
 
-const TableView = ({ horizontalHeaderViews, verticalHeaderViews, tableElementViews, style, hideGrid }: TableViewProp) => {
+const TableView = ({
+    horizontalHeaderViews,
+    verticalHeaderViews,
+    tableElementViews,
+    style,
+    hideGrid,
+}: TableViewProp) => {
     const flexHeadArray = useMemo(() => Array(horizontalHeaderViews.length).fill(1), [horizontalHeaderViews])
 
     return (

@@ -20,6 +20,7 @@ const AvailabilityCellView = (props: AvailabilityCellViewProps) => {
             }}
             onPress={() => props.cb && props.cb(props.availability, [props.index[1], props.index[0]])}
             disabled={!props.cb}
+            style={styles.container}
         >
             <View style={getAvailabilityStyle(props.availability, opacity)} />
         </Pressable>
@@ -29,17 +30,17 @@ const AvailabilityCellView = (props: AvailabilityCellViewProps) => {
 //------------------------------------------functions--------------------------------------------------------
 
 function getAvailabilityStyle(availability: boolean, opacity: number): any[] {
-    return [styles.container, availability ? styles.available : {}, { opacity: opacity }]
+    return [styles.container, availability ? styles.available : styles.uAvailable, { opacity: opacity }]
 }
 
 //------------------------------------------StyleSheet--------------------------------------------------------
 
 const styles = StyleSheet.create({
     container: {
-        paddingTop: 30,
-        backgroundColor: 'red',
+        flexGrow: 1,
     },
     available: { backgroundColor: 'green' },
+    uAvailable: { backgroundColor: 'red' },
     hover: { backgroundColor: 'pink' },
 })
 

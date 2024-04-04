@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native'
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 import React, { useMemo } from 'react'
 
 import { generateHeaderViews, transposeMat } from '../../../common/utils'
@@ -12,6 +12,7 @@ type AvailabilityTableProp = {
     posts: UniqueString[]
     availabilityData?: Constraint[][]
     onConstraintsChanged: (data: Constraint[][]) => void
+    style?: StyleProp<ViewStyle>
 }
 
 const AvailabilityTableView = ({
@@ -19,6 +20,7 @@ const AvailabilityTableView = ({
     hours,
     availabilityData = [],
     onConstraintsChanged,
+    style,
 }: AvailabilityTableProp) => {
     const postHeaderViews = useMemo(
         () => generateHeaderViews([{ id: 'fakePostForSpace', value: '' }, ...posts]),
@@ -50,7 +52,7 @@ const AvailabilityTableView = ({
     }, [transposedMatrix])
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, style]}>
             <TableView
                 horizontalHeaderViews={postHeaderViews}
                 verticalHeaderViews={hoursHeaderViews}
@@ -68,7 +70,7 @@ const AvailabilityTableView = ({
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        flexShrink: 1,
+        flexShrink: 2,
         padding: 16,
         paddingTop: 30,
         overflow: 'scroll',

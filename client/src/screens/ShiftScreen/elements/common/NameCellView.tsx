@@ -17,7 +17,7 @@ const NameCellView = ({ user, cb, isDisable = false, isSelected = false, style }
             onPress={cb}
             disabled={isDisable}
             onHoverIn={({ nativeEvent: MouseEvent }) => {}}
-            style={[style, { minHeight: 40, justifyContent: 'center' }]}
+            style={[style, { minHeight: 20, justifyContent: 'center' }]}
         >
             <Text style={getTextStyle(isSelected)}>{user}</Text>
         </Pressable>

@@ -99,12 +99,12 @@ export default function useShiftTableView(
                     tableElementViews={shiftDataViews}
                     style={[styles.table, { zIndex: -1, overflow: 'scroll' }]}
                 />
-                <TableView
+                {/* <TableView
                     horizontalHeaderViews={postHeaderViews}
                     verticalHeaderViews={hoursHeaderViews}
                     tableElementViews={shiftDataViews}
                     style={{ display: 'none', height: tableHeight }}
-                />
+                /> */}
                 {isEditing && (
                     <TableView
                         horizontalHeaderViews={removePostViews}
@@ -112,6 +112,13 @@ export default function useShiftTableView(
                         tableElementViews={shiftDataViews}
                         hideGrid
                         style={[styles.table, { zIndex: -1 }]}
+                    />
+                )}
+                {isEditing && (
+                    <ActionButton
+                        style={styles.addHourButton}
+                        type={IconType.add}
+                        cb={() => setHours((prev) => [...prev, getUniqueString('שעה חדשה')])}
                     />
                 )}
             </View>
@@ -130,6 +137,7 @@ export default function useShiftTableView(
 
 //------------------------------------------functions--------------------------------------------------------
 function removeShiftsByPost(shifts: User[][] | undefined, postIndex: number): User[][] | undefined {
+    console.log(`removeShiftsByPost-> postIndex:${postIndex}`)
     if (!shifts) return shifts
     const newShifts = shifts.map((hours) => {
         return hours.filter((_posts, index) => {
@@ -152,7 +160,7 @@ function removeShiftsByHour(shifts: User[][] | undefined, hourIndex: number) {
 function generateShiftDataElements(
     shifts: User[][] | undefined,
     emptyCellsForSkeleton: User[][],
-    selectedNameId: string | undefined,
+    selectedNameId: string | undefined
 ) {
     let uiArray = (shifts ?? emptyCellsForSkeleton).map((array) =>
         array.map((user) => {
@@ -175,9 +183,9 @@ function generateRemoveElements(
         }
         const cb = () => {
             setTitles((pre) => pre.filter((val) => val?.id !== title?.id))
-            setShifts((prev) => removeShift(prev, titleIndex))
+            setShifts((prev) => removeShift(prev, titleIndex -1))
         }
-        return <ActionButton type={IconType.close} cb={cb} style={style}/>
+        return <ActionButton type={IconType.close} cb={cb} style={style} />
     })
     return uiArray
 }
@@ -243,7 +251,7 @@ const styles = StyleSheet.create({
     addHourButtonContainer: { position: 'absolute', top: -21, width: '100%' },
     addPostButton: { alignSelf: 'flex-end', end: 70 },
     addHourButton: { alignSelf: 'flex-start' },
-    removePostButton: { position: 'absolute', top: -25, width: '100%', minHeight: 40},
+    removePostButton: { position: 'absolute', top: -25, width: '100%', minHeight: 40 },
     removeHourButton: { position: 'absolute', left: -25 },
     table: { position: 'absolute', top: 0, left: 0, width: '100%', paddingHorizontal: 100 },
 })

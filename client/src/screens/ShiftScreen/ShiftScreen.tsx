@@ -45,6 +45,7 @@ const ShiftScreen = () => {
 
             {selectedIndex >= 0 && (
                 <AvailabilityTableView
+                    style={{ marginTop: 30,  }}
                     availabilityData={JSON.parse(
                         JSON.stringify(shiftMap.getUser(names[selectedIndex].id)?.constraints)
                     )}
