@@ -15,7 +15,7 @@ import { colors } from '@app/styles'
 
 const ShiftScreen = () => {
     const [shiftMap, setShiftMap] = useState<ShiftMap>(new ShiftMap())
-    const { isEditing, EditAddButtonView } = useEditModeButton()
+    const { isEditing, EditAddButtonView } = useEditModeButton(true)
     const { list: names, selectedNameId, view: namesListView } = useShiftUsersListView(isEditing)
     const {
         posts,
@@ -45,7 +45,7 @@ const ShiftScreen = () => {
 
             {selectedIndex >= 0 && (
                 <AvailabilityTableView
-                    style={{ marginTop: 30 }}
+                    style={{ marginTop: 30, flex: 1 }}
                     availabilityData={JSON.parse(
                         JSON.stringify(shiftMap.getUser(names[selectedIndex].id)?.constraints)
                     )}
@@ -112,7 +112,6 @@ export function deriveUserDataMap(names: User[], defaultConstraints: Constraint[
         //FIXME: no need to recrate the map, just the constraints
         newMap.addUser(userData)
     })
-    // console.log('deriveUserDataMap after: -> result.size:', newMap.usersSize())
 
     return newMap
 }
@@ -126,7 +125,6 @@ function getDefaultConstraints(posts: UniqueString[], hours: UniqueString[]): Co
         })
         defaultConstraints.push(defaultPostsConstraints)
     })
-    // console.log(`getDefaultConstraints-> defUserCons: ${JSON.stringify(defUserCons)}`)
     return defaultConstraints
 }
 

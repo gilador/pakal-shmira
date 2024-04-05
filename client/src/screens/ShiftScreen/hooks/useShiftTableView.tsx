@@ -5,7 +5,7 @@ import { generateHeaderViews, getEmptyMatrix, getUniqueString } from '@app/commo
 import ActionButton, { IconType } from '@app/common/components/ActionButton'
 import { OptimizeShiftResponse } from '@app/services/api/models'
 import NameCellView from '../elements/common/NameCellView'
-import TableView2 from '../elements/common/TableView'
+import TableView from '../elements/common/TableView'
 import { UniqueString, User } from '../models'
 
 const mockedPosts = [
@@ -42,7 +42,7 @@ export default function useShiftTableView(
         })
     }, [JSON.stringify(hours), JSON.stringify(posts)])
 
-    const postHeaderViews = useMemo(() => generateHeaderViews([undefined, ...posts]), [JSON.stringify(posts)])
+    const postHeaderViews = useMemo(() => generateHeaderViews(posts), [JSON.stringify(posts)])
     const hoursHeaderViews = useMemo(() => generateHeaderViews(hours), [JSON.stringify(hours)])
     const shiftDataViews = useMemo(
         () => generateShiftDataElements(shifts, emptyCellsForSkeleton, selectedNameId),
@@ -55,35 +55,27 @@ export default function useShiftTableView(
     )
     const ShiftTable = useMemo(
         () => (
-            <View style={{ flex: 1, overflow: 'visible' }}>
-                {isEditing && (
-                    <ActionButton
-                        style={styles.addPostButton}
-                        type={IconType.add}
-                        cb={() => setPosts((prev) => [...prev, getUniqueString('עמדה חדשה')])}
-                    />
-                )}
-                <TableView2
+            <View style={{ flex: 1, overflow: 'scroll' }}>
+                <TableView
                     horizontalHeaderViews={postHeaderViews}
                     verticalHeaderViews={hoursHeaderViews}
                     tableElementViews={shiftDataViews}
                     style={[styles.table, { zIndex: -1, overflow: 'scroll' }]}
-                    onRemoveHeader={(index) => {
+                    onHeaderRemove={(index) => {
                         removeShift(index, setPosts, setShifts, removeShiftsByPost)
                     }}
-                    onRemoveSideHeader={(index) => {
+                    onHeaderAdd={(headerName) => {
+                        setPosts((prev) => [...prev, getUniqueString(headerName)])
+                    }}
+                    onSideHeaderRemove={(index) => {
                         removeShift(index, setHours, setShifts, removeShiftsByHour)
+                    }}
+                    onSideHeaderAdd={(headerName) => {
+                        setHours((prev) => [...prev, getUniqueString(headerName)])
                     }}
                     enableEdit={isEditing}
                 />
 
-                {isEditing && (
-                    <ActionButton
-                        style={styles.addHourButton}
-                        type={IconType.add}
-                        cb={() => setHours((prev) => [...prev, getUniqueString('שעה חדשה')])}
-                    />
-                )}
             </View>
         ),
         [isEditing, posts, hours, shiftDataViews]
@@ -106,7 +98,7 @@ function removeShift(
     removeShiftBy: (shifts: User[][] | undefined, index: number) => User[][] | undefined
 ) {
     console.log(`removeShift-> index:${index}`)
-    setTitles((pre) => pre.toSpliced(index - 1, 1))
+    setTitles((pre) => pre.toSpliced(index, 1))
     setShifts((prev) => removeShiftBy(prev, index - 1))
 }
 
@@ -200,11 +192,5 @@ const styles = StyleSheet.create({
     },
     text: { textAlign: 'center' },
     title: { flex: 1 },
-    removePostButtonsContainer: { bottom: -25, zIndex: 1 },
-    addHourButtonContainer: { position: 'absolute', top: -21, width: '100%' },
-    addPostButton: { alignSelf: 'flex-end', end: 70 },
-    addHourButton: { alignSelf: 'flex-start' },
-    removePostButton: { position: 'absolute', top: -25, width: '100%', minHeight: 40 },
-    removeHourButton: { position: 'absolute', left: -25 },
     table: { position: 'absolute', top: 0, left: 0, width: '100%', paddingHorizontal: 100 },
 })

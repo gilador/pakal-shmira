@@ -8,11 +8,12 @@ type TableViewProp = {
     verticalHeaderViews: (ReactNode | undefined)[]
     horizontalHeaderViews: (ReactNode | undefined)[]
     tableElementViews?: ReactNode[][]
-    hideGrid?: boolean
     style?: StyleProp<ViewStyle>
     enableEdit?: boolean
-    onRemoveHeader?: (index: number) => any
-    onRemoveSideHeader?: (index: number) => any
+    onHeaderRemove?: (index: number) => any
+    onHeaderAdd?: (headerName: string) => any
+    onSideHeaderRemove?: (index: number) => any
+    onSideHeaderAdd?: (headerName: string) => any
 }
 
 const TableView = ({
@@ -20,43 +21,55 @@ const TableView = ({
     verticalHeaderViews,
     tableElementViews,
     style,
-    hideGrid,
     enableEdit,
-    onRemoveHeader,
-    onRemoveSideHeader,
+    onHeaderRemove,
+    onHeaderAdd,
+    onSideHeaderRemove,
+    onSideHeaderAdd,
 }: TableViewProp) => {
     const sideHeaders = useMemo(() => {
-        return enableEdit && onRemoveSideHeader
+        return enableEdit && onHeaderRemove
             ? verticalHeaderViews.map((header, index) => {
-                  return removableHeaderCell(header, () => onRemoveSideHeader(index), styles.removeSideTopHeader)
+                  return removableHeaderCell(header, () => onHeaderRemove(index), styles.removeSideTopHeader)
               })
             : verticalHeaderViews
     }, [enableEdit, verticalHeaderViews])
     const topHeaders = useMemo(() => {
-        return enableEdit && onRemoveHeader
-            ? horizontalHeaderViews.map((header, index) => {
-                  return removableHeaderCell(header, () => onRemoveHeader(index), styles.removeTopHeader)
+        const adaptedHorizontalHeaderViews = [undefined, ...horizontalHeaderViews]
+        return enableEdit && onSideHeaderRemove
+            ? adaptedHorizontalHeaderViews.map((header, index) => {
+                  return removableHeaderCell(header, () => onSideHeaderRemove(index - 1), styles.removeTopHeader)
               })
-            : horizontalHeaderViews
+            : adaptedHorizontalHeaderViews
     }, [enableEdit, horizontalHeaderViews])
     const flexHeadArray = useMemo(() => Array(topHeaders.length).fill(1), [topHeaders])
 
     return (
         <View style={[styles.container, style]}>
-            <Table borderStyle={!hideGrid ? { borderWidth: 1 } : {}}>
-                <Row data={topHeaders} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
-                <TableWrapper style={styles.wrapper}>
-                    <Col data={sideHeaders} style={styles.title} textStyle={styles.text} />
-                    {tableElementViews && (
-                        <Rows
-                            data={tableElementViews}
-                            flexArr={flexHeadArray.slice(0, -1)}
-                            style={styles.row}
-                            textStyle={styles.text}
-                        />
-                    )}
-                </TableWrapper>
-            </Table>
+            <View style={{ flexDirection: 'row', width: '100%' }}>
+                <Table style={{ flex: 20 }} borderStyle={{ borderWidth: 1 }}>
+                    <Row data={topHeaders} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
+                    <TableWrapper style={styles.wrapper}>
+                        <Col data={sideHeaders} style={styles.title} textStyle={styles.text} />
+                        {tableElementViews && (
+                            <Rows
+                                data={tableElementViews}
+                                flexArr={flexHeadArray.slice(0, -1)}
+                                style={styles.row}
+                                textStyle={styles.text}
+                            />
+                        )}
+                    </TableWrapper>
+                </Table>
+                {enableEdit && onHeaderAdd && <ActionButton type={IconType.add} cb={() => onHeaderAdd('עמדה חדשה')} />}
+            </View>
+            {enableEdit && onSideHeaderAdd && (
+                <ActionButton
+                    style={styles.addHourButton}
+                    type={IconType.add}
+                    cb={() => onSideHeaderAdd('עמדה חדשה')}
+                />
+            )}
         </View>
     )
 }
@@ -68,7 +81,7 @@ function removableHeaderCell(
     style: StyleProp<ViewStyle>
 ): ReactNode {
     return wrappedComponent ? (
-        <View style={{ overflow: 'visible', position: 'absolute', alignSelf: 'center' }}>
+        <View style={{ overflow: 'visible', alignSelf: 'stretch' }}>
             {wrappedComponent}
             <ActionButton type={IconType.close} cb={onRemove} style={style} />
         </View>
@@ -86,8 +99,9 @@ const styles = StyleSheet.create({
     text: { textAlign: 'center' },
     row: { minHeight: 30, textAlign: 'center' },
     wrapper: { flexDirection: 'row' },
-    removeTopHeader: { position: 'absolute', top: -20, overflow: 'visible' },
-    removeSideTopHeader: { position: 'absolute', left: -20, overflow: 'visible' },
+    removeTopHeader: { position: 'absolute', overflow: 'visible' },
+    removeSideTopHeader: { position: 'absolute', overflow: 'visible' },
+    addHourButton: { alignSelf: 'flex-start' },
 })
 
 export default memo(TableView)

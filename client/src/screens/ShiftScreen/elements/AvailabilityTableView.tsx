@@ -5,7 +5,7 @@ import { generateHeaderViews, transposeMat } from '../../../common/utils'
 import withLogs from '@app/common/components/HOC/withLogs'
 import AvailabilityCellView from './AvailabilityCellView'
 import { Constraint, UniqueString } from '../models'
-import TableView2 from './common/TableView'
+import TableView from './common/TableView'
 
 type AvailabilityTableProp = {
     hours: UniqueString[]
@@ -53,7 +53,7 @@ const AvailabilityTableView = ({
 
     return (
         <View style={[styles.container, style]}>
-            <TableView2
+            <TableView
                 horizontalHeaderViews={postHeaderViews}
                 verticalHeaderViews={hoursHeaderViews}
                 tableElementViews={shiftDataNamesElements}

@@ -67,8 +67,8 @@ const styles = StyleSheet.create({
     whiteBackgroundFill: {
         position: 'absolute',
         backgroundColor: 'white',
-        width: 10,
-        height: 10,
+        width: 5,
+        height: 5,
     },
     icon: { width: 'auto', height: 'auto', margin: 0, padding: 0 },
 })
