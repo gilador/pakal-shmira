@@ -16,9 +16,10 @@ type CloseButtonProps = {
     cb: () => void
     center?: boolean
     style?: StyleProp<ViewStyle>
+    enabled?: boolean
 }
 
-const ActionButton = ({ type, cb, style, center = false }: CloseButtonProps) => {
+const ActionButton = ({ type, cb, style, center = false, enabled = true }: CloseButtonProps) => {
     const [compDim, setCompDim] = useState<readonly [number, number]>([0, 0])
     const [comLeft, compTop] = useMemo(() => {
         return [compDim[0] / 2 - 5, compDim[1] / 2 - 5]
@@ -32,7 +33,13 @@ const ActionButton = ({ type, cb, style, center = false }: CloseButtonProps) => 
             style={[style, { backgroundColor: 'transparent' }]}
         >
             <View style={[styles.whiteBackgroundFill, { left: comLeft, top: compTop }]} />
-            <IconButton icon={getIcon(type)} onPress={cb} iconColor={getIconColors(type)} style={styles.icon} />
+            <IconButton
+                icon={getIcon(type)}
+                onPress={cb}
+                iconColor={getIconColors(type)}
+                style={styles.icon}
+                disabled={!enabled}
+            />
         </View>
     )
 }

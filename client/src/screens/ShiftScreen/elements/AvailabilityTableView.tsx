@@ -22,10 +22,7 @@ const AvailabilityTableView = ({
     onConstraintsChanged,
     style,
 }: AvailabilityTableProp) => {
-    const postHeaderViews = useMemo(
-        () => generateHeaderViews([{ id: 'fakePostForSpace', value: '' }, ...posts]),
-        [JSON.stringify(posts)]
-    )
+    const postHeaderViews = useMemo(() => generateHeaderViews(posts), [JSON.stringify(posts)])
     const hoursHeaderViews = useMemo(() => generateHeaderViews(hours), [JSON.stringify(hours)])
     const transposedMatrix: Constraint[][] = useMemo(() => {
         return transposeMat(availabilityData)

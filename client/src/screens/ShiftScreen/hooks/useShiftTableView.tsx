@@ -1,8 +1,7 @@
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 
 import { generateHeaderViews, getEmptyMatrix, getUniqueString } from '@app/common/utils'
-import ActionButton, { IconType } from '@app/common/components/ActionButton'
 import { OptimizeShiftResponse } from '@app/services/api/models'
 import NameCellView from '../elements/common/NameCellView'
 import TableView from '../elements/common/TableView'
@@ -32,7 +31,6 @@ export default function useShiftTableView(
     const [posts, setPosts] = useState<UniqueString[]>(mockedPosts)
     const [hours, setHours] = useState<UniqueString[]>(mockedHours)
     const [shifts, setShifts] = useState<User[][]>()
-    console.log(`useShiftTableView-> shifts:${JSON.stringify(shifts)}`)
     const [isOptimized, setIsOptimized] = React.useState<boolean>(false)
 
     const emptyCellsForSkeleton: User[][] = useMemo(() => {
@@ -61,21 +59,20 @@ export default function useShiftTableView(
                     verticalHeaderViews={hoursHeaderViews}
                     tableElementViews={shiftDataViews}
                     style={[styles.table, { zIndex: -1, overflow: 'scroll' }]}
-                    onHeaderRemove={(index) => {
+                    onColRemove={(index) => {
                         removeShift(index, setPosts, setShifts, removeShiftsByPost)
                     }}
-                    onHeaderAdd={(headerName) => {
-                        setPosts((prev) => [...prev, getUniqueString(headerName)])
+                    onColAdd={(headerName) => {
+                        addPost(headerName, setPosts, setShifts)
                     }}
-                    onSideHeaderRemove={(index) => {
+                    onRowRemove={(index) => {
                         removeShift(index, setHours, setShifts, removeShiftsByHour)
                     }}
-                    onSideHeaderAdd={(headerName) => {
-                        setHours((prev) => [...prev, getUniqueString(headerName)])
+                    onRowAdd={(headerName) => {
+                        addHour(headerName, setHours, setShifts)
                     }}
                     enableEdit={isEditing}
                 />
-
             </View>
         ),
         [isEditing, posts, hours, shiftDataViews]
@@ -97,13 +94,12 @@ function removeShift(
     setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>,
     removeShiftBy: (shifts: User[][] | undefined, index: number) => User[][] | undefined
 ) {
-    console.log(`removeShift-> index:${index}`)
     setTitles((pre) => pre.toSpliced(index, 1))
-    setShifts((prev) => removeShiftBy(prev, index - 1))
+    setShifts((prev) => removeShiftBy(prev, index))
 }
 
 function removeShiftsByPost(shifts: User[][] | undefined, postIndex: number): User[][] | undefined {
-    if (!shifts) return shifts
+    if (!shifts || (shifts.length > 0 && shifts[0].length === 2)) return shifts
     const newShifts = shifts.map((hours) => {
         return hours.filter((_posts, index) => {
             return index !== postIndex
@@ -120,6 +116,32 @@ function removeShiftsByHour(shifts: User[][] | undefined, hourIndex: number) {
     })
 
     return newShifts
+}
+
+function addPost(
+    postName: string,
+    setTitles: React.Dispatch<React.SetStateAction<UniqueString[]>>,
+    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>
+) {
+    setTitles((prev) => [...prev, getUniqueString(postName)])
+    setShifts((prev) => {
+        if (!prev) return prev
+        return prev.map((postsInHour) => {
+            return [...postsInHour, { name: '', id: '' }]
+        })
+    })
+}
+
+function addHour(
+    hourName: string,
+    setTitles: React.Dispatch<React.SetStateAction<UniqueString[]>>,
+    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>
+) {
+    setTitles((prev) => [...prev, getUniqueString(hourName)])
+    setShifts((prev) => {
+        if (!prev) return prev
+        return [...prev, Array(prev[0].length).fill({ name: '', id: '' })]
+    })
 }
 
 function generateShiftDataElements(
@@ -181,15 +203,6 @@ async function calcOptimizeShifts(
 
 //------------------------------------------StyleSheet--------------------------------------------------------
 const styles = StyleSheet.create({
-    container: {
-        flex: 15,
-        paddingHorizontal: 100,
-        overflow: 'scroll',
-    },
-    head2: {
-        height: 50,
-        borderRadius: 0,
-    },
     text: { textAlign: 'center' },
     title: { flex: 1 },
     table: { position: 'absolute', top: 0, left: 0, width: '100%', paddingHorizontal: 100 },
