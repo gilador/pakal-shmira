@@ -44,8 +44,14 @@ export function getUniqueString(value: string): UniqueString {
     }
 }
 
-export function generateHeaderViews(array: UniqueString[]): ReactNode[] {
-    return array.map((post) => {
-        return post ? <NameCellView user={post.value} isDisable={true} /> : undefined
+export function generateHeaderViews(array: UniqueString[], editable?: boolean, setHeaders?: React.Dispatch<React.SetStateAction<UniqueString[]>>): ReactNode[] {
+    return array.map((post, index) => {
+        return post ? <NameCellView user={post.value} editable={editable} isDisable={true} onEdit={(newTextVal)=>{
+            setHeaders && setHeaders((prev) => {
+                const newHeaders = JSON.parse(JSON.stringify(prev))
+                newHeaders[index].value = newTextVal
+                return newHeaders
+            })
+        }}/> : undefined
     })
 }

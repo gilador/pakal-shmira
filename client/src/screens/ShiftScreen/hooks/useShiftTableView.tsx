@@ -40,8 +40,8 @@ export default function useShiftTableView(
         })
     }, [JSON.stringify(hours), JSON.stringify(posts)])
 
-    const postHeaderViews = useMemo(() => generateHeaderViews(posts), [JSON.stringify(posts)])
-    const hoursHeaderViews = useMemo(() => generateHeaderViews(hours), [JSON.stringify(hours)])
+    const postHeaderViews = useMemo(() => generateHeaderViews(posts, isEditing, setPosts), [JSON.stringify(posts)])
+    const hoursHeaderViews = useMemo(() => generateHeaderViews(hours, isEditing, setHours), [JSON.stringify(hours)])
     const shiftDataViews = useMemo(
         () => generateShiftDataElements(shifts, emptyCellsForSkeleton, selectedNameId),
         [JSON.stringify(shifts), emptyCellsForSkeleton, selectedNameId]
@@ -94,7 +94,12 @@ function removeShift(
     setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>,
     removeShiftBy: (shifts: User[][] | undefined, index: number) => User[][] | undefined
 ) {
-    setTitles((pre) => pre.toSpliced(index, 1))
+    setTitles((pre) => {
+        const ret = pre.toSpliced(index, 1)
+        console.log('gilad - index:', index)
+        console.log('gilad - pre:', pre)
+        console.log('gilad - ret:', ret)
+        return ret})
     setShifts((prev) => removeShiftBy(prev, index))
 }
 

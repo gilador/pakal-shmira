@@ -22,6 +22,9 @@ const AvailabilityTableView = ({
     onConstraintsChanged,
     style,
 }: AvailabilityTableProp) => {
+
+    console.log('AvailabilityTableView-> posts:', posts[1])
+
     const postHeaderViews = useMemo(() => generateHeaderViews(posts), [JSON.stringify(posts)])
     const hoursHeaderViews = useMemo(() => generateHeaderViews(hours), [JSON.stringify(hours)])
     const transposedMatrix: Constraint[][] = useMemo(() => {
@@ -48,6 +51,8 @@ const AvailabilityTableView = ({
         )
     }, [transposedMatrix])
 
+
+    console.log('gilad -AvailabilityTableView-> postHeaderViews:', postHeaderViews[1])
     return (
         <View style={[styles.container, style]}>
             <TableView

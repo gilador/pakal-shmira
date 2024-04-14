@@ -1,5 +1,5 @@
-import { Pressable, StyleProp, StyleSheet, Text, ViewStyle } from 'react-native'
-import React, { memo } from 'react'
+import React from 'react'
+import { Pressable, StyleProp, StyleSheet, TextInput, ViewStyle } from 'react-native'
 
 import withLogs from '@app/common/components/HOC/withLogs'
 
@@ -9,17 +9,31 @@ export type NameCellViewProps = {
     isSelected?: boolean
     cb?: () => void
     style?: StyleProp<ViewStyle>
+    editable?: boolean
+    onEdit?: (newText: string) => void
 }
 
-const NameCellView = ({ user, cb, isDisable = false, isSelected = false, style }: NameCellViewProps) => {
+const NameCellView = ({ user, cb, isSelected = false, style, editable = false, onEdit }: NameCellViewProps) => {
+    const [text, setText] = React.useState(user)
+    user !== text && setText(user)
     return (
         <Pressable
             onPress={cb}
-            disabled={isDisable}
             onHoverIn={({ nativeEvent: MouseEvent }) => {}}
             style={[style, { minHeight: 20, justifyContent: 'center' }]}
         >
-            <Text style={getTextStyle(isSelected)}>{user}</Text>
+            <TextInput
+                pointerEvents={editable ? 'auto' : 'none'}
+                style={getTextStyle(isSelected)}
+                value={text}
+                onEndEditing={(e) => {
+                    console.log(`onEndEditing e: ${e}`)
+                }}
+                onChangeText={(val: string) => {
+                    setText(val)
+                    onEdit && onEdit(val)
+                }}
+            />
         </Pressable>
     )
 }
@@ -40,4 +54,4 @@ const styles = StyleSheet.create({
     selected: { backgroundColor: 'pink' },
 })
 
-export default memo(withLogs(NameCellView))
+export default withLogs(NameCellView)

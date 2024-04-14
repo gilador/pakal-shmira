@@ -39,7 +39,7 @@ const ShiftScreen = () => {
         return retIndex
     }, [selectedNameId, JSON.stringify(names)])
 
-    const rightView = (
+    const rightView = ( //TODO memoize
         <View style={{ flexDirection: 'column', flexShrink: 1 }}>
             {shiftMap.usersSize() > 0 && names.length > 0 && ShiftTableView}
 

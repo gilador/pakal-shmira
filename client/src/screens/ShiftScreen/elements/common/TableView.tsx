@@ -3,6 +3,7 @@ import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 import React, { ReactNode, memo, useMemo } from 'react'
 
 import ActionButton, { IconType } from '@app/common/components/ActionButton'
+import withLogs from '@app/common/components/HOC/withLogs'
 
 type TableViewProp = {
     verticalHeaderViews: (ReactNode | undefined)[]
@@ -44,7 +45,9 @@ const TableView = ({
                   return removableHeaderCell(header, () => onColRemove(index - 1), styles.removeTopHeader, canBeRemoved)
               })
             : adaptedHorizontalHeaderViews
+            
     }, [enableEdit, horizontalHeaderViews])
+
 
     const flexHeadArray = useMemo(() => Array(topHeaders.length).fill(1), [topHeaders])
 
@@ -79,7 +82,9 @@ function removableHeaderCell(
     wrappedComponent: ReactNode,
     onRemove: () => void,
     style: StyleProp<ViewStyle>,
-    canBeRemoved: boolean
+    canBeRemoved: boolean,
+    allowFocus: boolean = false,
+    forceFocus: boolean = false
 ): ReactNode {
     return wrappedComponent ? (
         <View style={{ overflow: 'visible', alignSelf: 'stretch' }}>
