@@ -39,33 +39,34 @@ const ShiftScreen = () => {
         return retIndex
     }, [selectedNameId, JSON.stringify(names)])
 
-    const rightView = ( //TODO memoize
-        <View style={{ flexDirection: 'column', flexShrink: 1 }}>
-            {shiftMap.usersSize() > 0 && names.length > 0 && ShiftTableView}
+    const rightView = //TODO memoize
+        (
+            <View style={{ flexDirection: 'column', flexShrink: 1 }}>
+                {shiftMap.usersSize() > 0 && names.length > 0 && ShiftTableView}
 
-            {selectedIndex >= 0 && (
-                <AvailabilityTableView
-                    style={{ marginTop: 30, flex: 1 }}
-                    availabilityData={JSON.parse(
-                        JSON.stringify(shiftMap.getUser(names[selectedIndex].id)?.constraints)
-                    )}
-                    hours={hours}
-                    posts={posts}
-                    onConstraintsChanged={(newConstraints: Constraint[][]) => {
-                        setShiftMap((prev) => {
-                            const newShiftMap = prev.copy()
-                            const uerShiftData = prev.getUser(names[selectedIndex].id)
-                            if (uerShiftData) {
-                                uerShiftData.constraints = newConstraints
-                                newShiftMap.updateUser(uerShiftData)
-                            }
-                            return newShiftMap
-                        })
-                    }}
-                />
-            )}
-        </View>
-    )
+                {selectedIndex >= 0 && (
+                    <AvailabilityTableView
+                        style={{ marginTop: 30, flex: 1 }}
+                        availabilityData={JSON.parse(
+                            JSON.stringify(shiftMap.getUser(names[selectedIndex].id)?.constraints)
+                        )}
+                        hours={hours}
+                        posts={posts}
+                        onConstraintsChanged={(newConstraints: Constraint[][]) => {
+                            setShiftMap((prev) => {
+                                const newShiftMap = prev.copy()
+                                const uerShiftData = prev.getUser(names[selectedIndex].id)
+                                if (uerShiftData) {
+                                    uerShiftData.constraints = newConstraints
+                                    newShiftMap.updateUser(uerShiftData)
+                                }
+                                return newShiftMap
+                            })
+                        }}
+                    />
+                )}
+            </View>
+        )
 
     return (
         <View style={styles.container}>

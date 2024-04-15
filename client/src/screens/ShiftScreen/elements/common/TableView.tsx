@@ -12,9 +12,9 @@ type TableViewProp = {
     style?: StyleProp<ViewStyle>
     enableEdit?: boolean
     onColRemove?: (index: number) => any
-    onColAdd?: (headerName: string) => any
+    onColAdd?: () => any
     onRowRemove?: (index: number) => any
-    onRowAdd?: (headerName: string) => any
+    onRowAdd?: () => any
 }
 
 const TableView = ({
@@ -45,9 +45,7 @@ const TableView = ({
                   return removableHeaderCell(header, () => onColRemove(index - 1), styles.removeTopHeader, canBeRemoved)
               })
             : adaptedHorizontalHeaderViews
-            
     }, [enableEdit, horizontalHeaderViews])
-
 
     const flexHeadArray = useMemo(() => Array(topHeaders.length).fill(1), [topHeaders])
 
@@ -68,10 +66,10 @@ const TableView = ({
                         )}
                     </TableWrapper>
                 </Table>
-                {enableEdit && onColAdd && <ActionButton type={IconType.add} cb={() => onColAdd('עמדה חדשה')} />}
+                {enableEdit && onColAdd && <ActionButton type={IconType.add} cb={() => onColAdd()} />}
             </View>
             {enableEdit && onRowAdd && (
-                <ActionButton style={styles.addHourButton} type={IconType.add} cb={() => onRowAdd('שעה חדשה')} />
+                <ActionButton style={styles.addHourButton} type={IconType.add} cb={() => onRowAdd()} />
             )}
         </View>
     )
@@ -89,7 +87,7 @@ function removableHeaderCell(
     return wrappedComponent ? (
         <View style={{ overflow: 'visible', alignSelf: 'stretch' }}>
             {wrappedComponent}
-            <ActionButton type={IconType.close} cb={onRemove} style={style} enabled={canBeRemoved}/>
+            <ActionButton type={IconType.close} cb={onRemove} style={style} enabled={canBeRemoved} />
         </View>
     ) : (
         <View />

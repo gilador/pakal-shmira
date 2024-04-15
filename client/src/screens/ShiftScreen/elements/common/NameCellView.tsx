@@ -1,21 +1,40 @@
-import React from 'react'
 import { Pressable, StyleProp, StyleSheet, TextInput, ViewStyle } from 'react-native'
+import React, { useEffect, useMemo, useRef } from 'react'
 
 import withLogs from '@app/common/components/HOC/withLogs'
 
 export type NameCellViewProps = {
-    user: string
-    isDisable?: boolean
-    isSelected?: boolean
     cb?: () => void
-    style?: StyleProp<ViewStyle>
-    editable?: boolean
     onEdit?: (newText: string) => void
+    user: string
+    isSelected?: boolean
+    isFocused?: boolean
+    editable?: boolean
+    style?: StyleProp<ViewStyle>
 }
 
-const NameCellView = ({ user, cb, isSelected = false, style, editable = false, onEdit }: NameCellViewProps) => {
+const NameCellView = ({
+    user,
+    isSelected = false,
+    style,
+    editable = false,
+    isFocused = false,
+    onEdit,
+    cb,
+}: NameCellViewProps) => {
     const [text, setText] = React.useState(user)
+    const inputRef = useRef<TextInput | null>(null)
+
     user !== text && setText(user)
+    const isAllowEdit = useMemo(() => {
+        return editable ? 'auto' : 'none'
+    }, [])
+
+    useEffect(() => {
+        isFocused && inputRef && inputRef?.current?.focus()
+        // isFocused && inputRef.current && inputRef?.current?.setSelection(0, 1)
+    }, [])
+
     return (
         <Pressable
             onPress={cb}
@@ -23,16 +42,15 @@ const NameCellView = ({ user, cb, isSelected = false, style, editable = false, o
             style={[style, { minHeight: 20, justifyContent: 'center' }]}
         >
             <TextInput
-                pointerEvents={editable ? 'auto' : 'none'}
+                pointerEvents={isAllowEdit}
                 style={getTextStyle(isSelected)}
                 value={text}
-                onEndEditing={(e) => {
-                    console.log(`onEndEditing e: ${e}`)
-                }}
+                ref={inputRef}
                 onChangeText={(val: string) => {
                     setText(val)
                     onEdit && onEdit(val)
                 }}
+                
             />
         </Pressable>
     )

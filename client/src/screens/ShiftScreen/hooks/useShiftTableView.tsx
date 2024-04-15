@@ -7,20 +7,8 @@ import NameCellView from '../elements/common/NameCellView'
 import TableView from '../elements/common/TableView'
 import { UniqueString, User } from '../models'
 
-const mockedPosts = [
-    getUniqueString('ש.ג1'),
-    getUniqueString('ש.ג2'),
-    getUniqueString('מערבי'),
-    getUniqueString('מזרחי'),
-]
-const mockedHours = [
-    getUniqueString('0600-1000'),
-    getUniqueString('1000-1400'),
-    getUniqueString('1400-1600'),
-    getUniqueString('1600-2000'),
-    getUniqueString('2000-2400'),
-    getUniqueString('0000-0400'),
-]
+const mockedPosts = [getUniqueString('עמדה')]
+const mockedHours = [getUniqueString('שעה')]
 
 export default function useShiftTableView(
     selectedNameId: string | undefined,
@@ -31,7 +19,9 @@ export default function useShiftTableView(
     const [posts, setPosts] = useState<UniqueString[]>(mockedPosts)
     const [hours, setHours] = useState<UniqueString[]>(mockedHours)
     const [shifts, setShifts] = useState<User[][]>()
-    const [isOptimized, setIsOptimized] = React.useState<boolean>(false)
+    const [isOptimized, setIsOptimized] = useState<boolean>(false)
+    const [focusedPostHeaderId, setFocusedPostHeaderId] = useState<string>()
+    const [focusedHourHeaderId, setFocusedHourHeaderId] = useState<string>()
 
     const emptyCellsForSkeleton: User[][] = useMemo(() => {
         return getEmptyMatrix<User>(hours.length, posts.length, {
@@ -40,11 +30,17 @@ export default function useShiftTableView(
         })
     }, [JSON.stringify(hours), JSON.stringify(posts)])
 
-    const postHeaderViews = useMemo(() => generateHeaderViews(posts, isEditing, setPosts), [JSON.stringify(posts)])
-    const hoursHeaderViews = useMemo(() => generateHeaderViews(hours, isEditing, setHours), [JSON.stringify(hours)])
+    const postHeaderViews = useMemo(
+        () => generateHeaderViews(posts, focusedPostHeaderId, isEditing, setPosts),
+        [JSON.stringify(posts), isEditing]
+    )
+    const hoursHeaderViews = useMemo(
+        () => generateHeaderViews(hours, focusedHourHeaderId, isEditing, setHours),
+        [JSON.stringify(hours), isEditing]
+    )
     const shiftDataViews = useMemo(
         () => generateShiftDataElements(shifts, emptyCellsForSkeleton, selectedNameId),
-        [JSON.stringify(shifts), emptyCellsForSkeleton, selectedNameId]
+        [JSON.stringify(shifts), emptyCellsForSkeleton, selectedNameId, isEditing]
     )
 
     const onOptimize = useCallback(
@@ -62,14 +58,14 @@ export default function useShiftTableView(
                     onColRemove={(index) => {
                         removeShift(index, setPosts, setShifts, removeShiftsByPost)
                     }}
-                    onColAdd={(headerName) => {
-                        addPost(headerName, setPosts, setShifts)
+                    onColAdd={() => {
+                        addPost('עמדה', setPosts, setShifts, setFocusedPostHeaderId)
                     }}
                     onRowRemove={(index) => {
                         removeShift(index, setHours, setShifts, removeShiftsByHour)
                     }}
-                    onRowAdd={(headerName) => {
-                        addHour(headerName, setHours, setShifts)
+                    onRowAdd={() => {
+                        addHour('שעה', setHours, setShifts, setFocusedHourHeaderId)
                     }}
                     enableEdit={isEditing}
                 />
@@ -99,7 +95,8 @@ function removeShift(
         console.log('gilad - index:', index)
         console.log('gilad - pre:', pre)
         console.log('gilad - ret:', ret)
-        return ret})
+        return ret
+    })
     setShifts((prev) => removeShiftBy(prev, index))
 }
 
@@ -126,9 +123,12 @@ function removeShiftsByHour(shifts: User[][] | undefined, hourIndex: number) {
 function addPost(
     postName: string,
     setTitles: React.Dispatch<React.SetStateAction<UniqueString[]>>,
-    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>
+    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>,
+    setFocusHeaderId: React.Dispatch<React.SetStateAction<string | undefined>>
 ) {
-    setTitles((prev) => [...prev, getUniqueString(postName)])
+    const newPost = getUniqueString(postName)
+    setFocusHeaderId(newPost.id)
+    setTitles((prev) => [...prev, newPost])
     setShifts((prev) => {
         if (!prev) return prev
         return prev.map((postsInHour) => {
@@ -140,9 +140,12 @@ function addPost(
 function addHour(
     hourName: string,
     setTitles: React.Dispatch<React.SetStateAction<UniqueString[]>>,
-    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>
+    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>,
+    setFocusHeaderId: React.Dispatch<React.SetStateAction<string | undefined>>
 ) {
-    setTitles((prev) => [...prev, getUniqueString(hourName)])
+    const newHour = getUniqueString(hourName)
+    setFocusHeaderId(newHour.id)
+    setTitles((prev) => [...prev, newHour])
     setShifts((prev) => {
         if (!prev) return prev
         return [...prev, Array(prev[0].length).fill({ name: '', id: '' })]
@@ -156,7 +159,7 @@ function generateShiftDataElements(
 ) {
     let uiArray = (shifts ?? emptyCellsForSkeleton).map((array) =>
         array.map((user) => {
-            return <NameCellView user={user.name} isDisable={true} isSelected={user?.id === selectedNameId} />
+            return <NameCellView user={user.name} isSelected={user?.id === selectedNameId} />
         })
     )
     return uiArray

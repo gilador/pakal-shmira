@@ -24,7 +24,6 @@ const EditableListItem = ({ user, isEditing }: ItemProps) => {
                 cb={() => {
                     shiftListContext.onUserToggleSelected(user.id)
                 }}
-                isDisable={isEditing}
                 style={styles.nameCell}
             />
             {isEditing && <ActionButton type={IconType.close} cb={() => shiftListContext.onUserRemoved(user.id)} />}
