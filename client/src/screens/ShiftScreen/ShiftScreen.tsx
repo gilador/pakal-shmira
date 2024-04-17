@@ -31,13 +31,13 @@ const ShiftScreen = () => {
         setShiftMap((oldMap) => {
             return deriveUserDataMap(names, defaultConstraints, oldMap)
         })
-    }, [JSON.stringify(names), hours, posts])
+    }, [names, hours, posts])
 
     const selectedIndex = useMemo(() => {
         let retIndex = -1
         retIndex = names.findIndex((ele) => ele.id === selectedNameId)
         return retIndex
-    }, [selectedNameId, JSON.stringify(names)])
+    }, [selectedNameId, names])
 
     const rightView = //TODO memoize
         (
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
         flexBasis: 'auto',
         width: 300,
         alignSelf: 'flex-start',
-        backgroundColor: colors.military_green,
+        backgroundColor: colors.ok,
     },
     rightContainer: {
         flexDirection: 'column',

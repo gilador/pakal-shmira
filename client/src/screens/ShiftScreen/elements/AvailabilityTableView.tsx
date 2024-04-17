@@ -1,10 +1,10 @@
-import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 import React, { useMemo } from 'react'
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 
-import { generateHeaderViews, transposeMat } from '../../../common/utils'
 import withLogs from '@app/common/components/HOC/withLogs'
-import AvailabilityCellView from './AvailabilityCellView'
+import { generateHeaderViews, transposeMat } from '@app/common/utils'
 import { Constraint, UniqueString } from '../models'
+import AvailabilityCellView from './AvailabilityCellView'
 import TableView from './common/TableView'
 
 type AvailabilityTableProp = {
@@ -22,10 +22,13 @@ const AvailabilityTableView = ({
     onConstraintsChanged,
     style,
 }: AvailabilityTableProp) => {
-    console.log('AvailabilityTableView-> posts:', posts[1])
+    console.log('AvailabilityTableView-> posts:', posts, 'length:', posts.length)
 
-    const postHeaderViews = useMemo(() => generateHeaderViews(posts), [JSON.stringify(posts)])
-    const hoursHeaderViews = useMemo(() => generateHeaderViews(hours), [JSON.stringify(hours)])
+    const postHeaderViews = useMemo(() => {
+        console.log('AvailabilityTableView->postHeaderViews->useMemo-> posts:', posts, 'length:', posts.length)
+        return generateHeaderViews(posts)
+    }, [posts])
+    const hoursHeaderViews = useMemo(() => generateHeaderViews(hours), [hours])
     const transposedMatrix: Constraint[][] = useMemo(() => {
         return transposeMat(availabilityData)
     }, [availabilityData])
@@ -50,7 +53,6 @@ const AvailabilityTableView = ({
         )
     }, [transposedMatrix])
 
-    console.log('gilad -AvailabilityTableView-> postHeaderViews:', postHeaderViews[1])
     return (
         <View style={[styles.container, style]}>
             <TableView

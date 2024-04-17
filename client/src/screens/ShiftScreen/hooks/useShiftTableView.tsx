@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 
-import { generateHeaderViews, getEmptyMatrix, getUniqueString } from '@app/common/utils'
+import { generateHeaderViews, getEmptyMatrix, getUniqueString, useStateWithLogging } from '@app/common/utils'
 import { OptimizeShiftResponse } from '@app/services/api/models'
 import NameCellView from '../elements/common/NameCellView'
 import TableView from '../elements/common/TableView'
@@ -26,26 +26,26 @@ export default function useShiftTableView(
     const emptyCellsForSkeleton: User[][] = useMemo(() => {
         return getEmptyMatrix<User>(hours.length, posts.length, {
             name: ' ',
-            id: '',
+            id: '', //TODO nice to have add shift id composed by post and hour ids
         })
-    }, [JSON.stringify(hours), JSON.stringify(posts)])
+    }, [hours, posts])
 
     const postHeaderViews = useMemo(
         () => generateHeaderViews(posts, focusedPostHeaderId, isEditing, setPosts),
-        [JSON.stringify(posts), isEditing]
+        [posts, isEditing]
     )
     const hoursHeaderViews = useMemo(
         () => generateHeaderViews(hours, focusedHourHeaderId, isEditing, setHours),
-        [JSON.stringify(hours), isEditing]
+        [hours, isEditing]
     )
     const shiftDataViews = useMemo(
         () => generateShiftDataElements(shifts, emptyCellsForSkeleton, selectedNameId),
-        [JSON.stringify(shifts), emptyCellsForSkeleton, selectedNameId, isEditing]
+        [shifts, emptyCellsForSkeleton, selectedNameId, isEditing]
     )
 
     const onOptimize = useCallback(
         () => calcOptimizeShifts(names, hours, posts, callOptimizeAPI, setIsOptimized, setShifts),
-        [JSON.stringify(names), JSON.stringify(hours), JSON.stringify(posts), callOptimizeAPI]
+        [names, hours, posts, callOptimizeAPI]
     )
     const ShiftTable = useMemo(
         () => (
@@ -126,13 +126,14 @@ function addPost(
     setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>,
     setFocusHeaderId: React.Dispatch<React.SetStateAction<string | undefined>>
 ) {
+    console.log('gilad - addPost: postName:', postName)
     const newPost = getUniqueString(postName)
     setFocusHeaderId(newPost.id)
-    setTitles((prev) => [...prev, newPost])
+    setTitles((prev) => prev.concat(newPost))
     setShifts((prev) => {
         if (!prev) return prev
         return prev.map((postsInHour) => {
-            return [...postsInHour, { name: '', id: '' }]
+            return postsInHour.concat({ name: '', id: '' }) //TODO nice to have add shift id composed by post and hour ids
         })
     })
 }

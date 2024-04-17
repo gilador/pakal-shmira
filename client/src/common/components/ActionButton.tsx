@@ -1,8 +1,7 @@
-import { IconSource } from 'react-native-paper/lib/typescript/components/Icon'
-import { memo, useLayoutEffect, useMemo, useState } from 'react'
+import React, { memo, useMemo, useState } from 'react'
 import { StyleProp, StyleSheet, ViewStyle } from 'react-native'
 import { IconButton } from 'react-native-paper'
-import React from 'react'
+import { IconSource } from 'react-native-paper/lib/typescript/components/Icon'
 
 import { colors } from '@app/styles'
 import { View } from './Themed'

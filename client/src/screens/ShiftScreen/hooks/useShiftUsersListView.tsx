@@ -83,7 +83,7 @@ export default function useShiftUsersListView(isEditing = false) {
                 </ShiftListContext.Provider>
             </View>
         ),
-        [JSON.stringify(list), isEditing, selectedNameId]
+        [list, isEditing, selectedNameId]
     )
 
     return {

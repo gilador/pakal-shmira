@@ -2,6 +2,7 @@ import { Pressable, StyleProp, StyleSheet, TextInput, ViewStyle } from 'react-na
 import React, { useEffect, useMemo, useRef } from 'react'
 
 import withLogs from '@app/common/components/HOC/withLogs'
+import { colors } from '@app/styles'
 
 export type NameCellViewProps = {
     cb?: () => void
@@ -23,16 +24,22 @@ const NameCellView = ({
     cb,
 }: NameCellViewProps) => {
     const [text, setText] = React.useState(user)
-    const inputRef = useRef<TextInput | null>(null)
+    const initVal = useRef<string>(user)
+    const inputRef = useRef<TextInput>(null)
 
+    console.log(`NameCellView-> user:${user} text:${text}`)
     user !== text && setText(user)
+
+    if (!initVal.current) {
+        initVal.current = user
+    }
+
     const isAllowEdit = useMemo(() => {
         return editable ? 'auto' : 'none'
-    }, [])
+    }, [editable])
 
     useEffect(() => {
         isFocused && inputRef && inputRef?.current?.focus()
-        // isFocused && inputRef.current && inputRef?.current?.setSelection(0, 1)
     }, [])
 
     return (
@@ -46,11 +53,22 @@ const NameCellView = ({
                 style={getTextStyle(isSelected)}
                 value={text}
                 ref={inputRef}
+                placeholder={initVal.current}
+                placeholderTextColor={colors.place_holder}
+                selection={
+                    isFocused && editable && text === initVal.current ? { start: 0, end: text.length } : undefined
+                }
                 onChangeText={(val: string) => {
                     setText(val)
                     onEdit && onEdit(val)
+                    // }
                 }}
-                
+                onBlur={() => {
+                    if (text.length === 0) {
+                        setText(initVal.current)
+                        onEdit && onEdit(initVal.current)
+                    }
+                }}
             />
         </Pressable>
     )
