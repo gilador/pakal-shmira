@@ -92,9 +92,9 @@ function removeShift(
 ) {
     setTitles((pre) => {
         const ret = pre.toSpliced(index, 1)
-        console.log('gilad - index:', index)
-        console.log('gilad - pre:', pre)
-        console.log('gilad - ret:', ret)
+        
+        
+        
         return ret
     })
     setShifts((prev) => removeShiftBy(prev, index))
@@ -126,7 +126,7 @@ function addPost(
     setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>,
     setFocusHeaderId: React.Dispatch<React.SetStateAction<string | undefined>>
 ) {
-    console.log('gilad - addPost: postName:', postName)
+    
     const newPost = getUniqueString(postName)
     setFocusHeaderId(newPost.id)
     setTitles((prev) => prev.concat(newPost))

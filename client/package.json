@@ -10,7 +10,8 @@
         "tsc": "npx tsc",
         "test": "jest",
         "clean": "rm -rf node_modules",
-        "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\""
+        "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\"",
+        "clogs": "source scripts/clear_logs.sh"
     },
     "jest": {
         "preset": "jest-expo"

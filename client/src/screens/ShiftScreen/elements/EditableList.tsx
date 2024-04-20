@@ -35,11 +35,11 @@ const EditableList = ({ list, isEditing }: EditableListProps) => {
                     value={textValue}
                     placeholder="הזן שמות ברווחים"
                     onChangeText={(val: string) => {
-                        console.log(`r-onChangeText-> is`)
+                        
                         setTextValue(val)
                     }}
                     onBlur={() => {
-                        console.log(`r-onBlur-> is`)
+                        
                         shiftListContext.onUserAdded(textValue)
                         setTextValue('')
                         textInputRef?.current?.focus()

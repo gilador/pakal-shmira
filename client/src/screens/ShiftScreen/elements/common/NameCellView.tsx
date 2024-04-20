@@ -27,7 +27,7 @@ const NameCellView = ({
     const initVal = useRef<string>(user)
     const inputRef = useRef<TextInput>(null)
 
-    console.log(`NameCellView-> user:${user} text:${text}`)
+    
     user !== text && setText(user)
 
     if (!initVal.current) {

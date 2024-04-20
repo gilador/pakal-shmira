@@ -22,10 +22,10 @@ const AvailabilityTableView = ({
     onConstraintsChanged,
     style,
 }: AvailabilityTableProp) => {
-    console.log('AvailabilityTableView-> posts:', posts, 'length:', posts.length)
+    
 
     const postHeaderViews = useMemo(() => {
-        console.log('AvailabilityTableView->postHeaderViews->useMemo-> posts:', posts, 'length:', posts.length)
+        
         return generateHeaderViews(posts)
     }, [posts])
     const hoursHeaderViews = useMemo(() => generateHeaderViews(hours), [hours])

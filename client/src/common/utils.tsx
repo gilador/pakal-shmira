@@ -60,7 +60,7 @@ export function generateHeaderViews(
                     setHeaders &&
                         setHeaders((prev) => {
                             const newHeaders = JSON.parse(JSON.stringify(prev))
-                            console.log('generateHeaderViews-> onEdit-> newHeaders:', newHeaders)
+                            
                             newHeaders[index].value = newTextVal
                             return newHeaders
                         })
