@@ -3,7 +3,6 @@ import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 import React, { ReactNode, memo, useMemo } from 'react'
 
 import ActionButton, { IconType } from '@app/common/components/ActionButton'
-import withLogs from '@app/common/components/HOC/withLogs'
 
 type TableViewProp = {
     verticalHeaderViews: (ReactNode | undefined)[]
@@ -49,28 +48,32 @@ const TableView = ({
 
     const flexHeadArray = useMemo(() => Array(topHeaders.length).fill(1), [topHeaders])
 
+    const topHeadersWidth = topHeaders.length * 150
+
     return (
         <View style={[styles.container, style]}>
-            <View style={{ flexDirection: 'row', width: '100%' }}>
+            {enableEdit && onColAdd && (
+                <ActionButton style={styles.addTopHeaderButton} type={IconType.addCol} cb={() => onColAdd()} />
+            )}
+            <View style={{ flexDirection: 'row', width: topHeadersWidth}}>
+                {enableEdit && onRowAdd && (
+                    <ActionButton style={styles.addSideHeaderButton} type={IconType.addRow} cb={() => onRowAdd()} />
+                )}
                 <Table style={{ flex: 20 }} borderStyle={{ borderWidth: 1 }}>
-                    <Row data={topHeaders} flexArr={flexHeadArray} style={styles.head} textStyle={styles.text} />
-                    <TableWrapper style={styles.wrapper}>
-                        <Col data={sideHeaders} style={styles.title} textStyle={styles.text} />
+                    <Row data={topHeaders} style={[styles.head]} textStyle={styles.text} />
+                    <TableWrapper style={[styles.wrapper]}>
+                        <Col data={sideHeaders} style={[styles.title]} textStyle={styles.text} />
                         {tableElementViews && (
                             <Rows
                                 data={tableElementViews}
                                 flexArr={flexHeadArray.slice(0, -1)}
-                                style={styles.row}
+                                style={[styles.row]}
                                 textStyle={styles.text}
                             />
                         )}
                     </TableWrapper>
                 </Table>
-                {enableEdit && onColAdd && <ActionButton type={IconType.add} cb={() => onColAdd()} />}
             </View>
-            {enableEdit && onRowAdd && (
-                <ActionButton style={styles.addHourButton} type={IconType.add} cb={() => onRowAdd()} />
-            )}
         </View>
     )
 }
@@ -105,7 +108,8 @@ const styles = StyleSheet.create({
     wrapper: { flexDirection: 'row' },
     removeTopHeader: { position: 'absolute', overflow: 'visible' },
     removeSideTopHeader: { position: 'absolute', overflow: 'visible' },
-    addHourButton: { alignSelf: 'flex-start' },
+    addTopHeaderButton: { alignSelf: 'flex-start', paddingStart: 30 },
+    addSideHeaderButton: { alignSelf: 'flex-start', paddingTop: 30 },
 })
 
 export default memo(TableView)

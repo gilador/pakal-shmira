@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.black,
         flexBasis: 1,
         marginVertical: 60,
-        marginHorizontal: 20,
+        marginHorizontal: 10,
     },
     rightPanel: {
         flexGrow: 5,

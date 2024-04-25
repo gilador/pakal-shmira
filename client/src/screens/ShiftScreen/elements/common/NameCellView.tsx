@@ -86,6 +86,8 @@ const styles = StyleSheet.create({
     title: {
         textAlign: 'center',
         verticalAlign: 'middle',
+        maxWidth: 70,  
+        alignSelf: 'center',
     },
     selected: { backgroundColor: 'pink' },
 })

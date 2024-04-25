@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 
-import { generateHeaderViews, getEmptyMatrix, getUniqueString, useStateWithLogging } from '@app/common/utils'
+import { generateHeaderViews, getEmptyMatrix, getUniqueString } from '@app/common/utils'
 import { OptimizeShiftResponse } from '@app/services/api/models'
 import NameCellView from '../elements/common/NameCellView'
 import TableView from '../elements/common/TableView'
@@ -49,7 +49,7 @@ export default function useShiftTableView(
     )
     const ShiftTable = useMemo(
         () => (
-            <View style={{ flex: 1, overflow: 'scroll' }}>
+            <View style={{ flex: 1, overflow: 'scroll'}}>
                 <TableView
                     horizontalHeaderViews={postHeaderViews}
                     verticalHeaderViews={hoursHeaderViews}
@@ -92,9 +92,7 @@ function removeShift(
 ) {
     setTitles((pre) => {
         const ret = pre.toSpliced(index, 1)
-        
-        
-        
+
         return ret
     })
     setShifts((prev) => removeShiftBy(prev, index))
@@ -126,7 +124,6 @@ function addPost(
     setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>,
     setFocusHeaderId: React.Dispatch<React.SetStateAction<string | undefined>>
 ) {
-    
     const newPost = getUniqueString(postName)
     setFocusHeaderId(newPost.id)
     setTitles((prev) => prev.concat(newPost))
@@ -214,5 +211,5 @@ async function calcOptimizeShifts(
 const styles = StyleSheet.create({
     text: { textAlign: 'center' },
     title: { flex: 1 },
-    table: { position: 'absolute', top: 0, left: 0, width: '100%', paddingHorizontal: 100 },
+    table: { position: 'absolute', top: 0, left: 0, width: '100%' },
 })
