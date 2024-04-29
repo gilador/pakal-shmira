@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { MutableRefObject, useCallback, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 
 import { generateHeaderViews, getEmptyMatrix, getUniqueString } from '@app/common/utils'
@@ -7,8 +7,8 @@ import NameCellView from '../elements/common/NameCellView'
 import TableView from '../elements/common/TableView'
 import { UniqueString, User } from '../models'
 
-const mockedPosts = [getUniqueString('עמדה')]
-const mockedHours = [getUniqueString('שעה')]
+const initialPosts = [getUniqueString('עמדה')] //TODO li18n
+const initialHours = [getUniqueString('שעה')] //TODO li18n
 
 export default function useShiftTableView(
     selectedNameId: string | undefined,
@@ -16,12 +16,14 @@ export default function useShiftTableView(
     names: User[],
     callOptimizeAPI: () => Promise<OptimizeShiftResponse | undefined>
 ) {
-    const [posts, setPosts] = useState<UniqueString[]>(mockedPosts)
-    const [hours, setHours] = useState<UniqueString[]>(mockedHours)
+    const [posts, setPosts] = useState<UniqueString[]>(initialPosts)
+    const [hours, setHours] = useState<UniqueString[]>(initialHours)
     const [shifts, setShifts] = useState<User[][]>()
     const [isOptimized, setIsOptimized] = useState<boolean>(false)
     const [focusedPostHeaderId, setFocusedPostHeaderId] = useState<string>()
     const [focusedHourHeaderId, setFocusedHourHeaderId] = useState<string>()
+    const postCounter = React.useRef<number>(initialPosts.length)
+    const hoursCounter = React.useRef<number>(initialHours.length)
 
     const emptyCellsForSkeleton: User[][] = useMemo(() => {
         return getEmptyMatrix<User>(hours.length, posts.length, {
@@ -49,7 +51,7 @@ export default function useShiftTableView(
     )
     const ShiftTable = useMemo(
         () => (
-            <View style={{ flex: 1, overflow: 'scroll'}}>
+            <View style={{ flex: 1, overflow: 'scroll' }}>
                 <TableView
                     horizontalHeaderViews={postHeaderViews}
                     verticalHeaderViews={hoursHeaderViews}
@@ -59,13 +61,13 @@ export default function useShiftTableView(
                         removeShift(index, setPosts, setShifts, removeShiftsByPost)
                     }}
                     onColAdd={() => {
-                        addPost('עמדה', setPosts, setShifts, setFocusedPostHeaderId)
+                        addPost(getNewPostName('עמדה', posts, postCounter), setPosts, setShifts, setFocusedPostHeaderId) //TODO li18n
                     }}
                     onRowRemove={(index) => {
                         removeShift(index, setHours, setShifts, removeShiftsByHour)
                     }}
                     onRowAdd={() => {
-                        addHour('שעה', setHours, setShifts, setFocusedHourHeaderId)
+                        addHour(getNewPostName('שעה', posts, hoursCounter), setHours, setShifts, setFocusedHourHeaderId) //TODO li18n
                     }}
                     enableEdit={isEditing}
                 />
@@ -205,6 +207,11 @@ async function calcOptimizeShifts(
         console.error('Error occurred while optimizing shifts:', error)
         // Handle error appropriately, e.g., show error message to the user
     }
+}
+
+function getNewPostName(prefix: string, posts: UniqueString[], postCounter: MutableRefObject<number>): string {
+    postCounter.current++
+    return `${prefix} ${postCounter.current}`
 }
 
 //------------------------------------------StyleSheet--------------------------------------------------------
