@@ -1,8 +1,8 @@
 import React, { createContext, useCallback, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 
-import EditableList from '@app/screens/shiftScreen/elements/EditableList'
 import { extractWords } from '@app/common/utils'
+import EditableList from '@app/screens/shiftScreen/elements/EditableList'
 import { User } from '../models'
 
 export type ShiftListContextType = {
@@ -96,7 +96,7 @@ export default function useShiftUsersListView(isEditing = false) {
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'column',
-        backgroundColor: 'pink',
         flexBasis: 'auto',
+        flexShrink: 0,
     },
 })

@@ -1,5 +1,5 @@
-import { StyleProp, ViewStyle } from 'react-native'
 import { Dispatch, ReactNode, SetStateAction, useState } from 'react'
+import { StyleProp, ViewStyle } from 'react-native'
 
 import NameCellView from '@app/screens/shiftScreen/elements/common/NameCellView'
 import ActionButton, { IconType } from '@app/common/components/ActionButton'
@@ -60,7 +60,7 @@ export function generateHeaderViews(
                     setHeaders &&
                         setHeaders((prev) => {
                             const newHeaders = JSON.parse(JSON.stringify(prev))
-                            
+
                             newHeaders[index].value = newTextVal
                             return newHeaders
                         })

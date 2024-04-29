@@ -1,6 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native'
 import { memo, useState } from 'react'
 
+import { colors } from '@app/styles'
+
 export type AvailabilityCellViewProps = {
     availability: boolean
     index: [number, number]
@@ -39,8 +41,8 @@ const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
     },
-    available: { backgroundColor: 'green' },
-    uAvailable: { backgroundColor: 'red' },
+    available: { backgroundColor: colors.available },
+    uAvailable: { backgroundColor: colors.unavailable },
     hover: { backgroundColor: 'pink' },
 })
 

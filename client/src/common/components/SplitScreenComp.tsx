@@ -39,8 +39,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     separator: {
-        backgroundColor: colors.black,
-        flexBasis: 1,
+        backgroundColor: colors.border,
+        flexBasis: 2,
         marginVertical: 60,
         marginHorizontal: 10,
     },

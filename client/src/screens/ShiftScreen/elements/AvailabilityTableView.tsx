@@ -22,10 +22,7 @@ const AvailabilityTableView = ({
     onConstraintsChanged,
     style,
 }: AvailabilityTableProp) => {
-    
-
     const postHeaderViews = useMemo(() => {
-        
         return generateHeaderViews(posts)
     }, [posts])
     const hoursHeaderViews = useMemo(() => generateHeaderViews(hours), [hours])
@@ -54,12 +51,12 @@ const AvailabilityTableView = ({
     }, [transposedMatrix])
 
     return (
-        <View style={[styles.container, style]}>
+        <View style={[styles.container]}>
             <TableView
                 horizontalHeaderViews={postHeaderViews}
                 verticalHeaderViews={hoursHeaderViews}
                 tableElementViews={shiftDataNamesElements}
-                style={{ paddingHorizontal: 100 }}
+                style={[styles.table, style]}
             />
         </View>
     )
@@ -73,10 +70,9 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexShrink: 2,
-        padding: 16,
-        paddingTop: 30,
         overflow: 'scroll',
     },
+    table: { position: 'absolute', top: 0, left: 0, width: '100%' },
 })
 
 export default withLogs(AvailabilityTableView)

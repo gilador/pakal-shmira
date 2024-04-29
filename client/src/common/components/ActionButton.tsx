@@ -2,19 +2,20 @@ import React, { memo, useMemo, useState } from 'react'
 import { StyleProp, StyleSheet, ViewStyle } from 'react-native'
 import { IconButton } from 'react-native-paper'
 import { IconSource } from 'react-native-paper/lib/typescript/components/Icon'
-import AddCol from 'src/assets/svg/add-col.svg'
-import AddRow from 'src/assets/svg/add-row.svg'
 
+//@ts-ignore
+import AddCol from 'src/assets/svg/add-col.svg'
+//@ts-ignore
+import AddRow from 'src/assets/svg/add-row.svg'
 
 import { colors } from '@app/styles'
 import { View } from './Themed'
-import { re } from 'mathjs'
 
 export enum IconType {
     close,
     add,
     addCol,
-    addRow
+    addRow,
 }
 type CloseButtonProps = {
     type: IconType
@@ -36,9 +37,9 @@ const ActionButton = ({ type, cb, style, center = false, enabled = true }: Close
             onLayout={(event) => {
                 setCompDim([event.nativeEvent.layout.width, event.nativeEvent.layout.height])
             }}
-            style={[style, { backgroundColor: 'transparent' }, {alignItems: 'center', justifyContent: 'center'}]}
+            style={[style, { backgroundColor: 'transparent' }, { alignItems: 'center', justifyContent: 'center' }]}
         >
-            <View style={[styles.whiteBackgroundFill, {width:iconDim[1], height:iconDim[0]}]} />
+            <View style={[styles.whiteBackgroundFill, { width: iconDim[1], height: iconDim[0] }]} />
             <IconButton
                 onLayout={(event) => {
                     setIconDim([event.nativeEvent.layout.width, event.nativeEvent.layout.height])
@@ -76,10 +77,10 @@ function getIconColor(type: IconType): string | undefined {
         case IconType.close:
             return colors.remove
         case IconType.add:
-            return colors.add
+            return colors.positive
         case IconType.addCol:
         case IconType.addRow:
-            return colors.add
+            return colors.primaryBackground
         default:
             return undefined
     }
@@ -88,7 +89,7 @@ function getIconBackgroundColor(type: IconType): string | undefined {
     switch (type) {
         case IconType.addCol:
         case IconType.addRow:
-            return colors.white
+            return colors.positive
         default:
             return undefined
     }
@@ -103,8 +104,7 @@ const styles = StyleSheet.create({
         width: 'auto',
         height: 'auto',
         borderRadius: 100,
-        alignSelf:'center'
-        
+        alignSelf: 'center',
     },
     icon: { width: 'auto', height: 'auto', margin: 0, padding: 0 },
 })

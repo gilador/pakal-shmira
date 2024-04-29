@@ -27,7 +27,6 @@ const NameCellView = ({
     const initVal = useRef<string>(user)
     const inputRef = useRef<TextInput>(null)
 
-    
     user !== text && setText(user)
 
     if (!initVal.current) {
@@ -86,10 +85,10 @@ const styles = StyleSheet.create({
     title: {
         textAlign: 'center',
         verticalAlign: 'middle',
-        maxWidth: 70,  
+        maxWidth: 70,
         alignSelf: 'center',
     },
-    selected: { backgroundColor: 'pink' },
+    selected: { backgroundColor: colors.selected, borderRadius: 5, padding: 2 },
 })
 
 export default withLogs(NameCellView)

@@ -1,9 +1,9 @@
-import { StyleProp, View, ViewStyle } from 'react-native'
 import { memo, useContext, useState } from 'react'
+import { StyleProp, View, ViewStyle } from 'react-native'
 import { IconButton } from 'react-native-paper'
 
-import { ShiftListContext } from './useShiftUsersListView'
 import { colors } from '@app/styles'
+import { ShiftListContext } from './useShiftUsersListView'
 
 type EditAddButtonViewProps = {
     style?: StyleProp<ViewStyle>
@@ -22,7 +22,7 @@ export default function useEditModeButton(initialEditMode = false) {
                     setIsEditing((pre) => !pre)
                     shiftListContext.onUserToggleSelected(shiftListContext.selectedNameId)
                 }}
-                containerColor={colors.ok}
+                containerColor={colors.positive}
                 iconColor="white"
             />
         </View>

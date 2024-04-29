@@ -16,18 +16,10 @@ const fonts = {
 
 function createTextStyle(fontProps: FontProps) {
     return StyleSheet.create({
-        BlueRegular: textStyle(fontProps, colors.blue_corp, fonts.light),
-        BlueBold: textStyle(fontProps, colors.blue_corp, fonts.bold),
         DarkRegular: textStyle(fontProps, colors.dark_text, fonts.light),
         DarkBold: textStyle(fontProps, colors.dark_text, fonts.bold),
-        DarkGreyRegular: textStyle(fontProps, colors.abbey, fonts.light),
-        GreenRegular: textStyle(fontProps, colors.green_shade1, fonts.light),
-        GreyRegular: textStyle(fontProps, colors.slate_grey, fonts.light),
-        GrayHebDot: textStyle(fontProps, colors.slate_grey, fonts.heb_dot),
-        OrangeRegular: textStyle(fontProps, colors.dario_pumpkin, fonts.light),
-        OrangeBold: textStyle(fontProps, colors.dario_pumpkin, fonts.bold),
-        PurpleRegular: textStyle(fontProps, colors.purple, fonts.light),
-        PurpleBold: textStyle(fontProps, colors.purple, fonts.bold),
+        GreyRegular: textStyle(fontProps, colors.grey_text, fonts.light),
+        GrayHebDot: textStyle(fontProps, colors.grey_text, fonts.heb_dot),
         TransparentRegular: textStyle(fontProps, 'transparent', fonts.light),
     })
 }

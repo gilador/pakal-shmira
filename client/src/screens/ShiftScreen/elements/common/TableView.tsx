@@ -55,7 +55,7 @@ const TableView = ({
             {enableEdit && onColAdd && (
                 <ActionButton style={styles.addTopHeaderButton} type={IconType.addCol} cb={() => onColAdd()} />
             )}
-            <View style={{ flexDirection: 'row', width: topHeadersWidth}}>
+            <View style={{ flexDirection: 'row', width: topHeadersWidth }}>
                 {enableEdit && onRowAdd && (
                     <ActionButton style={styles.addSideHeaderButton} type={IconType.addRow} cb={() => onRowAdd()} />
                 )}

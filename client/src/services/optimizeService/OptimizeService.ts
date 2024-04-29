@@ -12,9 +12,8 @@ function transformConstraintsToBool(constraints: Constraint[][][] | undefined): 
 }
 
 export async function optimize(constraints: Constraint[][][] | undefined): Promise<OptimizeShiftResponse | undefined> {
-    
     const boolConstraints = transformConstraintsToBool(constraints)
-    
+
     const ret = await ApiService.optimizeShift(boolConstraints)
     return constraints ? ret : undefined
 }

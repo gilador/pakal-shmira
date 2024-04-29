@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useState } from 'react'
+import { Fragment, memo, useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Button } from 'react-native-paper'
 
@@ -7,6 +7,8 @@ import SplitScreenComp from '@app/common/components/SplitScreenComp'
 import AvailabilityTableView from './elements/AvailabilityTableView'
 import useShiftUsersListView from './hooks/useShiftUsersListView'
 import withLogs from '@app/common/components/HOC/withLogs'
+
+import { black } from 'react-native-paper/lib/typescript/styles/themes/v2/colors'
 
 import { Constraint, ShiftMap, UniqueString, User, UserShiftData } from './models'
 import useShiftTableView from './hooks/useShiftTableView'
@@ -45,28 +47,33 @@ const ShiftScreen = () => {
                 {shiftMap.usersSize() > 0 && names.length > 0 && ShiftTableView}
 
                 {selectedIndex >= 0 && (
-                    <AvailabilityTableView
-                        style={{ marginTop: 30, flex: 1 }}
-                        availabilityData={JSON.parse(
-                            JSON.stringify(shiftMap.getUser(names[selectedIndex].id)?.constraints)
-                        )}
-                        hours={hours}
-                        posts={posts}
-                        onConstraintsChanged={(newConstraints: Constraint[][]) => {
-                            setShiftMap((prev) => {
-                                const newShiftMap = prev.copy()
-                                const uerShiftData = prev.getUser(names[selectedIndex].id)
-                                if (uerShiftData) {
-                                    uerShiftData.constraints = newConstraints
-                                    newShiftMap.updateUser(uerShiftData)
-                                }
-                                return newShiftMap
-                            })
-                        }}
-                    />
+                    <Fragment>
+                        <View style={{ backgroundColor: colors.border, height: 2, marginVertical: 10 }} />
+
+                        <AvailabilityTableView
+                            availabilityData={JSON.parse(
+                                JSON.stringify(shiftMap.getUser(names[selectedIndex].id)?.constraints)
+                            )}
+                            hours={hours}
+                            posts={posts}
+                            onConstraintsChanged={(newConstraints: Constraint[][]) => {
+                                setShiftMap((prev) => {
+                                    const newShiftMap = prev.copy()
+                                    const uerShiftData = prev.getUser(names[selectedIndex].id)
+                                    if (uerShiftData) {
+                                        uerShiftData.constraints = newConstraints
+                                        newShiftMap.updateUser(uerShiftData)
+                                    }
+                                    return newShiftMap
+                                })
+                            }}
+                        />
+                    </Fragment>
                 )}
             </View>
         )
+
+    const leftView = <View style={{ flexDirection: 'column', flexShrink: 0 }}>{namesListView}</View>
 
     return (
         <View style={styles.container}>
@@ -74,7 +81,7 @@ const ShiftScreen = () => {
                 <EditAddButtonView style={{ width: '100%', flexGrow: 0 }} />
             </View>
             <SplitScreenComp leftPanel={namesListView} rightPanel={rightView} style={styles.body} />
-            <Button style={styles.bottom} onPress={onOptimize} textColor={colors.white}>
+            <Button style={styles.bottom} onPress={onOptimize} textColor={colors.primaryBackground}>
                 optimize
             </Button>
         </View>
@@ -167,7 +174,7 @@ const styles = StyleSheet.create({
         flexBasis: 'auto',
         width: 300,
         alignSelf: 'flex-start',
-        backgroundColor: colors.ok,
+        backgroundColor: colors.send,
     },
     rightContainer: {
         flexDirection: 'column',
