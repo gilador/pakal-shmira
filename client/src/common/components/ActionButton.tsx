@@ -45,7 +45,8 @@ const ActionButton = ({ type, cb, style, center = false, enabled = true }: Close
                 }}
                 icon={getIcon(type)}
                 onPress={cb}
-                iconColor={getIconColors(type)}
+                containerColor={getIconBackgroundColor(type)}
+                iconColor={getIconColor(type)}
                 style={styles.icon}
                 disabled={!enabled}
             />
@@ -70,12 +71,24 @@ function getIcon(type: IconType): IconSource {
     }
 }
 
-function getIconColors(type: IconType): string | undefined {
+function getIconColor(type: IconType): string | undefined {
     switch (type) {
         case IconType.close:
             return colors.remove
         case IconType.add:
             return colors.add
+        case IconType.addCol:
+        case IconType.addRow:
+            return colors.add
+        default:
+            return undefined
+    }
+}
+function getIconBackgroundColor(type: IconType): string | undefined {
+    switch (type) {
+        case IconType.addCol:
+        case IconType.addRow:
+            return colors.white
         default:
             return undefined
     }
