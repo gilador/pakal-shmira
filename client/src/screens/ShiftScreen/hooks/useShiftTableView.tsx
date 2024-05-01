@@ -1,4 +1,4 @@
-import React, { MutableRefObject, useCallback, useMemo, useState } from 'react'
+import React, { Dispatch, MutableRefObject, SetStateAction, useCallback, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 
 import { generateHeaderViews, getEmptyMatrix, getUniqueString } from '@app/common/utils'
@@ -32,12 +32,20 @@ export default function useShiftTableView(
         })
     }, [hours, posts])
 
+    function onHeaderEdit(setState: Dispatch<SetStateAction<UniqueString[]>>, newTextVal: string, index: number) {
+        setState((prev) => {
+            const newHeaders = JSON.parse(JSON.stringify(prev))
+
+            newHeaders[index].value = newTextVal
+            return newHeaders
+        })
+    }
     const postHeaderViews = useMemo(
-        () => generateHeaderViews(posts, focusedPostHeaderId, isEditing, setPosts),
+        () => generateHeaderViews(posts, focusedPostHeaderId, isEditing, (newTextVal, index)=>onHeaderEdit(setPosts, newTextVal, index)),
         [posts, isEditing]
     )
     const hoursHeaderViews = useMemo(
-        () => generateHeaderViews(hours, focusedHourHeaderId, isEditing, setHours),
+        () => generateHeaderViews(hours, focusedHourHeaderId, isEditing, (newTextVal, index)=>onHeaderEdit(setHours, newTextVal, index)),
         [hours, isEditing]
     )
     const shiftDataViews = useMemo(
@@ -46,7 +54,7 @@ export default function useShiftTableView(
     )
 
     const onOptimize = useCallback(
-        () => calcOptimizeShifts(names, hours, posts, callOptimizeAPI, setIsOptimized, setShifts),
+        () => calcOptimizeShifts(names, hours, posts, callOptimizeAPI, ()=>setIsOptimized, setShifts),
         [names, hours, posts, callOptimizeAPI]
     )
     const ShiftTable = useMemo(
@@ -170,7 +178,7 @@ async function calcOptimizeShifts(
     hours: UniqueString[],
     posts: UniqueString[],
     callOptimizeAPI: () => Promise<OptimizeShiftResponse | undefined>,
-    setIsOptimized: React.Dispatch<React.SetStateAction<boolean>>,
+    setIsOptimized: (isOpt: boolean)=>void,
     setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>
 ) {
     try {

@@ -48,7 +48,7 @@ export function generateHeaderViews(
     headers: UniqueString[],
     focusedHeaderId?: string,
     editMode?: boolean,
-    setHeaders?: React.Dispatch<React.SetStateAction<UniqueString[]>>
+    onHeaderEdit?: (newTextVal: string, index: number) => void
 ): ReactNode[] {
     return headers.map((header, index) => {
         return header ? (
@@ -57,13 +57,7 @@ export function generateHeaderViews(
                 editable={editMode}
                 isFocused={focusedHeaderId === header.id}
                 onEdit={(newTextVal) => {
-                    setHeaders &&
-                        setHeaders((prev) => {
-                            const newHeaders = JSON.parse(JSON.stringify(prev))
-
-                            newHeaders[index].value = newTextVal
-                            return newHeaders
-                        })
+                    onHeaderEdit && onHeaderEdit(newTextVal, index)
                 }}
             />
         ) : undefined
