@@ -32,14 +32,6 @@ export default function useShiftTableView(
         })
     }, [hours, posts])
 
-    function onHeaderEdit(setState: Dispatch<SetStateAction<UniqueString[]>>, newTextVal: string, index: number) {
-        setState((prev) => {
-            const newHeaders = JSON.parse(JSON.stringify(prev))
-
-            newHeaders[index].value = newTextVal
-            return newHeaders
-        })
-    }
     const postHeaderViews = useMemo(
         () => generateHeaderViews(posts, focusedPostHeaderId, isEditing, (newTextVal, index)=>onHeaderEdit(setPosts, newTextVal, index)),
         [posts, isEditing]
@@ -94,6 +86,14 @@ export default function useShiftTableView(
 }
 
 //------------------------------------------functions--------------------------------------------------------
+function onHeaderEdit(setState: Dispatch<SetStateAction<UniqueString[]>>, newTextVal: string, index: number) {
+    setState((prev) => {
+        const newHeaders = JSON.parse(JSON.stringify(prev))
+        newHeaders[index].value = newTextVal
+        return newHeaders
+    })
+}
+
 function removeShift(
     index: number,
     setTitles: React.Dispatch<React.SetStateAction<UniqueString[]>>,
