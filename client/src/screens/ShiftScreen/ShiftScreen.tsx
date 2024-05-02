@@ -45,12 +45,9 @@ const ShiftScreen = () => {
         (
             <View style={{ flexDirection: 'column', flexShrink: 1 }}>
                 {shiftMap.usersSize() > 0 && names.length > 0 && ShiftTableView}
-
-                {selectedIndex >= 0 && (
-                    <Fragment>
-                        <View style={{ backgroundColor: colors.border, height: 2, marginVertical: 10 }} />
-
-                        <AvailabilityTableView
+                <View style={{ backgroundColor: colors.border, height: 2, marginVertical: 10 }} />
+                    <View style={{ flex: 1, flexShrink: 2 }}>
+                    {selectedIndex >= 0 && (<AvailabilityTableView
                             availabilityData={JSON.parse(
                                 JSON.stringify(shiftMap.getUser(names[selectedIndex].id)?.constraints)
                             )}
@@ -68,8 +65,8 @@ const ShiftScreen = () => {
                                 })
                             }}
                         />
-                    </Fragment>
-                )}
+                    )}
+                    </View>
             </View>
         )
 

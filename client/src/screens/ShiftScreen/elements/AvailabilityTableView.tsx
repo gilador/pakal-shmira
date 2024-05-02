@@ -68,9 +68,9 @@ const AvailabilityTableView = ({
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        flexShrink: 2,
         overflow: 'scroll',
+        width: '100%',
+        height: '100%',
     },
     table: { position: 'absolute', top: 0, left: 0, width: '100%' },
 })

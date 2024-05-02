@@ -43,6 +43,7 @@ const NameCellView = ({
 
     return (
         <Pressable
+            disabled={!editable}
             onPress={cb}
             onHoverIn={({ nativeEvent: MouseEvent }) => {}}
             style={[style, { minHeight: 20, justifyContent: 'center' }]}
