@@ -1,9 +1,9 @@
-import { memo, useContext, useState } from 'react'
 import { StyleProp, View, ViewStyle } from 'react-native'
+import { memo, useContext, useState } from 'react'
 import { IconButton } from 'react-native-paper'
 
-import { colors } from '@app/styles'
 import { ShiftListContext } from './useShiftUsersListView'
+import { colors } from '@app/styles'
 
 type EditAddButtonViewProps = {
     style?: StyleProp<ViewStyle>

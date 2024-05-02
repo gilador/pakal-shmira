@@ -9,7 +9,7 @@ type TableViewProp = {
     horizontalHeaderViews: (ReactNode | undefined)[]
     tableElementViews?: ReactNode[][]
     style?: StyleProp<ViewStyle>
-    enableEdit?: boolean
+    isEditing?: boolean
     onColRemove?: (index: number) => any
     onColAdd?: () => any
     onRowRemove?: (index: number) => any
@@ -21,30 +21,30 @@ const TableView = ({
     verticalHeaderViews,
     tableElementViews,
     style,
-    enableEdit,
+    isEditing,
     onColRemove,
     onColAdd,
     onRowRemove,
     onRowAdd,
 }: TableViewProp) => {
     const sideHeaders = useMemo(() => {
-        return enableEdit && onRowRemove
+        return isEditing && onRowRemove
             ? verticalHeaderViews.map((header, index) => {
                   const canBeRemoved = verticalHeaderViews.length > 1
                   return removableHeaderCell(header, () => onRowRemove(index), styles.removeSideTopHeader, canBeRemoved)
               })
             : verticalHeaderViews
-    }, [enableEdit, verticalHeaderViews])
+    }, [isEditing, verticalHeaderViews])
 
     const topHeaders = useMemo(() => {
         const adaptedHorizontalHeaderViews = [undefined, ...horizontalHeaderViews]
-        return enableEdit && onColRemove
+        return isEditing && onColRemove
             ? adaptedHorizontalHeaderViews.map((header, index) => {
                   const canBeRemoved = horizontalHeaderViews.length > 1
                   return removableHeaderCell(header, () => onColRemove(index - 1), styles.removeTopHeader, canBeRemoved)
               })
             : adaptedHorizontalHeaderViews
-    }, [enableEdit, horizontalHeaderViews])
+    }, [isEditing, horizontalHeaderViews])
 
     const flexHeadArray = useMemo(() => Array(topHeaders.length).fill(1), [topHeaders])
 
@@ -52,12 +52,22 @@ const TableView = ({
 
     return (
         <View style={[styles.container, style]}>
-            {enableEdit && onColAdd && (
-                <ActionButton style={styles.addTopHeaderButton} type={IconType.addCol} cb={() => onColAdd()} />
+            {onColAdd && (
+                <ActionButton
+                    style={[styles.addTopHeaderButton, !isEditing ? styles.hide : undefined]}
+                    type={IconType.addCol}
+                    cb={() => onColAdd()}
+                    enabled={isEditing}
+                />
             )}
             <View style={{ flexDirection: 'row', width: topHeadersWidth }}>
-                {enableEdit && onRowAdd && (
-                    <ActionButton style={styles.addSideHeaderButton} type={IconType.addRow} cb={() => onRowAdd()} />
+                {onRowAdd && (
+                    <ActionButton
+                        style={[styles.addSideHeaderButton, !isEditing ? styles.hide : undefined]}
+                        type={IconType.addRow}
+                        cb={() => onRowAdd()}
+                        enabled={isEditing}
+                    />
                 )}
                 <Table style={{ flex: 20 }} borderStyle={{ borderWidth: 1 }}>
                     <Row data={topHeaders} style={[styles.head]} textStyle={styles.text} />
@@ -108,8 +118,9 @@ const styles = StyleSheet.create({
     wrapper: { flexDirection: 'row' },
     removeTopHeader: { position: 'absolute', overflow: 'visible' },
     removeSideTopHeader: { position: 'absolute', overflow: 'visible' },
-    addTopHeaderButton: { alignSelf: 'flex-start', paddingStart: 30 },
-    addSideHeaderButton: { alignSelf: 'flex-start', paddingTop: 30 },
+    addTopHeaderButton: { alignSelf: 'flex-start', paddingStart: 30, paddingBottom: 5 },
+    addSideHeaderButton: { alignSelf: 'flex-start', paddingTop: 30, paddingEnd: 5 },
+    hide: { opacity: 0 },
 })
 
 export default memo(TableView)

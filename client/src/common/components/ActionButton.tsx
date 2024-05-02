@@ -1,7 +1,7 @@
-import React, { memo, useMemo, useState } from 'react'
-import { StyleProp, StyleSheet, ViewStyle } from 'react-native'
-import { IconButton } from 'react-native-paper'
 import { IconSource } from 'react-native-paper/lib/typescript/components/Icon'
+import { StyleProp, StyleSheet, ViewStyle } from 'react-native'
+import React, { memo, useMemo, useState } from 'react'
+import { IconButton } from 'react-native-paper'
 
 //@ts-ignore
 import AddCol from 'src/assets/svg/add-col.svg'

@@ -33,11 +33,17 @@ export default function useShiftTableView(
     }, [hours, posts])
 
     const postHeaderViews = useMemo(
-        () => generateHeaderViews(posts, focusedPostHeaderId, isEditing, (newTextVal, index)=>onHeaderEdit(setPosts, newTextVal, index)),
+        () =>
+            generateHeaderViews(posts, focusedPostHeaderId, isEditing, (newTextVal, index) =>
+                onHeaderEdit(setPosts, newTextVal, index)
+            ),
         [posts, isEditing]
     )
     const hoursHeaderViews = useMemo(
-        () => generateHeaderViews(hours, focusedHourHeaderId, isEditing, (newTextVal, index)=>onHeaderEdit(setHours, newTextVal, index)),
+        () =>
+            generateHeaderViews(hours, focusedHourHeaderId, isEditing, (newTextVal, index) =>
+                onHeaderEdit(setHours, newTextVal, index)
+            ),
         [hours, isEditing]
     )
     const shiftDataViews = useMemo(
@@ -46,7 +52,7 @@ export default function useShiftTableView(
     )
 
     const onOptimize = useCallback(
-        () => calcOptimizeShifts(names, hours, posts, callOptimizeAPI, ()=>setIsOptimized, setShifts),
+        () => calcOptimizeShifts(names, hours, posts, callOptimizeAPI, () => setIsOptimized, setShifts),
         [names, hours, posts, callOptimizeAPI]
     )
     const ShiftTable = useMemo(
@@ -69,7 +75,7 @@ export default function useShiftTableView(
                     onRowAdd={() => {
                         addHour(getNewPostName('שעה', posts, hoursCounter), setHours, setShifts, setFocusedHourHeaderId) //TODO li18n
                     }}
-                    enableEdit={isEditing}
+                    isEditing={isEditing}
                 />
             </View>
         ),
@@ -178,7 +184,7 @@ async function calcOptimizeShifts(
     hours: UniqueString[],
     posts: UniqueString[],
     callOptimizeAPI: () => Promise<OptimizeShiftResponse | undefined>,
-    setIsOptimized: (isOpt: boolean)=>void,
+    setIsOptimized: (isOpt: boolean) => void,
     setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>
 ) {
     try {

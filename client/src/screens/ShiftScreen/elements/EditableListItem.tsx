@@ -16,7 +16,7 @@ const EditableListItem = ({ user, isEditing }: ItemProps) => {
     const shiftListContext = useContext(ShiftListContext)
 
     return (
-        <View style={styles.itemContainer}>
+        <View style={[styles.itemContainer]}>
             <NameCellView
                 user={user.name}
                 isSelected={shiftListContext.selectedNameId === user.id}
@@ -25,7 +25,12 @@ const EditableListItem = ({ user, isEditing }: ItemProps) => {
                 }}
                 style={styles.nameCell}
             />
-            {isEditing && <ActionButton type={IconType.close} cb={() => shiftListContext.onUserRemoved(user.id)} />}
+            <ActionButton
+                style={!isEditing ? styles.hide : undefined}
+                type={IconType.close}
+                cb={() => shiftListContext.onUserRemoved(user.id)}
+                enabled={isEditing}
+            />
         </View>
     )
 }
@@ -35,6 +40,9 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         height: '100%',
         paddingBottom: 40,
+    },
+    hide: {
+        opacity: 0,
     },
     list: {
         flexGrow: 1,

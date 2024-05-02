@@ -26,24 +26,23 @@ const EditableList = ({ list, isEditing }: EditableListProps) => {
 
     return (
         <View style={styles.container}>
-            {isEditing && (
-                <TextInput
-                    ref={textInputRef}
-                    mode="outlined"
-                    placeholderTextColor="lightgray"
-                    style={styles.input}
-                    value={textValue}
-                    placeholder="הזן שמות ברווחים"
-                    onChangeText={(val: string) => {
-                        setTextValue(val)
-                    }}
-                    onBlur={() => {
-                        shiftListContext.onUserAdded(textValue)
-                        setTextValue('')
-                        textInputRef?.current?.focus()
-                    }}
-                />
-            )}
+            <TextInput
+                ref={textInputRef}
+                mode="outlined"
+                placeholderTextColor="lightgray"
+                style={[styles.input, { opacity: isEditing ? 1 : 0 }]}
+                value={textValue}
+                placeholder="הזן שמות ברווחים" // TODO i18n
+                onChangeText={(val: string) => {
+                    setTextValue(val)
+                }}
+                onBlur={() => {
+                    shiftListContext.onUserAdded(textValue)
+                    setTextValue('')
+                    textInputRef?.current?.focus()
+                }}
+            />
+
             <FlatList
                 style={styles.list}
                 data={list}

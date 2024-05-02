@@ -1,8 +1,8 @@
 import React, { createContext, useCallback, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 
-import { extractWords } from '@app/common/utils'
 import EditableList from '@app/screens/shiftScreen/elements/EditableList'
+import { extractWords } from '@app/common/utils'
 import { User } from '../models'
 
 export type ShiftListContextType = {
@@ -19,7 +19,7 @@ export const ShiftListContext = createContext<ShiftListContextType>({
     selectedNameId: undefined,
 })
 
-const mocked = [
+const preloaded = [
     { name: 'אלון', id: 1 + 'אלון' },
     { name: 'צביקה', id: 2 + 'צביקה' },
     { name: 'תמיר', id: 3 + 'תמיר' },
@@ -33,7 +33,7 @@ const mocked = [
 ]
 
 export default function useShiftUsersListView(isEditing = false) {
-    const [list, setList] = useState<User[]>(mocked)
+    const [list, setList] = useState<User[]>(preloaded)
 
     const [selectedNameId, setSelectedNameId] = useState<string | undefined>(undefined)
 

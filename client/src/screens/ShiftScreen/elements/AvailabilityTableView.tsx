@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react'
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
+import React, { useMemo } from 'react'
 
-import withLogs from '@app/common/components/HOC/withLogs'
 import { generateHeaderViews, transposeMat } from '@app/common/utils'
-import { Constraint, UniqueString } from '../models'
+import withLogs from '@app/common/components/HOC/withLogs'
 import AvailabilityCellView from './AvailabilityCellView'
+import { Constraint, UniqueString } from '../models'
 import TableView from './common/TableView'
 
 type AvailabilityTableProp = {
