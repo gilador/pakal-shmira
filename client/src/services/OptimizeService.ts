@@ -1,7 +1,8 @@
 import { Constraint } from '@app/screens/shiftScreen/models'
-import { OptimizeShiftResponse } from '../api/models'
-import ApiService from '../api'
+import { OptimizeShiftResponse } from './api/models'
+import ApiService from './api'
 
+//Todo export class
 function transformConstraintsToBool(constraints: Constraint[][][] | undefined): boolean[][][] {
     const boolConstraints: boolean[][][] | undefined = constraints?.map((constraint1: Constraint[][]) =>
         constraint1.map((constraint2: Constraint[]) =>

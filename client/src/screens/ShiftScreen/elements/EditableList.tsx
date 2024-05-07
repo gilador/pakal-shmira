@@ -2,7 +2,7 @@ import React, { memo, useContext, useEffect, useRef } from 'react'
 import { FlatList, StyleSheet, View } from 'react-native'
 import { TextInput } from 'react-native-paper'
 
-import { ShiftListContext } from '../hooks/useShiftUsersListView'
+import { ShiftListContext } from '../hookComponents/useShiftUsersListView'
 import withLogging from '@app/common/components/HOC/withLogs'
 import { User } from '@app/screens/shiftScreen/models'
 import EditableListItem from './EditableListItem'

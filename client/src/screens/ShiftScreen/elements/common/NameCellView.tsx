@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef } from 'react'
 
 import withLogs from '@app/common/components/HOC/withLogs'
 import { colors } from '@app/styles'
+import { View } from '@app/common/components/Themed'
 
 export type NameCellViewProps = {
     cb?: () => void
@@ -11,6 +12,7 @@ export type NameCellViewProps = {
     isSelected?: boolean
     isFocused?: boolean
     editable?: boolean
+    disableClick?: boolean
     style?: StyleProp<ViewStyle>
 }
 
@@ -19,6 +21,7 @@ const NameCellView = ({
     isSelected = false,
     style,
     editable = false,
+    disableClick = false,
     isFocused = false,
     onEdit,
     cb,
@@ -43,9 +46,9 @@ const NameCellView = ({
 
     return (
         <Pressable
-            disabled={!editable}
+            disabled={disableClick}
             onPress={cb}
-            onHoverIn={({ nativeEvent: MouseEvent }) => {}}
+            onHoverIn={undefined}
             style={[style, { minHeight: 20, justifyContent: 'center' }]}
         >
             <TextInput

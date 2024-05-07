@@ -1,9 +1,11 @@
-import React, { createContext, useCallback, useMemo, useState } from 'react'
+import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 
 import EditableList from '@app/screens/shiftScreen/elements/EditableList'
 import { extractWords } from '@app/common/utils'
 import { User } from '../models'
+import useSyncedState from '@app/hooks/useSyncedState'
+import AsyncStorageManager from '@app/services/AsyncStorageManager'
 
 export type ShiftListContextType = {
     readonly onUserToggleSelected: (userNameId: string | undefined) => void
@@ -19,21 +21,10 @@ export const ShiftListContext = createContext<ShiftListContextType>({
     selectedNameId: undefined,
 })
 
-const preloaded = [
-    { name: 'אלון', id: 1 + 'אלון' },
-    { name: 'צביקה', id: 2 + 'צביקה' },
-    { name: 'תמיר', id: 3 + 'תמיר' },
-    { name: 'רחמים', id: 4 + 'רחמים' },
-    { name: 'מתי', id: 5 + 'מתי' },
-    { name: 'כספי', id: 6 + 'כספי' },
-    { name: 'גדי', id: 8 + 'גדי' },
-    { name: 'יוסף', id: 7 + 'יוסף' },
-    { name: 'חיים', id: 9 + 'חיים' },
-    { name: 'יששכר', id: 10 + 'יששכר' },
-]
+const preloaded: User[] = []
 
 export default function useShiftUsersListView(isEditing = false) {
-    const [list, setList] = useState<User[]>(preloaded)
+    const [list, setList] = useSyncedState<User[]>('names', [])
 
     const [selectedNameId, setSelectedNameId] = useState<string | undefined>(undefined)
 
@@ -54,7 +45,9 @@ export default function useShiftUsersListView(isEditing = false) {
         }))
 
         setList((preList) => {
-            return [...ret, ...preList]
+            console.log('useShiftUsersListView->onAdd-> preList:', preList)
+            const prev = preList ? preList:  []
+            return [...ret, ...prev]
         })
     }
 

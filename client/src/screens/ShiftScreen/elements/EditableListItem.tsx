@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native'
 import { memo, useContext } from 'react'
 
 import ActionButton, { IconType } from '../../../common/components/ActionButton'
-import { ShiftListContext } from '../hooks/useShiftUsersListView'
+import { ShiftListContext } from '../hookComponents/useShiftUsersListView'
 import NameCellView from './common/NameCellView'
 import { User } from '../models'
 

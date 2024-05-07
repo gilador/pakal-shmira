@@ -53,6 +53,7 @@ export function generateHeaderViews(
             <NameCellView
                 user={header.value}
                 editable={editMode}
+                disableClick={editMode}
                 isFocused={focusedHeaderId === header.id}
                 onEdit={(newTextVal) => {
                     onHeaderEdit && onHeaderEdit(newTextVal, index)

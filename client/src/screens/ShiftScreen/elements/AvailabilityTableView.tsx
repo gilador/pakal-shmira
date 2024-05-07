@@ -1,5 +1,5 @@
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 
 import { generateHeaderViews, transposeMat } from '@app/common/utils'
 import withLogs from '@app/common/components/HOC/withLogs'
@@ -29,7 +29,7 @@ const AvailabilityTableView = ({
     const transposedMatrix: Constraint[][] = useMemo(() => {
         return transposeMat(availabilityData)
     }, [availabilityData])
-
+    
     const cb = (availability: boolean, index: [number, number]) => {
         const newData: Constraint[][] = JSON.parse(JSON.stringify(availabilityData))
         newData[index[0]][index[1]].availability = !availability

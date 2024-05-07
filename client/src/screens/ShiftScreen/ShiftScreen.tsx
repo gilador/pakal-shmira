@@ -2,17 +2,15 @@ import { Fragment, memo, useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Button } from 'react-native-paper'
 
-import { optimize } from '@app/services/optimizeService/OptimizeService'
+import useShiftUsersListView from './hookComponents/useShiftUsersListView'
 import SplitScreenComp from '@app/common/components/SplitScreenComp'
 import AvailabilityTableView from './elements/AvailabilityTableView'
-import useShiftUsersListView from './hooks/useShiftUsersListView'
 import withLogs from '@app/common/components/HOC/withLogs'
-
-import { black } from 'react-native-paper/lib/typescript/styles/themes/v2/colors'
+import { optimize } from '@app/services/OptimizeService'
 
 import { Constraint, ShiftMap, UniqueString, User, UserShiftData } from './models'
-import useShiftTableView from './hooks/useShiftTableView'
-import useEditModeButton from './hooks/useEditModeButton'
+import useShiftTableView from './hookComponents/useShiftTableView'
+import useEditModeButton from './hookComponents/useEditModeButton'
 import { colors } from '@app/styles'
 
 const ShiftScreen = () => {
@@ -46,8 +44,9 @@ const ShiftScreen = () => {
             <View style={{ flexDirection: 'column', flexShrink: 1 }}>
                 {shiftMap.usersSize() > 0 && names.length > 0 && ShiftTableView}
                 <View style={{ backgroundColor: colors.border, height: 2, marginVertical: 10 }} />
-                    <View style={{ flex: 1, flexShrink: 2 }}>
-                    {selectedIndex >= 0 && (<AvailabilityTableView
+                <View style={{ flex: 1, flexShrink: 2 }}>
+                    {selectedIndex >= 0 && (
+                        <AvailabilityTableView
                             availabilityData={JSON.parse(
                                 JSON.stringify(shiftMap.getUser(names[selectedIndex].id)?.constraints)
                             )}
@@ -66,7 +65,7 @@ const ShiftScreen = () => {
                             }}
                         />
                     )}
-                    </View>
+                </View>
             </View>
         )
 
