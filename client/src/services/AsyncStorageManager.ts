@@ -28,7 +28,7 @@ class AsyncStorageManager {
                     observers.push(onValueChangeCB)
                     this.observables.set(key, observers)
                 } else {
-                    console.log('Observer already exists: ', onValueChangeCB)
+                    
                 }
             }
         } catch (e) {
@@ -41,7 +41,7 @@ class AsyncStorageManager {
     public removeObserver(key: string, onValueChange: (value: any) => void) {
         const observers = this.observables.get(key)
         if (!observers) {
-            console.log('removeObserver-> No observers found for key: ', key)
+            
             return
         }
         const index = observers.indexOf(onValueChange)
@@ -51,7 +51,7 @@ class AsyncStorageManager {
         }
         const observerssum = this.observables.get(key)?.length || 0
 
-        console.log('removeObserver->total after removal: ', observerssum)
+        
 
     }
 

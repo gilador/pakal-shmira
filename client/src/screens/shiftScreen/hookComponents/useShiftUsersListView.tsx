@@ -45,7 +45,7 @@ export default function useShiftUsersListView(isEditing = false) {
         }))
 
         setList((preList) => {
-            console.log('useShiftUsersListView->onAdd-> preList:', preList)
+            
             const prev = preList ? preList:  []
             return [...ret, ...prev]
         })
