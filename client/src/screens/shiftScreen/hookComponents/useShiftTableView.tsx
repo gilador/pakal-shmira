@@ -14,7 +14,7 @@ const initialHours = [getUniqueString('שעה')] //TODO li18n
 export default function useShiftTableView(
     selectedNameId: string | undefined,
     isEditing = false,
-    names: User[],
+    names: User[] = [],
     callOptimizeAPI: () => Promise<OptimizeShiftResponse | undefined>
 ) {
     const [posts, setPosts] = useSyncedState<UniqueString[]>('posts', initialPosts)

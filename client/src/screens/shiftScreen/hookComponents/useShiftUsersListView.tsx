@@ -2,10 +2,10 @@ import React, { createContext, useCallback, useEffect, useMemo, useState } from 
 import { StyleSheet, View } from 'react-native'
 
 import EditableList from '@app/screens/shiftScreen/elements/EditableList'
+import AsyncStorageManager from '@app/services/AsyncStorageManager'
+import useSyncedState from '@app/hooks/useSyncedState'
 import { extractWords } from '@app/common/utils'
 import { User } from '../models'
-import useSyncedState from '@app/hooks/useSyncedState'
-import AsyncStorageManager from '@app/services/AsyncStorageManager'
 
 export type ShiftListContextType = {
     readonly onUserToggleSelected: (userNameId: string | undefined) => void
@@ -45,19 +45,21 @@ export default function useShiftUsersListView(isEditing = false) {
         }))
 
         setList((preList) => {
-            
-            const prev = preList ? preList:  []
+            const prev = preList ? preList : []
             return [...ret, ...prev]
         })
     }
 
     const onRemove = (userId: string) => {
         setList((preList) => {
-            const index = preList.findIndex((el) => el.id === userId)
-            if (index >= 0) {
-                index >= 0 && preList.splice(index, 1)
+            if (preList) {
+                const index = preList.findIndex((el) => el.id === userId)
+                if (index >= 0) {
+                    index >= 0 && preList.splice(index, 1)
+                }
+                return [...preList]
             }
-            return [...preList]
+            return []
         })
     }
 
@@ -72,7 +74,7 @@ export default function useShiftUsersListView(isEditing = false) {
         () => (
             <View style={styles.container}>
                 <ShiftListContext.Provider value={context}>
-                    <EditableList list={list} isEditing={isEditing} />
+                    {list && <EditableList list={list} isEditing={isEditing} />}
                 </ShiftListContext.Provider>
             </View>
         ),

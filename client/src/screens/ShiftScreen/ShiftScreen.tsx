@@ -119,7 +119,7 @@ export function deriveUserDataMap(names: User[] | undefined, defaultConstraints:
     return newMap
 }
 
-function getDefaultConstraints(posts: UniqueString[], hours: UniqueString[]): Constraint[][] {
+function getDefaultConstraints(posts: UniqueString[]=[], hours: UniqueString[]=[]): Constraint[][] {
     const defaultConstraints: Constraint[][] = []
     posts.forEach((post) => {
         const defaultPostsConstraints: Constraint[] = []
@@ -131,7 +131,7 @@ function getDefaultConstraints(posts: UniqueString[], hours: UniqueString[]): Co
     return defaultConstraints
 }
 
-function getDerivedConstraints(names: User[], shiftMap: ShiftMap): Constraint[][][] {
+function getDerivedConstraints(names: User[] =[], shiftMap: ShiftMap): Constraint[][][] {
     return names.reduce(
         (accumulator, current) => {
             accumulator.push(shiftMap.getUser(current.id)?.constraints ?? ([] as Constraint[][]))
