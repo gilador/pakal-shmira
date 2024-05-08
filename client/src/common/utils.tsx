@@ -3,7 +3,7 @@ import { ReactNode } from 'react'
 import NameCellView from '@app/screens/shiftScreen/elements/common/NameCellView'
 import { UniqueString } from '@app/screens/shiftScreen/models'
 
-export function getEmptyMatrix<T>(cols: number, rows: number, fillObj: T): T[][] {
+export function getEmptyMatrix<T>(cols: number = 0, rows: number =0, fillObj: T): T[][] {
     return Array(cols)
         .fill(undefined)
         .map(() => {
@@ -43,7 +43,7 @@ export function getUniqueString(value: string): UniqueString {
 }
 
 export function generateHeaderViews(
-    headers: UniqueString[],
+    headers: UniqueString[] =[],
     focusedHeaderId?: string,
     editMode?: boolean,
     onHeaderEdit?: (newTextVal: string, index: number) => void

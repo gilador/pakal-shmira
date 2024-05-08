@@ -16,7 +16,7 @@ const colors = {
 
 export default {
     positive: colors.green,
-    send: colors.brown,
+    cta: colors.brown,
     available: colors.lightGreen,
     unavailable: colors.red,
     place_holder: colors.grey,

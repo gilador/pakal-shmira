@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native'
 import { generateHeaderViews, getEmptyMatrix, getUniqueString } from '@app/common/utils'
 import { OptimizeShiftResponse } from '@app/services/api/models'
 import NameCellView from '../elements/common/NameCellView'
+import useSyncedState from '@app/hooks/useSyncedState'
 import TableView from '../elements/common/TableView'
 import { UniqueString, User } from '../models'
 
@@ -16,9 +17,9 @@ export default function useShiftTableView(
     names: User[],
     callOptimizeAPI: () => Promise<OptimizeShiftResponse | undefined>
 ) {
-    const [posts, setPosts] = useState<UniqueString[]>(initialPosts)
-    const [hours, setHours] = useState<UniqueString[]>(initialHours)
-    const [shifts, setShifts] = useState<User[][]>()
+    const [posts, setPosts] = useSyncedState<UniqueString[]>('posts', initialPosts)
+    const [hours, setHours] = useSyncedState<UniqueString[]>('hours', initialHours)
+    const [shifts, setShifts] = useSyncedState<User[][]>('shifts', undefined)
     const [isOptimized, setIsOptimized] = useState<boolean>(false)
     const [focusedPostHeaderId, setFocusedPostHeaderId] = useState<string>()
     const [focusedHourHeaderId, setFocusedHourHeaderId] = useState<string>()
@@ -26,7 +27,7 @@ export default function useShiftTableView(
     const hoursCounter = React.useRef<number>(initialHours.length)
 
     const emptyCellsForSkeleton: User[][] = useMemo(() => {
-        return getEmptyMatrix<User>(hours.length, posts.length, {
+        return getEmptyMatrix<User>(hours?.length, posts?.length, {
             name: ' ',
             id: '', //TODO nice to have add shift id composed by post and hour ids
         })
@@ -67,13 +68,13 @@ export default function useShiftTableView(
                         removeShift(index, setPosts, setShifts, removeShiftsByPost)
                     }}
                     onColAdd={() => {
-                        addPost(getNewPostName('עמדה', posts, postCounter), setPosts, setShifts, setFocusedPostHeaderId) //TODO li18n
+                        addPost(getNewPostName('עמדה', postCounter), setPosts, setShifts, setFocusedPostHeaderId) //TODO li18n
                     }}
                     onRowRemove={(index) => {
                         removeShift(index, setHours, setShifts, removeShiftsByHour)
                     }}
                     onRowAdd={() => {
-                        addHour(getNewPostName('שעה', posts, hoursCounter), setHours, setShifts, setFocusedHourHeaderId) //TODO li18n
+                        addHour(getNewPostName('שעה', hoursCounter), setHours, setShifts, setFocusedHourHeaderId) //TODO li18n
                     }}
                     isEditing={isEditing}
                 />
@@ -92,7 +93,11 @@ export default function useShiftTableView(
 }
 
 //------------------------------------------functions--------------------------------------------------------
-function onHeaderEdit(setState: Dispatch<SetStateAction<UniqueString[]>>, newTextVal: string, index: number) {
+function onHeaderEdit(
+    setState: Dispatch<SetStateAction<UniqueString[] | undefined> | undefined>,
+    newTextVal: string,
+    index: number
+) {
     setState((prev) => {
         const newHeaders = JSON.parse(JSON.stringify(prev))
         newHeaders[index].value = newTextVal
@@ -102,15 +107,11 @@ function onHeaderEdit(setState: Dispatch<SetStateAction<UniqueString[]>>, newTex
 
 function removeShift(
     index: number,
-    setTitles: React.Dispatch<React.SetStateAction<UniqueString[]>>,
-    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>,
+    setTitles: Dispatch<SetStateAction<UniqueString[] | undefined> | undefined>,
+    setShifts: Dispatch<SetStateAction<User[][] | undefined>>,
     removeShiftBy: (shifts: User[][] | undefined, index: number) => User[][] | undefined
 ) {
-    setTitles((pre) => {
-        const ret = pre.toSpliced(index, 1)
-
-        return ret
-    })
+    setTitles((pre) =>  pre?.toSpliced(index, 1))
     setShifts((prev) => removeShiftBy(prev, index))
 }
 
@@ -136,13 +137,13 @@ function removeShiftsByHour(shifts: User[][] | undefined, hourIndex: number) {
 
 function addPost(
     postName: string,
-    setTitles: React.Dispatch<React.SetStateAction<UniqueString[]>>,
-    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>,
-    setFocusHeaderId: React.Dispatch<React.SetStateAction<string | undefined>>
+    setTitles: Dispatch<SetStateAction<UniqueString[] | undefined>>,
+    setShifts: Dispatch<SetStateAction<User[][] | undefined>>,
+    setFocusHeaderId: Dispatch<SetStateAction<string | undefined>>
 ) {
     const newPost = getUniqueString(postName)
     setFocusHeaderId(newPost.id)
-    setTitles((prev) => prev.concat(newPost))
+    setTitles((prev) => prev?.concat(newPost))
     setShifts((prev) => {
         if (!prev) return prev
         return prev.map((postsInHour) => {
@@ -153,13 +154,13 @@ function addPost(
 
 function addHour(
     hourName: string,
-    setTitles: React.Dispatch<React.SetStateAction<UniqueString[]>>,
-    setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>,
-    setFocusHeaderId: React.Dispatch<React.SetStateAction<string | undefined>>
+    setTitles: Dispatch<SetStateAction<UniqueString[] | undefined>>,
+    setShifts: Dispatch<SetStateAction<User[][] | undefined>>,
+    setFocusHeaderId: Dispatch<SetStateAction<string | undefined>>
 ) {
     const newHour = getUniqueString(hourName)
     setFocusHeaderId(newHour.id)
-    setTitles((prev) => [...prev, newHour])
+    setTitles((prev) => [...(prev??[]), newHour])
     setShifts((prev) => {
         if (!prev) return prev
         return [...prev, Array(prev[0].length).fill({ name: '', id: '' })]
@@ -180,13 +181,15 @@ function generateShiftDataElements(
 }
 
 async function calcOptimizeShifts(
-    names: User[],
-    hours: UniqueString[],
-    posts: UniqueString[],
+    names: User[] = [],
+    hours: UniqueString[] = [],
+    posts: UniqueString[] = [],
     callOptimizeAPI: () => Promise<OptimizeShiftResponse | undefined>,
     setIsOptimized: (isOpt: boolean) => void,
     setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>
 ) {
+    if(names.length === 0 || hours.length === 0 || posts.length === 0) return //TODO show error message
+
     try {
         // Optimize user shifts asynchronously
         const optimizedShift = await callOptimizeAPI()
@@ -223,7 +226,7 @@ async function calcOptimizeShifts(
     }
 }
 
-function getNewPostName(prefix: string, posts: UniqueString[], postCounter: MutableRefObject<number>): string {
+function getNewPostName(prefix: string, postCounter: MutableRefObject<number>): string {
     postCounter.current++
     return `${prefix} ${postCounter.current}`
 }

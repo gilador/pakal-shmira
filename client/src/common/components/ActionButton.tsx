@@ -89,7 +89,7 @@ function getIconBackgroundColor(type: IconType): string | undefined {
     switch (type) {
         case IconType.addCol:
         case IconType.addRow:
-            return colors.positive
+            return colors.cta
         default:
             return undefined
     }

@@ -34,18 +34,17 @@ const ShiftScreen = () => {
     }, [names, hours, posts])
 
     const selectedIndex = useMemo(() => {
-        let retIndex = -1
-        retIndex = names.findIndex((ele) => ele.id === selectedNameId)
+        const retIndex = names?.findIndex((ele) => ele.id === selectedNameId) ?? -1
         return retIndex
     }, [selectedNameId, names])
 
     const rightView = //TODO memoize
         (
             <View style={{ flexDirection: 'column', flexShrink: 1 }}>
-                {shiftMap.usersSize() > 0 && names.length > 0 && ShiftTableView}
+                {shiftMap.usersSize() > 0 && (names?.length ?? 0) > 0 && ShiftTableView}
                 <View style={{ backgroundColor: colors.border, height: 2, marginVertical: 10 }} />
                 <View style={{ flex: 1, flexShrink: 2 }}>
-                    {selectedIndex >= 0 && (
+                    {hours && posts && names && selectedIndex >= 0 && (
                         <AvailabilityTableView
                             availabilityData={JSON.parse(
                                 JSON.stringify(shiftMap.getUser(names[selectedIndex].id)?.constraints)
@@ -85,10 +84,10 @@ const ShiftScreen = () => {
 }
 
 //------------------------------------------functions--------------------------------------------------------
-export function deriveUserDataMap(names: User[], defaultConstraints: Constraint[][], oldMap: ShiftMap): ShiftMap {
+export function deriveUserDataMap(names: User[] | undefined, defaultConstraints: Constraint[][], oldMap: ShiftMap): ShiftMap {
     const newMap = new ShiftMap()
     // Loop through each name
-    names.forEach(({ id: userId, name }) => {
+    names?.forEach(({ id: userId, name }) => {
         // Get existing shift data if present
         const existingShiftData = oldMap.getUser(userId)
         // let userConstraints = defaultConstraints
@@ -170,7 +169,7 @@ const styles = StyleSheet.create({
         flexBasis: 'auto',
         width: 300,
         alignSelf: 'flex-start',
-        backgroundColor: colors.send,
+        backgroundColor: colors.cta,
     },
     rightContainer: {
         flexDirection: 'column',

@@ -1,12 +1,12 @@
 import AsyncStorageManager from '@app/services/AsyncStorageManager'
 import { useEffect, useState } from 'react'
 
-function useSyncedState<T>(key: string, defaultValue: T): [T, (newValue: T | ((prevState: T) => T)) => void] {
-    const [state, setState] = useState<T>(defaultValue)
+function useSyncedState<T>(key: string, defaultValue?: T): [T | undefined, (newValue: (T | undefined) | ((prevState: T | undefined) => T | undefined)) => void] {
+    const [state, setState] = useState<T | undefined>(defaultValue)
 
     useEffect(() => {
         
-        initFromStorage(key, defaultValue, setState).then((value) => {
+        initFromStorage(key, setState, defaultValue).then((value) => {
             setState(value)
         })
     }, [])
@@ -18,7 +18,7 @@ function useSyncedState<T>(key: string, defaultValue: T): [T, (newValue: T | ((p
         }
     }, [])
 
-    const setSyncState = (newValue: T | ((prevState: T) => T)) => {
+    const setSyncState = (newValue: (T | undefined) | ((prevState: T|undefined) => T|undefined)) => {
         // 
         const valueToStore = newValue instanceof Function ? newValue(state ? state : defaultValue) : newValue
         const serializedValue = JSON.stringify(valueToStore)
@@ -30,12 +30,13 @@ function useSyncedState<T>(key: string, defaultValue: T): [T, (newValue: T | ((p
     return [state, setSyncState]
 }
 
-async function initFromStorage<T>(key: string, initValue: T, cb: (val: T) => void): Promise<Awaited<T>> {
-    let returnValue = await AsyncStorageManager.getItem(key, cb)
-    if (!returnValue) {
-        returnValue = JSON.stringify(initValue)
+async function initFromStorage<T>(key: string, cb: (val: T) => void, initValue?: T): Promise<T | undefined> {
+    let storedValue = await AsyncStorageManager.getItem(key, cb)
+    let returnValue: T | undefined = initValue
+    if (storedValue) {
+        returnValue = JSON.parse(storedValue) as T
     }
-    return JSON.parse(returnValue)
+    return returnValue
 }
 
 export default useSyncedState
