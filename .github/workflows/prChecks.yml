@@ -1,0 +1,34 @@
+name: PR Checks
+
+on:
+  workflow_call:
+
+permissions: write-all
+
+jobs:
+  branchNameCheck:
+    name: Branch Name Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions-ecosystem/action-regex-match@v2
+        id: regex-match
+        with:
+          text: ${{ github.head_ref }}
+          regex: '(((feature|bugfix|hotfix)){1}\/\w+-\d+(-(\w|\d){1,})+)'
+          flags: gm
+          github_token: ${{ secrets.CICD_TOKEN }}
+      - name: check
+        shell: bash
+        if: ${{ steps.regex-match.outputs.match == '' }}
+        run: |
+          exit 1
+
+  prTitleChecks:
+    name: PR Title Check
+    needs: branchNameCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: deepakputhraya/action-pr-title@v1.0.2
+        with:
+          regex: '(\w+-([0-9]+|\[[0-9]+(\,[0-9]+)*\]): .*)'
+          github_token: ${{ secrets.CICD_TOKEN }}

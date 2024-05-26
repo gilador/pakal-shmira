@@ -1,0 +1,11 @@
+name: External Actions
+on:
+  workflow_call:
+jobs:
+  build:
+    name: Adding auto labels
+    runs-on: ubuntu-latest
+    steps:
+      - uses: srvaroa/labeler@v1.8.1
+        env:
+          GITHUB_TOKEN: '${{ secrets.CICD_TOKEN }}'

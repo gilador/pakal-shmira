@@ -1,0 +1,25 @@
+version: 1
+labels:
+  - label: 'Story'
+    branch: '^feature/.*'
+  - label: 'Task'
+    branch: '^task/.*'
+  - label: 'Bug'
+    branch: '^bugfix/.*'
+  - label: 'CICD'
+    files:
+      - '.github/*'
+
+  - label: 'XS'
+    size-below: 10
+  - label: 'S'
+    size-above: 10
+    size-below: 30
+  - label: 'M'
+    size-above: 30
+    size-below: 60
+  - label: 'L'
+    size-above: 60
+    size-below: 100
+  - label: 'XL'
+    size-above: 100
