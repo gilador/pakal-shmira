@@ -1,7 +1,12 @@
 name: PR Checks
 
 on:
-  workflow_call:
+  pull_request:
+    types:
+      - opened
+      - edited
+    branches:
+      - 'releases/**'
 
 permissions: write-all
 
