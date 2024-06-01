@@ -1,11 +1,14 @@
-import AsyncStorageManager from '@app/services/AsyncStorageManager'
 import { useEffect, useState } from 'react'
 
-function useSyncedState<T>(key: string, defaultValue?: T): [T | undefined, (newValue: (T | undefined) | ((prevState: T | undefined) => T | undefined)) => void] {
+import AsyncStorageManager from '@app/services/AsyncStorageManager'
+
+function useSyncedState<T>(
+    key: string,
+    defaultValue?: T
+): [T | undefined, (newValue: (T | undefined) | ((prevState: T | undefined) => T | undefined)) => void] {
     const [state, setState] = useState<T | undefined>(defaultValue)
 
     useEffect(() => {
-        
         initFromStorage(key, setState, defaultValue).then((value) => {
             setState(value)
         })
@@ -13,16 +16,14 @@ function useSyncedState<T>(key: string, defaultValue?: T): [T | undefined, (newV
 
     useEffect(() => {
         return () => {
-            
             AsyncStorageManager.removeObserver(key, setState)
         }
     }, [])
 
-    const setSyncState = (newValue: (T | undefined) | ((prevState: T|undefined) => T|undefined)) => {
-        // 
+    const setSyncState = (newValue: (T | undefined) | ((prevState: T | undefined) => T | undefined)) => {
+        //
         const valueToStore = newValue instanceof Function ? newValue(state ? state : defaultValue) : newValue
         const serializedValue = JSON.stringify(valueToStore)
-        
 
         AsyncStorageManager.setItem(key, serializedValue, setState)
     }

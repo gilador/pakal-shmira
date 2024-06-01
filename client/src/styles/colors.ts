@@ -21,7 +21,7 @@ export default {
     unavailable: colors.red,
     place_holder: colors.grey,
     primaryBackground: colors.white,
-    border: colors.black,
+    border: colors.brown,
     dark_text: colors.black,
     remove: colors.red,
     grey_text: colors.grey,

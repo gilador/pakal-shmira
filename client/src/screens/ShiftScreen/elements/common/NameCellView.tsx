@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useRef } from 'react'
 
 import withLogs from '@app/common/components/HOC/withLogs'
 import { colors } from '@app/styles'
-import { View } from '@app/common/components/Themed'
 
 export type NameCellViewProps = {
     cb?: () => void

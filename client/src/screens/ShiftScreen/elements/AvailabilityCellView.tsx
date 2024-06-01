@@ -1,6 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native'
 import { memo, useState } from 'react'
 
+import React from 'react'
+
 import { colors } from '@app/styles'
 
 export type AvailabilityCellViewProps = {

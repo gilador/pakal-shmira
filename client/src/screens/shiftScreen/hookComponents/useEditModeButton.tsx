@@ -2,6 +2,8 @@ import { StyleProp, View, ViewStyle } from 'react-native'
 import { memo, useContext, useState } from 'react'
 import { IconButton } from 'react-native-paper'
 
+import React from 'react'
+
 import { ShiftListContext } from './useShiftUsersListView'
 import { colors } from '@app/styles'
 

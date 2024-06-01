@@ -6,6 +6,7 @@ import ActionButton, { IconType } from '../../../common/components/ActionButton'
 import { ShiftListContext } from '../hookComponents/useShiftUsersListView'
 import NameCellView from './common/NameCellView'
 import { User } from '../models'
+import React from 'react'
 
 type ItemProps = {
     user: User

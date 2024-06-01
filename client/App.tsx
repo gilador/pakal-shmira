@@ -1,7 +1,8 @@
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar'
 import { useFonts } from 'expo-font'
-import { useEffect } from 'react'
+
+import React from 'react'
 
 import useCachedResources from './src/hooks/useCachedResources'
 import Navigation from '@app/navigation'

@@ -3,6 +3,7 @@ import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 import React, { ReactNode, memo, useMemo } from 'react'
 
 import ActionButton, { IconType } from '@app/common/components/ActionButton'
+import { colors } from '@app/styles'
 
 type TableViewProp = {
     verticalHeaderViews: (ReactNode | undefined)[]
@@ -23,9 +24,9 @@ const TableView = ({
     style,
     isEditing,
     onColRemove,
-    onColAdd,
+    onColAdd = () => {},
     onRowRemove,
-    onRowAdd,
+    onRowAdd = () => {},
 }: TableViewProp) => {
     const sideHeaders = useMemo(() => {
         return isEditing && onRowRemove
@@ -52,37 +53,47 @@ const TableView = ({
 
     return (
         <View style={[styles.container, style]}>
-            {onColAdd && (
+            <ActionButton
+                style={[styles.addTopHeaderButton, !isEditing ? styles.hide : undefined]}
+                type={IconType.addCol}
+                cb={() => onColAdd()}
+                enabled={isEditing}
+            />
+
+            <View style={{ flexDirection: 'row', width: topHeadersWidth }}>
                 <ActionButton
-                    style={[styles.addTopHeaderButton, !isEditing ? styles.hide : undefined]}
-                    type={IconType.addCol}
-                    cb={() => onColAdd()}
+                    style={[styles.addSideHeaderButton, !isEditing ? styles.hide : undefined]}
+                    type={IconType.addRow}
+                    cb={() => onRowAdd()}
                     enabled={isEditing}
                 />
-            )}
-            <View style={{ flexDirection: 'row', width: topHeadersWidth }}>
-                {onRowAdd && (
-                    <ActionButton
-                        style={[styles.addSideHeaderButton, !isEditing ? styles.hide : undefined]}
-                        type={IconType.addRow}
-                        cb={() => onRowAdd()}
-                        enabled={isEditing}
+                <View style={[{ flex: 20, borderColor: colors.border, borderWidth: 3, borderRadius: 5 }]}>
+                    <Table borderStyle={{ borderWidth: 2, borderColor: colors.border }}>
+                        <Row data={topHeaders} style={[styles.head]} textStyle={styles.text} />
+                        <TableWrapper style={[styles.wrapper]}>
+                            <Col data={sideHeaders} style={[styles.title]} textStyle={styles.text} />
+                            {tableElementViews && (
+                                <Rows
+                                    data={tableElementViews}
+                                    flexArr={flexHeadArray.slice(0, -1)}
+                                    style={[styles.row]}
+                                    textStyle={styles.text}
+                                />
+                            )}
+                        </TableWrapper>
+                    </Table>
+                    <View
+                        style={{
+                            height: '100%',
+                            width: '100%',
+                            position: 'absolute',
+                            borderWidth: 3,
+                            borderColor: colors.border,
+                            borderRadius: 5,
+                            pointerEvents: 'none',
+                        }}
                     />
-                )}
-                <Table style={{ flex: 20 }} borderStyle={{ borderWidth: 1 }}>
-                    <Row data={topHeaders} style={[styles.head]} textStyle={styles.text} />
-                    <TableWrapper style={[styles.wrapper]}>
-                        <Col data={sideHeaders} style={[styles.title]} textStyle={styles.text} />
-                        {tableElementViews && (
-                            <Rows
-                                data={tableElementViews}
-                                flexArr={flexHeadArray.slice(0, -1)}
-                                style={[styles.row]}
-                                textStyle={styles.text}
-                            />
-                        )}
-                    </TableWrapper>
-                </Table>
+                </View>
             </View>
         </View>
     )
@@ -93,9 +104,7 @@ function removableHeaderCell(
     wrappedComponent: ReactNode,
     onRemove: () => void,
     style: StyleProp<ViewStyle>,
-    canBeRemoved: boolean,
-    allowFocus: boolean = false,
-    forceFocus: boolean = false
+    canBeRemoved: boolean
 ): ReactNode {
     return wrappedComponent ? (
         <View style={{ overflow: 'visible', alignSelf: 'stretch' }}>

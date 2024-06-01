@@ -11,7 +11,9 @@ class AsyncStorageManager {
             await AsyncStorage.setItem(key, value)
             const observers = this.observables.get(key) || []
             onValueChangeCB && observers.push(onValueChangeCB)
-            observers.forEach((observer) => {observer(JSON.parse(value))})
+            observers.forEach((observer) => {
+                observer(JSON.parse(value))
+            })
             this.observables.set(key, observers)
         } catch (e) {
             //TODO handle error
@@ -28,7 +30,6 @@ class AsyncStorageManager {
                     observers.push(onValueChangeCB)
                     this.observables.set(key, observers)
                 } else {
-                    
                 }
             }
         } catch (e) {
@@ -41,7 +42,6 @@ class AsyncStorageManager {
     public removeObserver(key: string, onValueChange: (value: any) => void) {
         const observers = this.observables.get(key)
         if (!observers) {
-            
             return
         }
         const index = observers.indexOf(onValueChange)
@@ -50,9 +50,6 @@ class AsyncStorageManager {
             this.observables.set(key, observers)
         }
         const observerssum = this.observables.get(key)?.length || 0
-
-        
-
     }
 
     // private onValueChange(key: string, value: any) {

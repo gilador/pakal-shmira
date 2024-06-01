@@ -29,7 +29,7 @@ const AvailabilityTableView = ({
     const transposedMatrix: Constraint[][] = useMemo(() => {
         return transposeMat(availabilityData)
     }, [availabilityData])
-    
+
     const cb = (availability: boolean, index: [number, number]) => {
         const newData: Constraint[][] = JSON.parse(JSON.stringify(availabilityData))
         newData[index[0]][index[1]].availability = !availability

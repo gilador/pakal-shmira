@@ -8,6 +8,8 @@ import AvailabilityTableView from './elements/AvailabilityTableView'
 import withLogs from '@app/common/components/HOC/withLogs'
 import { optimize } from '@app/services/OptimizeService'
 
+import React from 'react'
+
 import { Constraint, ShiftMap, UniqueString, User, UserShiftData } from './models'
 import useShiftTableView from './hookComponents/useShiftTableView'
 import useEditModeButton from './hookComponents/useEditModeButton'
@@ -41,9 +43,11 @@ const ShiftScreen = () => {
     const rightView = //TODO memoize
         (
             <View style={{ flexDirection: 'column', flexShrink: 1 }}>
-                {shiftMap.usersSize() > 0 && (names?.length ?? 0) > 0 && ShiftTableView}
+                <View style={{ flex: 1, flexShrink: 1 }}>
+                    {shiftMap.usersSize() > 0 && (names?.length ?? 0) > 0 && ShiftTableView}
+                </View>
                 <View style={{ backgroundColor: colors.border, height: 2, marginVertical: 10 }} />
-                <View style={{ flex: 1, flexShrink: 2 }}>
+                <View style={{ flex: 1, flexShrink: 1 }}>
                     {hours && posts && names && selectedIndex >= 0 && (
                         <AvailabilityTableView
                             availabilityData={JSON.parse(
@@ -68,8 +72,6 @@ const ShiftScreen = () => {
             </View>
         )
 
-    const leftView = <View style={{ flexDirection: 'column', flexShrink: 0 }}>{namesListView}</View>
-
     return (
         <View style={styles.container}>
             <View style={styles.top}>
@@ -84,7 +86,11 @@ const ShiftScreen = () => {
 }
 
 //------------------------------------------functions--------------------------------------------------------
-export function deriveUserDataMap(names: User[] | undefined, defaultConstraints: Constraint[][], oldMap: ShiftMap): ShiftMap {
+export function deriveUserDataMap(
+    names: User[] | undefined,
+    defaultConstraints: Constraint[][],
+    oldMap: ShiftMap
+): ShiftMap {
     const newMap = new ShiftMap()
     // Loop through each name
     names?.forEach(({ id: userId, name }) => {
@@ -119,7 +125,7 @@ export function deriveUserDataMap(names: User[] | undefined, defaultConstraints:
     return newMap
 }
 
-function getDefaultConstraints(posts: UniqueString[]=[], hours: UniqueString[]=[]): Constraint[][] {
+function getDefaultConstraints(posts: UniqueString[] = [], hours: UniqueString[] = []): Constraint[][] {
     const defaultConstraints: Constraint[][] = []
     posts.forEach((post) => {
         const defaultPostsConstraints: Constraint[] = []
@@ -131,7 +137,7 @@ function getDefaultConstraints(posts: UniqueString[]=[], hours: UniqueString[]=[
     return defaultConstraints
 }
 
-function getDerivedConstraints(names: User[] =[], shiftMap: ShiftMap): Constraint[][][] {
+function getDerivedConstraints(names: User[] = [], shiftMap: ShiftMap): Constraint[][][] {
     return names.reduce(
         (accumulator, current) => {
             accumulator.push(shiftMap.getUser(current.id)?.constraints ?? ([] as Constraint[][]))

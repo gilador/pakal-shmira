@@ -7,6 +7,7 @@ import NameCellView from '../elements/common/NameCellView'
 import useSyncedState from '@app/hooks/useSyncedState'
 import TableView from '../elements/common/TableView'
 import { UniqueString, User } from '../models'
+import { colors } from '@app/styles'
 
 const initialPosts = [getUniqueString('עמדה')] //TODO li18n
 const initialHours = [getUniqueString('שעה')] //TODO li18n
@@ -111,7 +112,7 @@ function removeShift(
     setShifts: Dispatch<SetStateAction<User[][] | undefined>>,
     removeShiftBy: (shifts: User[][] | undefined, index: number) => User[][] | undefined
 ) {
-    setTitles((pre) =>  pre?.toSpliced(index, 1))
+    setTitles((pre) => pre?.toSpliced(index, 1))
     setShifts((prev) => removeShiftBy(prev, index))
 }
 
@@ -160,7 +161,7 @@ function addHour(
 ) {
     const newHour = getUniqueString(hourName)
     setFocusHeaderId(newHour.id)
-    setTitles((prev) => [...(prev??[]), newHour])
+    setTitles((prev) => [...(prev ?? []), newHour])
     setShifts((prev) => {
         if (!prev) return prev
         return [...prev, Array(prev[0].length).fill({ name: '', id: '' })]
@@ -188,7 +189,7 @@ async function calcOptimizeShifts(
     setIsOptimized: (isOpt: boolean) => void,
     setShifts: React.Dispatch<React.SetStateAction<User[][] | undefined>>
 ) {
-    if(names.length === 0 || hours.length === 0 || posts.length === 0) return //TODO show error message
+    if (names.length === 0 || hours.length === 0 || posts.length === 0) return //TODO show error message
 
     try {
         // Optimize user shifts asynchronously
