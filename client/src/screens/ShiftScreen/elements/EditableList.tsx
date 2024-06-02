@@ -1,4 +1,4 @@
-import React, { memo, useContext, useEffect, useRef } from 'react'
+import React, { useContext, useEffect, useRef } from 'react'
 import { FlatList, StyleSheet, View } from 'react-native'
 import { TextInput } from 'react-native-paper'
 
@@ -36,10 +36,15 @@ const EditableList = ({ list, isEditing }: EditableListProps) => {
                 onChangeText={(val: string) => {
                     setTextValue(val)
                 }}
-                onBlur={() => {
+                onBlur={(args) => {
+                    console.log('onBlur relatedTarget', args.relatedTarget)
                     shiftListContext.onUserAdded(textValue)
                     setTextValue('')
-                    textInputRef?.current?.focus()
+
+                    //restore focus only if the user didn't click on outside the input (e.g tapped 'Enter' on the keyboard)
+                    if (!args.relatedTarget) {
+                        textInputRef?.current?.focus()
+                    }
                 }}
             />
 
