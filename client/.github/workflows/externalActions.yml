@@ -1,0 +1,14 @@
+name: External Actions
+
+on:
+    - pull_request
+    - push
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: srvaroa/labeler@v0.9
+              env:
+                  GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'

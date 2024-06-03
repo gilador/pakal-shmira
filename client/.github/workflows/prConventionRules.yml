@@ -1,0 +1,17 @@
+name: PR Convention Rules
+on:
+    pull_request:
+    push:
+        branches:
+            - 'dev'
+            - 'stage'
+            - 'main'
+            - 'feature/env**'
+jobs:
+    prChecks:
+        name: Check PR Title
+        steps:
+            - uses: deepakputhraya/action-pr-title@v1.0.2
+              with:
+                  regex: '(\w+-[0-9]+: .*|(((dev|stage|main)->(dev|stage|main)\([0-9][0-9][0-9][0-9].(01|02|03|04|05|06|07|08|09|10|11|12)(A|B|C)#[0-9]+\)( )*)$))'
+                  github_token: ${{ github.token }} # Default: ${{ github.token }}

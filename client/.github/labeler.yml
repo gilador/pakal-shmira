@@ -1,0 +1,45 @@
+version: 1
+labels:
+    - label: 'Story'
+      branch: '^feature/.*'
+    - label: 'Task'
+      branch: '^task/.*'
+    - label: 'Bug'
+      branch: '^bugfix/.*'
+
+    - label: 'CICD'
+      files:
+          - '.github/*'
+
+    - label: 'XS'
+      size-below: 10
+    - label: 'S'
+      size-above: 10
+      size-below: 30
+    - label: 'M'
+      size-above: 30
+      size-below: 60
+    - label: 'L'
+      size-above: 60
+      size-below: 100
+    - label: 'XL'
+      size-above: 100
+
+    - label: 'Env01'
+      branch: '.*/env01/.*'
+    - label: 'Env02'
+      branch: '.*/env02/.*'
+    - label: 'Env03'
+      branch: '.*/env03/.*'
+    - label: 'Env04'
+      branch: '.*/env04/.*'
+    - label: 'Env05'
+      branch: '.*/env05/.*'
+    - label: 'Env06'
+      branch: '.*/env06/.*'
+    - label: 'Env07'
+      branch: '.*/env07/.*'
+    - label: 'Env08'
+      branch: '.*/env08/.*'
+    - label: 'Env09'
+      branch: '.*/env09/.*'
