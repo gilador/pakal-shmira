@@ -1,6 +1,8 @@
 from flask import Flask, request
 from flask_cors import CORS
 from modules import shit_opt_service
+from pydantic import BaseModel
+from typing import List, Optional
 
 
 
@@ -16,6 +18,17 @@ def index():
     """
     return 'Web App with Python Flask!'
 
+class ShiftRequest(BaseModel):
+    start_date: str
+    end_date: str
+    employees: List[str]
+    shift_preferences: Optional[dict] = None
+
+class ShiftResponse(BaseModel):
+    schedule: dict
+    status: str
+    message: Optional[str] = None
+
 @app.route('/api/getOptimizedShift', methods=['POST'])
 def get_optimized_shift():
     """
@@ -30,5 +43,13 @@ def get_optimized_shift():
     optim_result = shit_opt_service.solve_shift_optimization(availability_matrix)
 
     return optim_result.toJSON()
+
+def get_optimized_shift(shift_request: ShiftRequest) -> ShiftResponse:
+    # ... existing optimization logic ...
+    
+    return ShiftResponse(
+        schedule=optimized_schedule,
+        status="success"
+    )
 
 app.run(host='0.0.0.0', port=8190)
