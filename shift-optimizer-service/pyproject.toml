@@ -1,0 +1,13 @@
+[project]
+name = "shift-optimizer-service"
+version = "0.1.0"
+dependencies = [
+    "flask==3.0.2",
+    "flask-cors==4.0.0",
+    "numpy==1.24.4",
+    "pulp==2.8.0",
+    "pydantic==2.10.5",
+]
+
+[tool.uv]
+python = ">=3.11"

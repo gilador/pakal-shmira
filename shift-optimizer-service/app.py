@@ -44,8 +44,33 @@ def get_optimized_shift():
 
     return optim_result.toJSON()
 
-def get_optimized_shift(shift_request: ShiftRequest) -> ShiftResponse:
-    # ... existing optimization logic ...
+@app.route('/api/optimizeShift', methods=['POST'])
+def optimize_shift():
+    try:
+        shift_request = ShiftRequest(**request.json)
+        # Extract data from request
+        employees = shift_request.employees
+        start_date = shift_request.start_date
+        end_date = shift_request.end_date
+        preferences = shift_request.shift_preferences or {}
+
+        # Call optimization service
+        optimized_schedule = shit_opt_service.solve_shift_optimization(
+            employees=employees,
+            start_date=start_date, 
+            end_date=end_date,
+            preferences=preferences
+        )
+
+        if not optimized_schedule:
+            raise Exception("Failed to generate optimized schedule")
+
+    except Exception as e:
+        return ShiftResponse(
+            schedule={},
+            status="error",
+            message=str(e)
+        )
     
     return ShiftResponse(
         schedule=optimized_schedule,
