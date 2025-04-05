@@ -37,10 +37,16 @@ class ApiService {
     }
 
     public async optimizeShift(constraints: boolean[][][]): Promise<OptimizeShiftResponse> {
-        console.log('optimizeShift')
+        console.log('Starting server-side optimization...')
+        console.log('Input constraints:', JSON.stringify(constraints, null, 2))
+
         const url = '/api/getOptimizedShift'
         const data = { constraints: constraints }
+
+        console.log('Sending request to server...')
         const response: OptimizeShiftResponse = await this.post(url, data)
+
+        console.log('Server response received:', JSON.stringify(response, null, 2))
         return response
     }
 

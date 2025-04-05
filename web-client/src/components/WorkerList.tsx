@@ -1,0 +1,92 @@
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { User } from "../models";
+import { withActions, WithActionsProps } from "./withActions";
+import { colors } from "@/constants/colors";
+
+export interface WorkerListProps {
+  users: User[];
+  selectedUserId: string | null;
+  onSelectUser: (userId: string | null) => void;
+  onEditUser: (userId: string | null) => void;
+  onAddUser: () => void;
+  onRemoveUser: (userId: string) => void;
+  isEditing: boolean;
+}
+
+const UserName = ({
+  isEditing,
+  onNameChange,
+  onDelete,
+  initialName,
+  userId,
+  isSelected,
+  onClick,
+  name,
+}: WithActionsProps & {
+  isSelected: boolean;
+  onClick: () => void;
+  name?: string;
+}) => (
+  <div className="flex items-center gap-2 w-full">
+    <span
+      className={`cursor-pointer pl-3 mr-10 ${
+        isSelected ? "font-semibold" : ""
+      }`}
+      onClick={onClick}
+    >
+      {isEditing ? initialName : name}
+    </span>
+  </div>
+);
+
+const UserNameWithActions = withActions(UserName);
+
+export function WorkerList({
+  users,
+  selectedUserId,
+  onSelectUser,
+  onEditUser,
+  onAddUser,
+  onRemoveUser,
+  isEditing,
+}: WorkerListProps) {
+  return (
+    <div className="flex flex-col gap-2">
+      <h3 className="text-lg font-semibold mb-2">Personals</h3>
+      {users.map((user) => (
+        <div
+          key={user.id}
+          className={`p-2 rounded-md cursor-pointer ${
+            selectedUserId === user.id
+              ? colors.selected.default
+              : colors.background.hover
+          }`}
+          onClick={() =>
+            onSelectUser(selectedUserId === user.id ? null : user.id)
+          }
+        >
+          <UserNameWithActions
+            isEditing={isEditing}
+            onNameChange={onEditUser}
+            onDelete={onRemoveUser}
+            initialName={user.name}
+            userId={user.id}
+            isSelected={selectedUserId === user.id}
+            onClick={() =>
+              onSelectUser(selectedUserId === user.id ? null : user.id)
+            }
+            name={user.name}
+          />
+        </div>
+      ))}
+      {isEditing && (
+        <button
+          className="p-2 rounded-md bg-primary/10 hover:bg-primary/20"
+          onClick={onAddUser}
+        >
+          Add Worker
+        </button>
+      )}
+    </div>
+  );
+}

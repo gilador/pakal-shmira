@@ -1,23 +1,26 @@
-import { Fragment, memo, useEffect, useMemo, useState } from 'react'
+import { memo, useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Button } from 'react-native-paper'
 
 import useShiftUsersListView from './hookComponents/useShiftUsersListView'
 import SplitScreenComp from '@app/common/components/SplitScreenComp'
+import { optimize } from '@app/services/OptimizeService'
 import AvailabilityTableView from './elements/AvailabilityTableView'
 import withLogs from '@app/common/components/HOC/withLogs'
-import { optimize } from '@app/services/OptimizeService'
 
 import React from 'react'
 
 import { Constraint, ShiftMap, UniqueString, User, UserShiftData } from './models'
-import useShiftTableView from './hookComponents/useShiftTableView'
 import useEditModeButton from './hookComponents/useEditModeButton'
+import useShiftTableView from './hookComponents/useShiftTableView'
 import { colors } from '@app/styles'
+// import { optimize } from '@app/services/ShiftOptimizer'
+
 
 const ShiftScreen = () => {
     const [shiftMap, setShiftMap] = useState<ShiftMap>(new ShiftMap())
     const { isEditing, EditAddButtonView } = useEditModeButton(true)
+
     const { list: names, selectedNameId, view: namesListView } = useShiftUsersListView(isEditing)
     const {
         posts,
@@ -79,6 +82,7 @@ const ShiftScreen = () => {
             </View>
             <SplitScreenComp leftPanel={namesListView} rightPanel={rightView} style={styles.body} />
             <Button style={styles.bottom} onPress={onOptimize} textColor={colors.primaryBackground}>
+            {/* <Button style={styles.bottom} onPress={handleOptimization} textColor={colors.primaryBackground}> */}
                 optimize
             </Button>
         </View>

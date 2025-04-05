@@ -1,7 +1,7 @@
 from flask import jsonify
 from pulp import *
 import numpy as np
-from modules.model.optim_result import OptimReult
+from model.optim_result import OptimReult
 
 def solve_shift_optimization(availability_matrix) -> OptimReult:
     flatten_matrix = flatten_availability_matrix(availability_matrix)
