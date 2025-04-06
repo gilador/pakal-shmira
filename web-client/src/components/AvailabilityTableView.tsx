@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { User, Constraint, UniqueString } from "../models";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ export interface AvailabilityTableViewProps {
   onPostRemove?: (postId: string) => void;
   users?: User[]; // Add this prop for shift assignments
   mode?: "availability" | "assignments"; // Add mode prop to distinguish between views
+  selectedUserId?: string | null; // Add selectedUserId prop
 }
 
 const AssignmentCell = ({
@@ -34,18 +35,26 @@ const AssignmentCell = ({
   onClick: () => void;
   name?: string;
   isAssigned: boolean;
-}) => (
-  <div className="flex items-center gap-2 w-full">
-    <span
-      className={`cursor-pointer pl-3 mr-10 ${
-        isSelected ? "font-semibold" : ""
-      } ${isAssigned ? "bg-primary/10" : ""}`}
-      onClick={onClick}
+}) => {
+  console.log("AssignmentCell rendered with props:", {
+    isEditing,
+    initialName,
+    userId,
+    isSelected,
+    name,
+    isAssigned,
+  });
+
+  return (
+    <div
+      className={`flex items-center gap-2 w-full `}
     >
-      {name}
-    </span>
-  </div>
-);
+      <span className={`cursor-pointer pl-3 mr-10 `} onClick={onClick}>
+        {initialName}
+      </span>
+    </div>
+  );
+};
 
 const AssignmentCellWithActions = withActions(AssignmentCell);
 
@@ -60,7 +69,20 @@ export function AvailabilityTableView({
   onPostRemove,
   users = [], // Default to empty array
   mode = "availability", // Default to availability mode
+  selectedUserId = null, // Add selectedUserId prop with default value
 }: AvailabilityTableViewProps) {
+  console.log(
+    "AvailabilityTableView rendered with selectedUserId:",
+    selectedUserId
+  );
+
+  useEffect(() => {
+    console.log(
+      "AvailabilityTableView selectedUserId changed to:",
+      selectedUserId
+    );
+  }, [selectedUserId]);
+
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingPostName, setEditingPostName] = useState("");
 
@@ -142,6 +164,15 @@ export function AvailabilityTableView({
     }
   };
 
+  const handlePostNameChange = (postId: string, newName: string) => {
+    console.log("handlePostNameChange called with:", { postId, newName });
+    onPostEdit?.(postId, newName);
+  };
+
+  const handlePostRemove = (postId: string) => {
+    onPostRemove?.(postId);
+  };
+
   return (
     <div className="w-full h-full">
       {mode === "availability" && (
@@ -154,7 +185,22 @@ export function AvailabilityTableView({
         style={{ "--hours": hours.length } as React.CSSProperties}
       >
         {/* Header row */}
-        <div className="font-semibold p-2">Post</div>
+        <div className="font-semibold p-2">
+          {mode === "assignments" ? (
+            <AssignmentCellWithActions
+              isEditing={isEditing}
+              onNameChange={handlePostNameChange}
+              onDelete={handlePostRemove}
+              initialName="Post"
+              userId="post-header"
+              isSelected={false}
+              onClick={() => {}}
+              isAssigned={false}
+            />
+          ) : (
+            "Post"
+          )}
+        </div>
         {hours.map((hour) => (
           <div key={hour.id} className="font-semibold p-2 text-center">
             {hour.value}
@@ -165,7 +211,18 @@ export function AvailabilityTableView({
         {posts.map((post, postIndex) => (
           <React.Fragment key={post.id}>
             <div className="font-semibold p-2">
-              {isEditing ? (
+              {mode === "assignments" ? (
+                <AssignmentCellWithActions
+                  isEditing={isEditing}
+                  onNameChange={handlePostNameChange}
+                  onDelete={handlePostRemove}
+                  initialName={post.value}
+                  userId={post.id}
+                  isSelected={false}
+                  onClick={() => {}}
+                  isAssigned={false}
+                />
+              ) : mode === "availability" && isEditing ? (
                 <div className="flex items-center gap-2">
                   {editingPostId === post.id ? (
                     <Input
@@ -184,14 +241,6 @@ export function AvailabilityTableView({
                       {post.value}
                     </span>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => onPostRemove?.(post.id)}
-                  >
-                    <X className="h-4 w-4 text-destructive" />
-                  </Button>
                 </div>
               ) : (
                 post.value
@@ -205,38 +254,29 @@ export function AvailabilityTableView({
 
               if (mode === "assignments") {
                 if (assignedUser) {
+                  console.log("Rendering assigned cell:", {
+                    assignedUserId: assignedUser.id,
+                    selectedUserId,
+                    isSelected: selectedUserId === assignedUser.id,
+                  });
                   return (
                     <div
                       key={`${post.id}-${hour.id}`}
-                      className="p-2 text-center"
+                      className={`p-2 text-center ${
+                        selectedUserId === assignedUser.id
+                          ? colors.selected.default
+                          : ""
+                      }`}
                     >
                       <div className="relative group">
-                        <AssignmentCellWithActions
-                          isEditing={isEditing}
-                          onNameChange={(userId, newName) => {
-                            // Handle name change if needed
-                          }}
-                          onDelete={(userId) => {
-                            const newConstraints = [...safeConstraints];
-                            newConstraints[postIndex][hourIndex] = {
-                              ...newConstraints[postIndex][hourIndex],
-                              assignedUser: undefined,
-                            };
-                            onConstraintsChange(newConstraints);
-                          }}
+                        <AssignmentCell
+                          isEditing={false}
+                          onNameChange={(userId: string, newName: string) => {}}
+                          onDelete={() => {}}
                           initialName={assignedUser.name}
                           userId={assignedUser.id}
-                          isSelected={false}
-                          onClick={() => {
-                            if (isEditing) {
-                              const newConstraints = [...safeConstraints];
-                              newConstraints[postIndex][hourIndex] = {
-                                ...newConstraints[postIndex][hourIndex],
-                                assignedUser: undefined,
-                              };
-                              onConstraintsChange(newConstraints);
-                            }
-                          }}
+                          isSelected={selectedUserId === assignedUser.id}
+                          onClick={() => {}}
                           name={assignedUser.name}
                           isAssigned={true}
                         />
@@ -250,7 +290,19 @@ export function AvailabilityTableView({
                     key={`${post.id}-${hour.id}`}
                     className="p-2 text-center"
                   >
-                    -
+                    <div className="relative group">
+                      <AssignmentCell
+                        isEditing={false}
+                        onNameChange={(userId: string, newName: string) => {}}
+                        onDelete={() => {}}
+                        initialName=""
+                        userId=""
+                        isSelected={false}
+                        onClick={() => {}}
+                        name="-"
+                        isAssigned={false}
+                      />
+                    </div>
                   </div>
                 );
               } else {

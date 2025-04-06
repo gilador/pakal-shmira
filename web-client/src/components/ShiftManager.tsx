@@ -1,22 +1,15 @@
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import React, { useEffect, useMemo, useState } from "react";
 import { useRecoilState } from "recoil";
 import { mockShiftAssignments } from "../mocks/shiftAssignments";
-import {
-  Constraint,
-  ShiftMap,
-  UniqueString,
-  User,
-  UserShiftData,
-  OptimizeShiftSolution,
-} from "../models";
+import { Constraint, ShiftMap, User, UserShiftData } from "../models";
+import { UniqueString } from "../models/index";
 import { shiftState } from "../stores/shiftStore";
 import { AvailabilityTableView } from "./AvailabilityTableView";
 import { EditButton } from "./EditButton";
 import { SplitScreen } from "./SplitScreen";
 import { WorkerList } from "./WorkerList";
-import { Button } from "@/components/ui/button";
-import { optimizeShift } from "../lib/shiftOptimizedService";
 
 const defaultHours: UniqueString[] = [
   { id: "hour-1", value: "08:00" },
@@ -45,6 +38,8 @@ export function ShiftManager() {
   const [newPostName, setNewPostName] = useState("");
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingPostName, setEditingPostName] = useState("");
+
+  console.log("ShiftManager rendered with selectedUserId:", selectedUserId);
 
   const defaultConstraints = useMemo(
     () => getDefaultConstraints(posts, defaultHours),
@@ -237,6 +232,7 @@ export function ShiftManager() {
   };
 
   const handlePostEdit = (postId: string, newName: string) => {
+    console.log("Editing post:", postId, newName);
     setPosts((prev) =>
       prev.map((post) =>
         post.id === postId ? { ...post, value: newName } : post
@@ -293,6 +289,11 @@ export function ShiftManager() {
     });
   };
 
+  const handleUserSelect = (userId: string | null) => {
+    console.log("handleUserSelect called with userId:", userId);
+    setSelectedUserId(userId);
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex justify-between items-center mb-4">
@@ -321,6 +322,7 @@ export function ShiftManager() {
                 hours={defaultHours}
                 users={state.userShiftData.map((userData) => userData.user)}
                 mode="assignments"
+                selectedUserId={selectedUserId}
                 onConstraintsChange={(newConstraints) => {
                   // Convert constraints back to assignments
                   const newAssignments = newConstraints.map((postConstraints) =>
@@ -365,7 +367,7 @@ export function ShiftManager() {
                 <WorkerList
                   users={state.userShiftData.map((userData) => userData.user)}
                   selectedUserId={selectedUserId}
-                  onSelectUser={setSelectedUserId}
+                  onSelectUser={handleUserSelect}
                   onEditUser={setEditingUserId}
                   onAddUser={addUser}
                   onRemoveUser={removeUser}
@@ -389,6 +391,7 @@ export function ShiftManager() {
                     isEditing={isEditing}
                     onPostEdit={handlePostEdit}
                     onPostRemove={handlePostRemove}
+                    selectedUserId={selectedUserId}
                   />
                 ) : (
                   <Card className="h-full">

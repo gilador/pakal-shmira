@@ -50,35 +50,48 @@ export function WorkerList({
   onRemoveUser,
   isEditing,
 }: WorkerListProps) {
+  console.log("WorkerList rendered with selectedUserId:", selectedUserId);
+
+  const handleUserClick = (userId: string) => {
+    console.log("handleUserClick called with userId:", userId);
+    console.log("Current selectedUserId:", selectedUserId);
+    const newSelectedUserId = selectedUserId === userId ? null : userId;
+    console.log("Calling onSelectUser with:", newSelectedUserId);
+    onSelectUser(newSelectedUserId);
+  };
+
   return (
     <div className="flex flex-col gap-2">
       <h3 className="text-lg font-semibold mb-2">Personals</h3>
-      {users.map((user) => (
-        <div
-          key={user.id}
-          className={`p-2 rounded-md cursor-pointer ${
-            selectedUserId === user.id
-              ? colors.selected.default
-              : colors.background.hover
-          }`}
-          onClick={() =>
-            onSelectUser(selectedUserId === user.id ? null : user.id)
-          }
-        >
-          <UserNameWithActions
-            isEditing={isEditing}
-            onNameChange={onEditUser}
-            onDelete={onRemoveUser}
-            initialName={user.name}
-            userId={user.id}
-            isSelected={selectedUserId === user.id}
-            onClick={() =>
-              onSelectUser(selectedUserId === user.id ? null : user.id)
-            }
-            name={user.name}
-          />
-        </div>
-      ))}
+      {users.map((user) => {
+        console.log("Rendering user:", {
+          userId: user.id,
+          selectedUserId,
+          isSelected: selectedUserId === user.id,
+        });
+        return (
+          <div
+            key={user.id}
+            className={`p-2 rounded-md cursor-pointer ${
+              selectedUserId === user.id
+                ? colors.selected.default
+                : colors.background.hover
+            }`}
+            onClick={() => handleUserClick(user.id)}
+          >
+            <UserNameWithActions
+              isEditing={isEditing}
+              onNameChange={onEditUser}
+              onDelete={onRemoveUser}
+              initialName={user.name}
+              userId={user.id}
+              isSelected={selectedUserId === user.id}
+              onClick={() => handleUserClick(user.id)}
+              name={user.name}
+            />
+          </div>
+        );
+      })}
       {isEditing && (
         <button
           className="p-2 rounded-md bg-primary/10 hover:bg-primary/20"

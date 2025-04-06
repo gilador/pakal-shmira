@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MinusCircle } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, memo } from "react";
 import { EditButton } from "./EditButton";
 
 export interface WithActionsProps {
@@ -16,7 +16,7 @@ export interface WithActionsProps {
 export function withActions<T extends WithActionsProps>(
   WrappedComponent: React.ComponentType<T>
 ) {
-  return function WithActionsComponent(props: T) {
+  const WithActionsComponent = memo(function WithActionsComponent(props: T) {
     const [isEditMode, setIsEditMode] = useState(false);
     const [name, setName] = useState(props.initialName);
     const [isHovered, setIsHovered] = useState(false);
@@ -27,18 +27,52 @@ export function withActions<T extends WithActionsProps>(
       setIsHovered(false);
     }, [props.isEditing]);
 
-    const handleNameChange = (newName: string) => {
-      setName(newName);
-      props.onNameChange(props.userId, newName);
-    };
+    // Update name when initialName changes
+    useEffect(() => {
+      if (props.initialName !== name) {
+        setName(props.initialName);
+      }
+    }, [props.initialName]);
 
-    const handleMouseEnter = () => {
+    const handleNameChange = useCallback(
+      (newName: string) => {
+        setName(newName);
+        props.onNameChange(props.userId, newName);
+      },
+      [props.userId, props.onNameChange]
+    );
+
+    const handleMouseEnter = useCallback(() => {
       setIsHovered(true);
-    };
+    }, []);
 
-    const handleMouseLeave = () => {
+    const handleMouseLeave = useCallback(() => {
       setIsHovered(false);
-    };
+    }, []);
+
+    const handleBlur = useCallback(() => {
+      if (name !== props.initialName) {
+        props.onNameChange(props.userId, name);
+      }
+      setIsEditMode(false);
+    }, [name, props.initialName, props.userId, props.onNameChange]);
+
+    const handleKeyDown = useCallback(
+      (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+          handleBlur();
+        } else if (e.key === "Escape") {
+          setName(props.initialName);
+          setIsEditMode(false);
+        }
+      },
+      [handleBlur, props.initialName]
+    );
+
+    // Skip rendering for empty cells
+    if (!props.userId) {
+      return <WrappedComponent {...props} />;
+    }
 
     return (
       <div
@@ -74,16 +108,23 @@ export function withActions<T extends WithActionsProps>(
               <Input
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
-                onBlur={() => setTimeout(() => setIsEditMode(false), 200)}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
                 className="h-8"
                 autoFocus
               />
             ) : (
-              <WrappedComponent {...props} />
+              <WrappedComponent {...props} name={name} />
             )}
           </div>
         </div>
       </div>
     );
-  };
+  });
+
+  WithActionsComponent.displayName = `WithActions(${
+    WrappedComponent.displayName || WrappedComponent.name || "Component"
+  })`;
+
+  return WithActionsComponent;
 }
