@@ -50,8 +50,6 @@ export function WorkerList({
   onRemoveUser,
   isEditing,
 }: WorkerListProps) {
-  console.log("WorkerList rendered with selectedUserId:", selectedUserId);
-
   const handleUserClick = (userId: string) => {
     console.log("handleUserClick called with userId:", userId);
     console.log("Current selectedUserId:", selectedUserId);
@@ -64,11 +62,6 @@ export function WorkerList({
     <div className="flex flex-col gap-2">
       <h3 className="text-lg font-semibold mb-2">Personals</h3>
       {users.map((user) => {
-        console.log("Rendering user:", {
-          userId: user.id,
-          selectedUserId,
-          isSelected: selectedUserId === user.id,
-        });
         return (
           <div
             key={user.id}

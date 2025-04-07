@@ -10,6 +10,7 @@ import { AvailabilityTableView } from "./AvailabilityTableView";
 import { EditButton } from "./EditButton";
 import { SplitScreen } from "./SplitScreen";
 import { WorkerList } from "./WorkerList";
+import { optimizeShift } from "@/lib/shiftOptimizedService";
 
 const defaultHours: UniqueString[] = [
   { id: "hour-1", value: "08:00" },
@@ -38,8 +39,6 @@ export function ShiftManager() {
   const [newPostName, setNewPostName] = useState("");
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingPostName, setEditingPostName] = useState("");
-
-  console.log("ShiftManager rendered with selectedUserId:", selectedUserId);
 
   const defaultConstraints = useMemo(
     () => getDefaultConstraints(posts, defaultHours),
@@ -213,13 +212,18 @@ export function ShiftManager() {
     });
 
     try {
-      // Create a cycling pattern of assignments
-      const optimizedData = posts.map((post, postIndex) =>
-        defaultHours.map((hour, hourIndex) => {
-          // Calculate which user should be assigned based on the cycle
-          const cycleIndex =
-            (hourIndex * posts.length + postIndex) % state.userShiftData.length;
-          return state.userShiftData[cycleIndex].user;
+      const optimizedResult = await optimizeShift(state.userShiftData);
+      console.log("Optimized result:", optimizedResult);
+
+      // Convert the boolean result to user assignments
+      const optimizedData = optimizedResult.result.map((postAssignments) =>
+        postAssignments.map((hourAssignments) => {
+          const assignedUserIndex = hourAssignments.findIndex(
+            (isAssigned) => isAssigned
+          );
+          return assignedUserIndex >= 0
+            ? state.userShiftData[assignedUserIndex].user
+            : null;
         })
       );
 

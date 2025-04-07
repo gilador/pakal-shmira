@@ -36,15 +36,6 @@ const AssignmentCell = ({
   name?: string;
   isAssigned: boolean;
 }) => {
-  console.log("AssignmentCell rendered with props:", {
-    isEditing,
-    initialName,
-    userId,
-    isSelected,
-    name,
-    isAssigned,
-  });
-
   return (
     <div
       className={`flex items-center gap-2 w-full `}
@@ -71,10 +62,6 @@ export function AvailabilityTableView({
   mode = "availability", // Default to availability mode
   selectedUserId = null, // Add selectedUserId prop with default value
 }: AvailabilityTableViewProps) {
-  console.log(
-    "AvailabilityTableView rendered with selectedUserId:",
-    selectedUserId
-  );
 
   useEffect(() => {
     console.log(
@@ -254,11 +241,6 @@ export function AvailabilityTableView({
 
               if (mode === "assignments") {
                 if (assignedUser) {
-                  console.log("Rendering assigned cell:", {
-                    assignedUserId: assignedUser.id,
-                    selectedUserId,
-                    isSelected: selectedUserId === assignedUser.id,
-                  });
                   return (
                     <div
                       key={`${post.id}-${hour.id}`}
