@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { User, Constraint, UniqueString } from "../models";
+import { User, Constraint } from "../models";
+import { UniqueString } from "../models/index";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Pencil, X } from "lucide-react";
@@ -37,9 +38,7 @@ const AssignmentCell = ({
   isAssigned: boolean;
 }) => {
   return (
-    <div
-      className={`flex items-center gap-2 w-full `}
-    >
+    <div className={`flex items-center gap-2 w-full `}>
       <span className={`cursor-pointer pl-3 mr-10 `} onClick={onClick}>
         {initialName}
       </span>
@@ -62,7 +61,6 @@ export function AvailabilityTableView({
   mode = "availability", // Default to availability mode
   selectedUserId = null, // Add selectedUserId prop with default value
 }: AvailabilityTableViewProps) {
-
   useEffect(() => {
     console.log(
       "AvailabilityTableView selectedUserId changed to:",
@@ -92,6 +90,23 @@ export function AvailabilityTableView({
       return;
     }
 
+    console.log("===== TOGGLE AVAILABILITY =====");
+    console.log(`User: ${user.name} (${user.id})`);
+    console.log(
+      `Post: ${posts[postIndex].value} (${posts[postIndex].id}) at index ${postIndex}`
+    );
+    console.log(
+      `Hour: ${hours[hourIndex].value} (${hours[hourIndex].id}) at index ${hourIndex}`
+    );
+    console.log(
+      "Current availability:",
+      constraints[postIndex][hourIndex].availability
+    );
+    console.log(
+      "Constraints structure:",
+      constraints.map((row) => row.length)
+    );
+
     // Create a new constraints array with the correct structure
     const newConstraints = constraints.map((postConstraints, pIndex) => {
       if (pIndex === postIndex) {
@@ -120,6 +135,13 @@ export function AvailabilityTableView({
       }
       return postConstraints;
     });
+
+    // Print the new constraints structure
+    console.log("USER CONSTRAINTS (AFTER):");
+    console.log(JSON.stringify(newConstraints, null, 2));
+    console.log(
+      `Toggled [${postIndex}][${hourIndex}] from ${constraints[postIndex]?.[hourIndex]?.availability} to ${newConstraints[postIndex][hourIndex].availability}`
+    );
 
     onConstraintsChange(newConstraints);
   };

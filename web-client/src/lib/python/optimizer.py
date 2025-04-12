@@ -1,66 +1,100 @@
-def generate_solution(user_data):
+from js import console
+from pulp import LpProblem, LpVariable, LpMinimize, lpSum, value
+
+def generate_solution(availability_matrix):
     """
-    Generate a solution based on user constraints using deterministic assignment.
+    Generate a solution based on availability matrix using PuLP's LpProblem.
     
     Args:
-        user_data (list): List of user data containing constraints
+        availability_matrix (list): 3D list of boolean values representing availability
+            First dimension: users
+            Second dimension: shifts
+            Third dimension: time slots
         
     Returns:
         dict: Solution containing result array and optimization status
     """
-    print("Python received data type:", type(user_data))
-    print("Python received data:", user_data)
-    
-    # Test that numpy is working
     try:
         import numpy as np
         
-        # Test numpy with a simple linear algebra example
-        A = np.array([[1, 2], [3, 4]])
-        B = np.array([[5, 6], [7, 8]])
-        C = np.dot(A, B)
+        # Convert to numpy array
+        availability = np.array(availability_matrix, dtype=bool)
         
-        print("Test optimization solution:")
-        print(f"Matrix multiplication result:\n{C}")
+        # Get dimensions
+        num_users, num_shifts, num_time_slots = availability.shape
+        if num_users == 0:
+            return {"result": [], "isOptim": True}
         
-        # Test numpy array operations
-        arr = np.array([1, 2, 3, 4, 5])
-        print(f"Numpy test - array sum: {np.sum(arr)}")
-        print(f"Numpy test - array mean: {np.mean(arr)}")
+        # Create the problem
+        prob = LpProblem("Shift_Assignment", LpMinimize)
+        
+        # Create binary variables for each user-shift-time_slot combination
+        x = {}
+        for user in range(num_users):
+            for shift in range(num_shifts):
+                for time_slot in range(num_time_slots):
+                    x[(user, shift, time_slot)] = LpVariable(
+                        f"x_{user}_{shift}_{time_slot}", 
+                        cat='Binary'
+                    )
+        
+        # Add availability constraints
+        for user in range(num_users):
+            for shift in range(num_shifts):
+                for time_slot in range(num_time_slots):
+                    if not availability[user, shift, time_slot]:
+                        prob += x[(user, shift, time_slot)] == 0
+        
+        # Add coverage constraints (each shift-time_slot must have exactly one user)
+        for shift in range(num_shifts):
+            for time_slot in range(num_time_slots):
+                prob += lpSum(x[(user, shift, time_slot)] for user in range(num_users)) == 1
+        
+        # Add consecutivity constraints
+        for user in range(num_users):
+            for shift in range(num_shifts - 1):
+                for time_slot in range(num_time_slots):
+                    prob += x[(user, shift, time_slot)] + x[(user, shift + 1, time_slot)] <= 1
+        
+        # Calculate target shifts per user
+        total_slots = num_shifts * num_time_slots
+        target_shifts = total_slots / num_users
+        
+        # Create variables for positive and negative differences
+        d_pos = {}
+        d_neg = {}
+        for user in range(num_users):
+            d_pos[user] = LpVariable(f"d_pos_{user}", lowBound=0)
+            d_neg[user] = LpVariable(f"d_neg_{user}", lowBound=0)
+            
+            # Add constraints for differences
+            total_user_shifts = lpSum(x[(user, shift, time_slot)] 
+                                    for shift in range(num_shifts) 
+                                    for time_slot in range(num_time_slots))
+            prob += total_user_shifts - d_pos[user] + d_neg[user] == target_shifts
+        
+        # Set objective: minimize total difference
+        prob += lpSum(d_pos[user] + d_neg[user] for user in range(num_users))
+        
+        # Solve the problem
+        prob.solve()
+        
+        # Extract results
+        solution = np.zeros((num_users, num_shifts, num_time_slots), dtype=bool)
+        for user in range(num_users):
+            for shift in range(num_shifts):
+                for time_slot in range(num_time_slots):
+                    if value(x[(user, shift, time_slot)]) == 1:
+                        solution[user, shift, time_slot] = True
+        
+        # Convert to list format
+        result = solution.tolist()
+        
+        return {
+            "result": result,
+            "isOptim": prob.status == 1
+        }
         
     except Exception as e:
-        print(f"Error testing packages: {str(e)}")
-    
-    # Derive dimensions from input data
-    num_users = len(user_data)ddd
-    if num_users == 0:
-        return {"result": [], "isOptim": True}
-        
-    # Get number of shifts and time slots from the first user's constraints
-    first_user = user_data[0]
-    num_shifts = len(first_user['constraints'])
-    num_time_slots = len(first_user['constraints'][0]) if num_shifts > 0 else 0
-    
-    # Generate solution array with derived dimensions
-    solution = []
-    for user_idx in range(num_users):
-        user_solution = []
-        for shift_idx in range(num_shifts):
-            time_slots = []
-            for time_slot_idx in range(num_time_slots):
-                # Check if user is available for this shift
-                is_available = bool(user_data[user_idx]['constraints'][shift_idx][time_slot_idx]['availability'])
-                # Use deterministic assignment based on user index and time slot
-                # This ensures consistent test results
-                should_assign = is_available and ((user_idx + time_slot_idx) % 2 == 0)
-                time_slots.append(should_assign)
-            user_solution.append(time_slots)
-        solution.append(user_solution)
-    
-    # Convert boolean values to proper JSON format
-    result = {
-        "result": [[[bool(x) for x in row] for row in user] for user in solution],
-        "isOptim": True
-    }
-    
-    return result 
+        console.log(f"Error in optimization: {str(e)}")
+        return {"result": [], "isOptim": False} 

@@ -11,13 +11,21 @@ export async function initializePython() {
     });
     console.log("Pyodide instance created");
 
-    // Redirect Python print to browser console
+    // Initialize the output array in Python
+    pyodideInstance.runPython(`
+      import js
+      js.pythonOutput = []
+    `);
+
+    // Redirect Python print to browser console and capture output
     console.log("Setting up Python print redirection...");
     pyodideInstance.runPython(`
       import sys
       import js
       def print_to_console(*args, **kwargs):
-          js.console.log('Python:', *args)
+          output = ' '.join(str(arg) for arg in args)
+          js.console.log('Python:', output)
+          js.pythonOutput.append(output)
       sys.stdout.write = print_to_console
       sys.stderr.write = print_to_console
       print = print_to_console
@@ -48,9 +56,15 @@ export async function initializePython() {
   return pyodideInstance;
 }
 
-export async function runPythonCode(code: string, data?: any): Promise<any> {
+export async function runPythonCode(code: string, data?: any): Promise<string> {
   console.log("Running Python code...");
   const pyodide = await initializePython();
+
+  // Reset the output array
+  pyodide.runPython(`
+    import js
+    js.pythonOutput = []
+  `);
 
   if (data) {
     console.log("Processing input data...");
@@ -71,7 +85,14 @@ print("Input data loaded:", input_data)
     .replace(/"true"/g, "True")
     .replace(/"false"/g, "False");
 
-  const result = await pyodide.runPythonAsync(pythonCode);
+  await pyodide.runPythonAsync(pythonCode);
   console.log("Python code execution complete");
-  return result;
+
+  // Get the output array from Python
+  const output = pyodide.runPython(`
+    import js
+    '\\n'.join(js.pythonOutput)
+  `);
+
+  return output;
 }

@@ -94,6 +94,41 @@ export function ShiftManager() {
           constraints: getDefaultConstraints(defaultPosts, defaultHours),
           totalAssignments: 0,
         },
+        {
+          user: { id: "worker-6", name: "David Miller" },
+          constraints: getDefaultConstraints(defaultPosts, defaultHours),
+          totalAssignments: 0,
+        },
+        {
+          user: { id: "worker-7", name: "Emma Davis" },
+          constraints: getDefaultConstraints(defaultPosts, defaultHours),
+          totalAssignments: 0,
+        },
+        {
+          user: { id: "worker-8", name: "Frank Wilson" },
+          constraints: getDefaultConstraints(defaultPosts, defaultHours),
+          totalAssignments: 0,
+        },
+        {
+          user: { id: "worker-9", name: "Grace Taylor" },
+          constraints: getDefaultConstraints(defaultPosts, defaultHours),
+          totalAssignments: 0,
+        },
+        {
+          user: { id: "worker-10", name: "Henry Anderson" },
+          constraints: getDefaultConstraints(defaultPosts, defaultHours),
+          totalAssignments: 0,
+        },
+        {
+          user: { id: "worker-11", name: "Isabella Martinez" },
+          constraints: getDefaultConstraints(defaultPosts, defaultHours),
+          totalAssignments: 0,
+        },
+        {
+          user: { id: "worker-12", name: "Jack Thompson" },
+          constraints: getDefaultConstraints(defaultPosts, defaultHours),
+          totalAssignments: 0,
+        },
       ];
       setState((prev) => ({
         ...prev,
@@ -127,6 +162,9 @@ export function ShiftManager() {
     userId: string,
     newConstraints: Constraint[][]
   ) => {
+    // Print only the user availability object
+    console.log(JSON.stringify(newConstraints, null, 2));
+
     setState((prev) => ({
       ...prev,
       userShiftData: prev.userShiftData.map((userData) =>
@@ -184,23 +222,62 @@ export function ShiftManager() {
   const handleConstraintsChanged = (newConstraints: Constraint[][]) => {
     if (!selectedUser) return;
 
+    console.log("===== HANDLE CONSTRAINTS CHANGED =====");
     console.log(
-      `Updating availability for user: ${selectedUser.user.name} (${selectedUser.user.id})`
+      `Processing constraints for user: ${selectedUser.user.name} (${selectedUser.user.id})`
     );
-    console.log("New constraints:", newConstraints);
+    console.log(
+      "New constraints structure:",
+      newConstraints.map((row) => row.length)
+    );
+
+    // Log detailed post/hour mapping
+    console.log("Posts and hours mapping:");
+    posts.forEach((post, postIndex) => {
+      console.log(`  Post ${postIndex}: ${post.value} (${post.id})`);
+    });
+    defaultHours.forEach((hour, hourIndex) => {
+      console.log(`  Hour ${hourIndex}: ${hour.value} (${hour.id})`);
+    });
+
+    // Detailed constraints logging
+    console.log("Constraint details:");
+    newConstraints.forEach((postConstraints, postIndex) => {
+      const postName =
+        postIndex < posts.length
+          ? posts[postIndex].value
+          : `Unknown(${postIndex})`;
+      console.log(`  Post ${postIndex} (${postName}):`);
+      postConstraints.forEach((constraint, hourIndex) => {
+        const hourName =
+          hourIndex < defaultHours.length
+            ? defaultHours[hourIndex].value
+            : `Unknown(${hourIndex})`;
+        console.log(
+          `    Hour ${hourIndex} (${hourName}): Availability=${constraint.availability}, PostID=${constraint.postID}, HourID=${constraint.hourID}`
+        );
+      });
+    });
 
     setShiftMap((prev) => {
       const newShiftMap = prev.copy();
+      console.log("BEFORE UPDATE - User constraints in ShiftMap:");
+      newShiftMap.debugUserConstraints(selectedUser.user.id);
+
       const userShiftData = prev.getUser(selectedUser.user.id);
       if (userShiftData) {
         userShiftData.constraints = newConstraints;
         newShiftMap.updateUser(userShiftData);
         console.log("Updated shift map with new constraints");
+        console.log("AFTER UPDATE - User constraints in ShiftMap:");
+        newShiftMap.debugUserConstraints(selectedUser.user.id);
       } else {
         console.warn("User shift data not found in shift map");
       }
       return newShiftMap;
     });
+
+    console.log("======================================");
   };
 
   const handleOptimize = async () => {
@@ -214,24 +291,95 @@ export function ShiftManager() {
     try {
       const optimizedResult = await optimizeShift(state.userShiftData);
       console.log("Optimized result:", optimizedResult);
-
-      // Convert the boolean result to user assignments
-      const optimizedData = optimizedResult.result.map((postAssignments) =>
-        postAssignments.map((hourAssignments) => {
-          const assignedUserIndex = hourAssignments.findIndex(
-            (isAssigned) => isAssigned
-          );
-          return assignedUserIndex >= 0
-            ? state.userShiftData[assignedUserIndex].user
-            : null;
-        })
+      console.log(
+        "Hours available:",
+        defaultHours.map((h) => h.value)
       );
 
-      console.log("Optimized data created:", optimizedData);
-      setAssignments(optimizedData);
+      // Initialize assignments with null values
+      const newAssignments: (User | null)[][] = posts.map(() =>
+        defaultHours.map(() => null)
+      );
+
+      // Only process the result if optimization was successful
+      if (optimizedResult.isOptim) {
+        console.log("Processing optimized assignments...");
+
+        // Convert the boolean result to user assignments
+        // The result is in format [posts][shifts][users]
+        optimizedResult.result.forEach((postAssignments, postIndex) => {
+          console.log(
+            `Processing post ${postIndex} (${
+              posts[postIndex]?.value || "unknown"
+            }):`
+          );
+
+          postAssignments.forEach((shiftAssignments, shiftIndex) => {
+            // Log shift details for debugging
+            const hourName =
+              shiftIndex < defaultHours.length
+                ? defaultHours[shiftIndex].value
+                : `Unknown(${shiftIndex})`;
+            console.log(`  Processing shift ${shiftIndex} (${hourName}):`);
+
+            // Special logging for 11:00 and 12:00
+            if (hourName === "11:00" || hourName === "12:00") {
+              console.log(`    DEBUGGING ${hourName} SHIFT:`);
+              console.log(
+                `    - Shift data available:`,
+                shiftAssignments.length > 0
+              );
+              console.log(
+                `    - Any assignments:`,
+                shiftAssignments.some((a) => a)
+              );
+              console.log(`    - Assignment data:`, shiftAssignments);
+            }
+
+            // Find the first assigned user for this shift
+            const assignedUserIndex = shiftAssignments.findIndex(
+              (isAssigned) => isAssigned
+            );
+
+            console.log(`    - Assigned user index: ${assignedUserIndex}`);
+
+            if (
+              assignedUserIndex >= 0 &&
+              assignedUserIndex < state.userShiftData.length
+            ) {
+              newAssignments[postIndex][shiftIndex] =
+                state.userShiftData[assignedUserIndex].user;
+              console.log(
+                `    - Assigned to: ${state.userShiftData[assignedUserIndex].user.name}`
+              );
+            } else {
+              console.log(`    - No user assigned for this shift`);
+            }
+          });
+        });
+
+        // Log the final assignments structure
+        console.log("Final assignments structure:");
+        posts.forEach((post, postIndex) => {
+          console.log(`  Post ${post.value}:`);
+          defaultHours.forEach((hour, hourIndex) => {
+            const assigned = newAssignments[postIndex][hourIndex];
+            console.log(
+              `    Hour ${hour.value}: ${
+                assigned ? assigned.name : "UNASSIGNED"
+              }`
+            );
+          });
+        });
+      }
+
+      console.log("New assignments:", newAssignments);
+      setAssignments(newAssignments);
       console.log("Optimization complete - shift data updated");
     } catch (error) {
       console.error("Error during optimization:", error);
+      // Reset assignments to all null values
+      setAssignments(posts.map(() => defaultHours.map(() => null)));
     }
   };
 
@@ -296,6 +444,16 @@ export function ShiftManager() {
   const handleUserSelect = (userId: string | null) => {
     console.log("handleUserSelect called with userId:", userId);
     setSelectedUserId(userId);
+
+    if (userId) {
+      const selectedUserData = state.userShiftData.find(
+        (user) => user.user.id === userId
+      );
+      if (selectedUserData) {
+        console.log("SELECTED USER CONSTRAINTS:");
+        console.log(JSON.stringify(selectedUserData.constraints, null, 2));
+      }
+    }
   };
 
   return (
@@ -314,10 +472,10 @@ export function ShiftManager() {
               <h3 className="text-lg font-semibold mb-2">Shift Assignments</h3>
               <AvailabilityTableView
                 user={{ id: "shift-assignments", name: "Shift Assignments" }}
-                constraints={assignments.map((postAssignments) =>
-                  postAssignments.map((user) => ({
-                    postID: posts[0].id,
-                    hourID: defaultHours[0].id,
+                constraints={assignments.map((postAssignments, postIndex) =>
+                  postAssignments.map((user, hourIndex) => ({
+                    postID: posts[postIndex]?.id || "",
+                    hourID: defaultHours[hourIndex]?.id || "",
                     availability: !!user,
                     assignedUser: user?.id,
                   }))
@@ -329,14 +487,15 @@ export function ShiftManager() {
                 selectedUserId={selectedUserId}
                 onConstraintsChange={(newConstraints) => {
                   // Convert constraints back to assignments
-                  const newAssignments = newConstraints.map((postConstraints) =>
-                    postConstraints.map((constraint) =>
-                      constraint.assignedUser
-                        ? state.userShiftData.find(
-                            (u) => u.user.id === constraint.assignedUser
-                          )?.user || null
-                        : null
-                    )
+                  const newAssignments = newConstraints.map(
+                    (postConstraints, postIndex) =>
+                      postConstraints.map((constraint, hourIndex) =>
+                        constraint.assignedUser
+                          ? state.userShiftData.find(
+                              (u) => u.user.id === constraint.assignedUser
+                            )?.user || null
+                          : null
+                      )
                   );
                   // Update assignments
                   newAssignments.forEach((postAssignments, postIndex) => {
@@ -419,10 +578,10 @@ function getDefaultConstraints(
   posts: UniqueString[],
   hours: UniqueString[]
 ): Constraint[][] {
-  // First level represents hours
-  return hours.map((hour) => {
-    // For each hour, create constraints for all posts
-    return posts.map((post) => ({
+  // First level represents posts (changed from hours-first to posts-first)
+  return posts.map((post) => {
+    // For each post, create constraints for all hours
+    return hours.map((hour) => ({
       postID: post.id,
       hourID: hour.id,
       availability: true,
@@ -440,17 +599,19 @@ function deriveUserDataMap(
     const existingShiftData = oldMap.getUser(userShiftData.user.id);
     let newUserConstraints = JSON.parse(JSON.stringify(defaultConstraints));
 
-    newUserConstraints.forEach((newHourConstraint: Constraint[]) => {
-      newHourConstraint.forEach((newPostConstraint) => {
-        const id =
-          userShiftData.user.id +
-          newPostConstraint.postID +
-          newPostConstraint.hourID;
-        const oldShift = oldMap.getShift(id);
-        newPostConstraint.availability =
-          (oldShift && oldShift.availability) ?? newPostConstraint.availability;
-      });
-    });
+    newUserConstraints.forEach(
+      (postConstraints: Constraint[], postIndex: number) => {
+        postConstraints.forEach((hourConstraint, hourIndex: number) => {
+          const id =
+            userShiftData.user.id +
+            hourConstraint.postID +
+            hourConstraint.hourID;
+          const oldShift = oldMap.getShift(id);
+          hourConstraint.availability =
+            (oldShift && oldShift.availability) ?? hourConstraint.availability;
+        });
+      }
+    );
 
     const totalAssignments = existingShiftData
       ? existingShiftData.totalAssignments

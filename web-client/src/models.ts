@@ -42,8 +42,8 @@ export class ShiftMap {
 
   getShift(id: string): Constraint | undefined {
     for (const userData of this.map.values()) {
-      for (const hourConstraints of userData.constraints) {
-        for (const constraint of hourConstraints) {
+      for (const postConstraints of userData.constraints) {
+        for (const constraint of postConstraints) {
           if (constraint.postID + constraint.hourID === id) {
             return constraint;
           }
@@ -59,5 +59,31 @@ export class ShiftMap {
       newMap.addUser(JSON.parse(JSON.stringify(value)));
     });
     return newMap;
+  }
+
+  // Debug utility to log the constraints for a user
+  debugUserConstraints(userId: string): void {
+    const userData = this.getUser(userId);
+    if (!userData) {
+      console.log(`User ${userId} not found in ShiftMap`);
+      return;
+    }
+
+    console.log(`===== SHIFT MAP DEBUG: ${userData.user.name} =====`);
+    console.log(`User ID: ${userData.user.id}`);
+    console.log(
+      `Constraints structure: ${userData.constraints.map((row) => row.length)}`
+    );
+
+    userData.constraints.forEach((postConstraints, postIndex) => {
+      console.log(`Post ${postIndex}:`);
+      postConstraints.forEach((constraint, hourIndex) => {
+        console.log(
+          `  Hour ${hourIndex}: Availability=${constraint.availability}, PostID=${constraint.postID}, HourID=${constraint.hourID}`
+        );
+      });
+    });
+
+    console.log("==========================================");
   }
 }

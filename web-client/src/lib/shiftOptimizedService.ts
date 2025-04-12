@@ -1,4 +1,3 @@
-import { runPythonCode } from "./pythonService";
 import { UserShiftData } from "@/models";
 
 export interface OptimizedShiftResult {
@@ -6,57 +5,555 @@ export interface OptimizedShiftResult {
   isOptim: boolean;
 }
 
+// Load HiGHS once
+let highsPromise: Promise<any> | null = null;
+
+async function getHighs() {
+  if (!highsPromise) {
+    highsPromise = new Promise((resolve) => {
+      const script = document.createElement("script");
+      // Use the more reliable highs-js version
+      script.src = "https://lovasoa.github.io/highs-js/highs.js";
+      script.async = true;
+      script.onload = () => {
+        // @ts-ignore - HiGHS is loaded globally
+        const highs = window.Module();
+        console.log("HiGHS library loaded:", {
+          available: !!highs,
+          version: highs?.version || "unknown",
+        });
+        resolve(highs);
+      };
+      document.body.appendChild(script);
+    });
+  }
+  return highsPromise;
+}
+
+// Convert our problem to LP format
+function convertToLPFormat(availabilityMatrix: boolean[][][]): string {
+  const num_users = availabilityMatrix.length;
+  const num_shifts = availabilityMatrix[0].length;
+  const num_time_slots = availabilityMatrix[0][0].length;
+
+  let lp = "Minimize\n obj: ";
+
+  // Create variables to track assignments per user
+  // In standard LP format, we can approximate minimizing standard deviation by:
+  // 1. Introducing "above_avg" and "below_avg" variables for each user
+  // 2. Constraining these to capture the absolute deviation from the mean
+  // 3. Minimizing the sum of these deviations
+
+  // First, calculate the expected average assignments per user
+  const total_slots = num_shifts * num_time_slots;
+  const expected_avg = total_slots / num_users;
+
+  console.log(
+    `Optimization goal: Even distribution around ${expected_avg.toFixed(
+      2
+    )} assignments per worker`
+  );
+
+  // For each user, create deviation variables
+  for (let user = 0; user < num_users; user++) {
+    // Add positive deviation variables to objective (minimize them)
+    lp += `1 above_avg_${user} + 1 below_avg_${user} + `;
+  }
+
+  // Remove the trailing " + "
+  lp = lp.slice(0, -3);
+
+  lp += "\nSubject To\n";
+
+  // Constraint: define the deviation variables in terms of assignment variables
+  let constraintId = 1;
+  for (let user = 0; user < num_users; user++) {
+    lp += ` c${constraintId++}: `;
+
+    // Sum all assignments for this user
+    for (let shift = 0; shift < num_shifts; shift++) {
+      for (let time_slot = 0; time_slot < num_time_slots; time_slot++) {
+        if (availabilityMatrix[user][shift][time_slot]) {
+          lp += `1 x_${user}_${shift}_${time_slot} + `;
+        }
+      }
+    }
+
+    // If user has any availability
+    if (lp.endsWith(" + ")) {
+      // Remove trailing " + "
+      lp = lp.slice(0, -3);
+
+      // Define relationship between assignments and deviation variables
+      lp += ` - 1 above_avg_${user} + 1 below_avg_${user} = ${expected_avg}\n`;
+    } else {
+      // If user has no availability for any shift/time slot
+      lp += ` - 1 above_avg_${user} + 1 below_avg_${user} = 0\n`;
+    }
+  }
+
+  // 1. Each shift-time_slot must have exactly one user
+  for (let shift = 0; shift < num_shifts; shift++) {
+    for (let time_slot = 0; time_slot < num_time_slots; time_slot++) {
+      lp += ` c${constraintId++}: `;
+
+      // Add coefficients for available users
+      let anyAvailable = false;
+      for (let user = 0; user < num_users; user++) {
+        if (availabilityMatrix[user][shift][time_slot]) {
+          lp += `1 x_${user}_${shift}_${time_slot} + `;
+          anyAvailable = true;
+        }
+      }
+
+      if (anyAvailable) {
+        // Remove the trailing " + "
+        lp = lp.slice(0, -3);
+        lp += " = 1\n";
+      } else {
+        // If no user is available, skip this constraint
+        lp = lp.slice(0, -3);
+        console.warn(
+          `No users available for shift ${shift}, time slot ${time_slot}`
+        );
+      }
+    }
+  }
+
+  // 2. No consecutive shifts for same user
+  for (let user = 0; user < num_users; user++) {
+    for (let shift = 0; shift < num_shifts - 1; shift++) {
+      for (let time_slot = 0; time_slot < num_time_slots; time_slot++) {
+        if (
+          availabilityMatrix[user][shift][time_slot] &&
+          availabilityMatrix[user][shift + 1][time_slot]
+        ) {
+          lp += ` c${constraintId++}: x_${user}_${shift}_${time_slot} + x_${user}_${
+            shift + 1
+          }_${time_slot} <= 1\n`;
+        }
+      }
+    }
+  }
+
+  lp += "Binary\n";
+
+  // Binary variables for assignments
+  for (let user = 0; user < num_users; user++) {
+    for (let shift = 0; shift < num_shifts; shift++) {
+      for (let time_slot = 0; time_slot < num_time_slots; time_slot++) {
+        if (availabilityMatrix[user][shift][time_slot]) {
+          lp += ` x_${user}_${shift}_${time_slot}\n`;
+        }
+      }
+    }
+  }
+
+  // Add bounds for the deviation variables
+  lp += "Bounds\n";
+  for (let user = 0; user < num_users; user++) {
+    lp += ` 0 <= above_avg_${user}\n`;
+    lp += ` 0 <= below_avg_${user}\n`;
+  }
+
+  lp += "End";
+
+  console.log("LP problem:", lp);
+  return lp;
+}
+
+// Parse the solution from HiGHS solve format to our format
+function parseLPSolution(
+  solution: any,
+  num_users: number,
+  num_shifts: number,
+  num_time_slots: number
+): boolean[][][] {
+  console.log("Parsing LP solution:", solution);
+
+  // Initialize result in the expected format [posts][shifts][users]
+  // Always ensure we return the exact expected structure (3 posts, 5 shifts, 12 users)
+  const result: boolean[][][] = Array(3)
+    .fill(false)
+    .map(() =>
+      Array(5)
+        .fill(false)
+        .map(() => Array(12).fill(false))
+    );
+
+  try {
+    // If solution is optimal and has columns
+    if (solution && solution.Status === "Optimal" && solution.Columns) {
+      // Log initial solution check
+      console.log("\nChecking solution for shifts 4 and 5:");
+      console.log("Solution status:", solution.Status);
+      console.log("Number of columns:", Object.keys(solution.Columns).length);
+
+      // Track assignments per user to verify even distribution
+      const assignmentsPerUser: number[] = Array(num_users).fill(0);
+      const deviations: { above: number; below: number }[] = Array(num_users)
+        .fill(0)
+        .map(() => ({ above: 0, below: 0 }));
+
+      // First collect all assignments to understand the structure
+      const assignments: { user: number; post: number; hour: number }[] = [];
+
+      // Log all variables that might be relevant to shifts 4 and 5
+      console.log("\nAll solution variables:");
+      for (const [name, details] of Object.entries(solution.Columns)) {
+        const value = (details as any).Primal;
+        if (name.startsWith("x_")) {
+          const parts = name.split("_");
+          if (parts.length === 4 && parts[0] === "x") {
+            const user = parseInt(parts[1], 10);
+            const shift = parseInt(parts[2], 10);
+            const timeSlot = parseInt(parts[3], 10);
+
+            // Log all assignment variables
+            console.log(`${name}:`, {
+              value,
+              user,
+              shift,
+              timeSlot,
+              isAssigned: Math.abs(value - 1) < 1e-6,
+            });
+          }
+        }
+      }
+
+      // Parse each variable
+      for (const [name, details] of Object.entries(solution.Columns)) {
+        const value = (details as any).Primal;
+
+        // Process assignment variables (x_user_shift_timeSlot)
+        if (name.startsWith("x_") && Math.abs(value - 1) < 1e-6) {
+          // Extract indices from variable name (x_user_shift_timeSlot)
+          const parts = name.split("_");
+          if (parts.length === 4 && parts[0] === "x") {
+            const user = parseInt(parts[1], 10);
+            const shift = parseInt(parts[2], 10);
+            const timeSlot = parseInt(parts[3], 10);
+
+            // Track assignment for stats
+            if (user >= 0 && user < num_users) {
+              assignmentsPerUser[user]++;
+            }
+
+            // IMPORTANT: The optimizer uses [user][shift][timeSlot] format
+            // But our UI expects [post][hour][user] format
+            // Here shift is actually the post, and timeSlot is the hour
+            const post = shift; // shift in optimizer = post in UI
+            const hour = timeSlot; // timeSlot in optimizer = hour in UI
+
+            // Log all assignments
+            console.log(`Processing assignment:`, {
+              variable: name,
+              value,
+              user,
+              shift,
+              timeSlot,
+              post,
+              hour,
+              mappedTo: `result[${post}][${hour}][${user}]`,
+            });
+
+            // Only store assignments for valid posts (0-2) and hours (0-4)
+            if (post >= 0 && post < 3 && hour >= 0 && hour < 5) {
+              assignments.push({ user, post, hour });
+            } else {
+              console.warn(`Skipping invalid assignment:`, {
+                user,
+                post,
+                hour,
+              });
+            }
+          }
+        }
+
+        // Track deviations for analysis
+        if (name.startsWith("above_avg_") && Math.abs(value) > 1e-6) {
+          const user = parseInt(name.substring("above_avg_".length), 10);
+          if (user >= 0 && user < num_users) {
+            deviations[user].above = value;
+          }
+        }
+
+        if (name.startsWith("below_avg_") && Math.abs(value) > 1e-6) {
+          const user = parseInt(name.substring("below_avg_".length), 10);
+          if (user >= 0 && user < num_users) {
+            deviations[user].below = value;
+          }
+        }
+      }
+
+      // Log all collected assignments
+      console.log("\nAll collected assignments:", assignments);
+
+      // Fill in the result array using the collected assignments
+      for (const { user, post, hour } of assignments) {
+        // Double-check bounds before setting
+        if (
+          post < 0 ||
+          post >= 3 ||
+          hour < 0 ||
+          hour >= 5 ||
+          user < 0 ||
+          user >= 12
+        ) {
+          console.warn(`Skipping out-of-bounds assignment:`, {
+            post,
+            hour,
+            user,
+          });
+          continue;
+        }
+
+        // Set the assignment in our result array
+        console.log(`Setting assignment in result:`, { post, hour, user });
+        result[post][hour][user] = true;
+      }
+
+      // Print result matrix
+      console.log("\nResult Matrix [post][shift][user]:");
+      result.forEach((post, postIndex) => {
+        console.log(`\nPost ${postIndex + 1}:`);
+        post.forEach((shift, shiftIndex) => {
+          const assignedUsers = shift
+            .map((assigned, userIndex) => (assigned ? userIndex + 1 : null))
+            .filter(Boolean);
+          console.log(`  Shift ${shiftIndex + 1}:`, assignedUsers.join(", "));
+        });
+      });
+
+      return result;
+    }
+  } catch (error) {
+    console.error("Error parsing LP solution:", error);
+    // Return empty solution on error
+    return createEmptySolution(5);
+  }
+
+  return result;
+}
+
+function createEmptySolution(numTimeSlots = 5): boolean[][][] {
+  // Create a solution with exactly 3 posts, 5 shifts, and 12 users
+  return Array(3) // posts
+    .fill(false)
+    .map(
+      () =>
+        Array(numTimeSlots) // shifts (default to 5 for our 5 hours)
+          .fill(false)
+          .map(() => Array(12).fill(false)) // users
+    );
+}
+
+function validateSolution(
+  solution: boolean[][][],
+  expectedNumTimeSlots = 5
+): boolean[][][] {
+  // Ensure the solution has exactly the right structure
+  if (
+    !solution ||
+    !Array.isArray(solution) ||
+    solution.length !== 3 ||
+    !Array.isArray(solution[0]) ||
+    solution[0].length !== expectedNumTimeSlots ||
+    !Array.isArray(solution[0][0]) ||
+    solution[0][0].length !== 12
+  ) {
+    console.error(
+      `Invalid solution structure, returning empty solution with ${expectedNumTimeSlots} time slots`
+    );
+    return createEmptySolution(expectedNumTimeSlots);
+  }
+  return solution;
+}
+
 export async function optimizeShift(
   userData: UserShiftData[]
 ): Promise<OptimizedShiftResult> {
   try {
-    // Convert user data to Python-compatible format
-    const pythonUserData = userData.map((user) => ({
-      user: {
-        id: user.user.id,
-        name: user.user.name,
-      },
-      constraints: user.constraints.map((shift) =>
-        shift.map((slot) => ({
-          postID: slot.postID,
-          hourID: slot.hourID,
-          availability: slot.availability,
-        }))
-      ),
-      totalAssignments: user.totalAssignments,
-    }));
+    console.log("Starting optimization with userData:", {
+      numUsers: userData.length,
+      sampleUser: userData[0],
+    });
 
-    // Log the data before stringification
-    console.log("Python user data before stringification:", pythonUserData);
+    if (!userData || userData.length === 0) {
+      console.error("No user data provided");
+      return {
+        result: createEmptySolution(5),
+        isOptim: false,
+      };
+    }
 
-    // Stringify the data and convert boolean values
-    const jsonString = JSON.stringify(pythonUserData)
-      .replace(/"true"/g, "True")
-      .replace(/"false"/g, "False");
-
-    // Import and run the optimizer
-    const code = `
-import json
-
-# Convert the JSON string to Python data structure
-user_data = json.loads('${jsonString}')
-print("Python received data:", user_data)
-result = generate_solution(user_data)
-print("Python result:", result)
-json.dumps(result)
-`;
-
-    console.log("Python code to be executed:", code);
-    const result = await runPythonCode(code);
-    console.log("Python returned result:", result);
-
-    // Parse the result and convert boolean values back to JavaScript format
-    const parsedResult = JSON.parse(
-      result.replace(/True/g, "true").replace(/False/g, "false")
+    // Convert user data to availability matrix
+    const availabilityMatrix = userData.map((user) =>
+      user.constraints.map((shift) => {
+        // Get all time slots without limiting to 3
+        const timeSlots = shift.map((slot) => slot.availability);
+        // Ensure we have exactly 5 time slots (but don't cut off at 3)
+        while (timeSlots.length < 5) {
+          timeSlots.push(false);
+        }
+        return timeSlots.slice(0, 5); // Allow up to 5 time slots
+      })
     );
-    return parsedResult;
+
+    // Check if we have enough available users for each shift and time slot
+    let isFeasible = true;
+    let infeasiblePositions = [];
+
+    // For each shift-time slot, check if at least one user is available
+    for (let shift = 0; shift < availabilityMatrix[0].length; shift++) {
+      for (
+        let time_slot = 0;
+        time_slot < availabilityMatrix[0][0].length;
+        time_slot++
+      ) {
+        let anyAvailable = false;
+        for (let user = 0; user < availabilityMatrix.length; user++) {
+          if (availabilityMatrix[user][shift][time_slot]) {
+            anyAvailable = true;
+            break;
+          }
+        }
+        if (!anyAvailable) {
+          isFeasible = false;
+          infeasiblePositions.push({ shift, time_slot });
+        }
+      }
+    }
+
+    console.log("Feasibility check:", {
+      isFeasible,
+      infeasiblePositions,
+    });
+
+    console.log("Created availability matrix:", {
+      users: availabilityMatrix.length,
+      shifts: availabilityMatrix[0].length,
+      timeSlots: availabilityMatrix[0][0].length,
+      sample: availabilityMatrix[0].map((s) => s.slice(0, 5)),
+      totalAvailable: availabilityMatrix.reduce(
+        (sum, user) =>
+          sum +
+          user.reduce(
+            (userSum, shift) =>
+              userSum + shift.filter((available) => available).length,
+            0
+          ),
+        0
+      ),
+    });
+
+    // If the problem is infeasible, return early
+    if (!isFeasible) {
+      console.error(
+        "Problem is infeasible: some shifts have no available users"
+      );
+      return {
+        result: createEmptySolution(5),
+        isOptim: false,
+      };
+    }
+
+    // Get HiGHS instance
+    const highs = await getHighs();
+
+    // Convert to LP format
+    const lpProblem = convertToLPFormat(availabilityMatrix);
+    console.log("LP problem formulation:", {
+      problemSize: lpProblem.length,
+      sample: lpProblem.substring(0, 500) + "...",
+    });
+
+    // Try using the high-level HiGHS solve API
+    try {
+      console.log("Calling HiGHS solver with LP format...");
+      const result = highs.solve(lpProblem);
+
+      console.log("HiGHS solve result:", {
+        status: result.Status,
+        objectiveValue: result.ObjectiveValue,
+        isOptimal: result.Status === "Optimal",
+      });
+
+      // Parse the solution to our format
+      const solution = parseLPSolution(
+        result,
+        availabilityMatrix.length,
+        availabilityMatrix[0].length,
+        availabilityMatrix[0][0].length
+      );
+
+      // Validate and return the solution
+      const validatedSolution = validateSolution(solution);
+
+      // Check for missing assignments
+      console.log("Checking for missing assignments in solution:");
+      let missingAssignments = [];
+      for (
+        let postIndex = 0;
+        postIndex < validatedSolution.length;
+        postIndex++
+      ) {
+        for (
+          let shiftIndex = 0;
+          shiftIndex < validatedSolution[postIndex].length;
+          shiftIndex++
+        ) {
+          const shiftData = validatedSolution[postIndex][shiftIndex];
+          const hasAssignment = shiftData.some((value) => value === true);
+
+          if (!hasAssignment) {
+            missingAssignments.push({ post: postIndex, shift: shiftIndex });
+          }
+        }
+      }
+
+      if (missingAssignments.length > 0) {
+        console.warn(
+          `IMPORTANT: Found ${missingAssignments.length} shift-post combinations with NO assignments:`,
+          missingAssignments
+        );
+        console.warn(
+          "This might be expected if there are no available workers for these shifts"
+        );
+      }
+
+      console.log("Returning validated solution:", {
+        posts: validatedSolution.length,
+        shifts: validatedSolution[0].length,
+        users: validatedSolution[0][0].length,
+        assigned: validatedSolution.reduce(
+          (sum, post) =>
+            sum +
+            post.reduce(
+              (postSum, shift) =>
+                postSum + shift.filter((assigned) => assigned).length,
+              0
+            ),
+          0
+        ),
+      });
+
+      return {
+        result: validatedSolution,
+        isOptim: true,
+      };
+    } catch (solverError) {
+      console.error("Error during HiGHS solver call:", solverError);
+      return {
+        result: createEmptySolution(5),
+        isOptim: false,
+      };
+    }
   } catch (error) {
-    console.error("Error running Python optimizer:", error);
-    throw new Error("Failed to optimize shifts");
+    console.error("Error in optimization:", error);
+    return {
+      result: createEmptySolution(5),
+      isOptim: false,
+    };
   }
 }
