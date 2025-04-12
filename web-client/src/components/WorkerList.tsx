@@ -59,40 +59,44 @@ export function WorkerList({
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <h3 className="text-lg font-semibold mb-2">Personals</h3>
-      {users.map((user) => {
-        return (
-          <div
-            key={user.id}
-            className={`p-2 rounded-md cursor-pointer ${
-              selectedUserId === user.id
-                ? colors.selected.default
-                : colors.background.hover
-            }`}
-            onClick={() => handleUserClick(user.id)}
-          >
-            <UserNameWithActions
-              isEditing={isEditing}
-              onNameChange={onEditUser}
-              onDelete={onRemoveUser}
-              initialName={user.name}
-              userId={user.id}
-              isSelected={selectedUserId === user.id}
-              onClick={() => handleUserClick(user.id)}
-              name={user.name}
-            />
-          </div>
-        );
-      })}
-      {isEditing && (
-        <button
-          className="p-2 rounded-md bg-primary/10 hover:bg-primary/20"
-          onClick={onAddUser}
-        >
-          Add Worker
-        </button>
-      )}
+    <div className="flex flex-col h-full">
+      <h3 className="text-lg font-semibold">Personals</h3>
+      <div className="h-[calc(50vh)] overflow-y-auto">
+        <div className="flex flex-col gap-2 pr-4">
+          {users.map((user) => {
+            return (
+              <div
+                key={user.id}
+                className={`h-full p-2 rounded-md cursor-pointer ${
+                  selectedUserId === user.id
+                    ? colors.selected.default
+                    : colors.background.hover
+                }`}
+                onClick={() => handleUserClick(user.id)}
+              >
+                <UserNameWithActions
+                  isEditing={isEditing}
+                  onNameChange={onEditUser}
+                  onDelete={onRemoveUser}
+                  initialName={user.name}
+                  userId={user.id}
+                  isSelected={selectedUserId === user.id}
+                  onClick={() => handleUserClick(user.id)}
+                  name={user.name}
+                />
+              </div>
+            );
+          })}
+          {isEditing && (
+            <button
+              className="p-2 rounded-md bg-primary/10 hover:bg-primary/20"
+              onClick={onAddUser}
+            >
+              Add Worker
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

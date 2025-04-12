@@ -169,7 +169,6 @@ function parseLPSolution(
   num_shifts: number,
   num_time_slots: number
 ): boolean[][][] {
-  console.log("Parsing LP solution:", solution);
 
   // Initialize result in the expected format [posts][shifts][users]
   // Always ensure we return the exact expected structure (3 posts, 5 shifts, 12 users)
@@ -184,11 +183,6 @@ function parseLPSolution(
   try {
     // If solution is optimal and has columns
     if (solution && solution.Status === "Optimal" && solution.Columns) {
-      // Log initial solution check
-      console.log("\nChecking solution for shifts 4 and 5:");
-      console.log("Solution status:", solution.Status);
-      console.log("Number of columns:", Object.keys(solution.Columns).length);
-
       // Track assignments per user to verify even distribution
       const assignmentsPerUser: number[] = Array(num_users).fill(0);
       const deviations: { above: number; below: number }[] = Array(num_users)
@@ -197,29 +191,6 @@ function parseLPSolution(
 
       // First collect all assignments to understand the structure
       const assignments: { user: number; post: number; hour: number }[] = [];
-
-      // Log all variables that might be relevant to shifts 4 and 5
-      console.log("\nAll solution variables:");
-      for (const [name, details] of Object.entries(solution.Columns)) {
-        const value = (details as any).Primal;
-        if (name.startsWith("x_")) {
-          const parts = name.split("_");
-          if (parts.length === 4 && parts[0] === "x") {
-            const user = parseInt(parts[1], 10);
-            const shift = parseInt(parts[2], 10);
-            const timeSlot = parseInt(parts[3], 10);
-
-            // Log all assignment variables
-            console.log(`${name}:`, {
-              value,
-              user,
-              shift,
-              timeSlot,
-              isAssigned: Math.abs(value - 1) < 1e-6,
-            });
-          }
-        }
-      }
 
       // Parse each variable
       for (const [name, details] of Object.entries(solution.Columns)) {
@@ -244,18 +215,6 @@ function parseLPSolution(
             // Here shift is actually the post, and timeSlot is the hour
             const post = shift; // shift in optimizer = post in UI
             const hour = timeSlot; // timeSlot in optimizer = hour in UI
-
-            // Log all assignments
-            console.log(`Processing assignment:`, {
-              variable: name,
-              value,
-              user,
-              shift,
-              timeSlot,
-              post,
-              hour,
-              mappedTo: `result[${post}][${hour}][${user}]`,
-            });
 
             // Only store assignments for valid posts (0-2) and hours (0-4)
             if (post >= 0 && post < 3 && hour >= 0 && hour < 5) {
@@ -286,9 +245,6 @@ function parseLPSolution(
         }
       }
 
-      // Log all collected assignments
-      console.log("\nAll collected assignments:", assignments);
-
       // Fill in the result array using the collected assignments
       for (const { user, post, hour } of assignments) {
         // Double-check bounds before setting
@@ -308,22 +264,8 @@ function parseLPSolution(
           continue;
         }
 
-        // Set the assignment in our result array
-        console.log(`Setting assignment in result:`, { post, hour, user });
         result[post][hour][user] = true;
       }
-
-      // Print result matrix
-      console.log("\nResult Matrix [post][shift][user]:");
-      result.forEach((post, postIndex) => {
-        console.log(`\nPost ${postIndex + 1}:`);
-        post.forEach((shift, shiftIndex) => {
-          const assignedUsers = shift
-            .map((assigned, userIndex) => (assigned ? userIndex + 1 : null))
-            .filter(Boolean);
-          console.log(`  Shift ${shiftIndex + 1}:`, assignedUsers.join(", "));
-        });
-      });
 
       return result;
     }

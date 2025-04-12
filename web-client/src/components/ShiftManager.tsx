@@ -10,7 +10,7 @@ import { AvailabilityTableView } from "./AvailabilityTableView";
 import { EditButton } from "./EditButton";
 import { SplitScreen } from "./SplitScreen";
 import { WorkerList } from "./WorkerList";
-import { optimizeShift } from "@/lib/shiftOptimizedService";
+import { optimizeShift } from "@/service/shiftOptimizedService";
 
 const defaultHours: UniqueString[] = [
   { id: "hour-1", value: "08:00" },
@@ -290,11 +290,6 @@ export function ShiftManager() {
 
     try {
       const optimizedResult = await optimizeShift(state.userShiftData);
-      console.log("Optimized result:", optimizedResult);
-      console.log(
-        "Hours available:",
-        defaultHours.map((h) => h.value)
-      );
 
       // Initialize assignments with null values
       const newAssignments: (User | null)[][] = posts.map(() =>
@@ -303,45 +298,20 @@ export function ShiftManager() {
 
       // Only process the result if optimization was successful
       if (optimizedResult.isOptim) {
-        console.log("Processing optimized assignments...");
-
         // Convert the boolean result to user assignments
         // The result is in format [posts][shifts][users]
         optimizedResult.result.forEach((postAssignments, postIndex) => {
-          console.log(
-            `Processing post ${postIndex} (${
-              posts[postIndex]?.value || "unknown"
-            }):`
-          );
-
           postAssignments.forEach((shiftAssignments, shiftIndex) => {
             // Log shift details for debugging
             const hourName =
               shiftIndex < defaultHours.length
                 ? defaultHours[shiftIndex].value
                 : `Unknown(${shiftIndex})`;
-            console.log(`  Processing shift ${shiftIndex} (${hourName}):`);
-
-            // Special logging for 11:00 and 12:00
-            if (hourName === "11:00" || hourName === "12:00") {
-              console.log(`    DEBUGGING ${hourName} SHIFT:`);
-              console.log(
-                `    - Shift data available:`,
-                shiftAssignments.length > 0
-              );
-              console.log(
-                `    - Any assignments:`,
-                shiftAssignments.some((a) => a)
-              );
-              console.log(`    - Assignment data:`, shiftAssignments);
-            }
 
             // Find the first assigned user for this shift
             const assignedUserIndex = shiftAssignments.findIndex(
               (isAssigned) => isAssigned
             );
-
-            console.log(`    - Assigned user index: ${assignedUserIndex}`);
 
             if (
               assignedUserIndex >= 0 &&
@@ -349,33 +319,14 @@ export function ShiftManager() {
             ) {
               newAssignments[postIndex][shiftIndex] =
                 state.userShiftData[assignedUserIndex].user;
-              console.log(
-                `    - Assigned to: ${state.userShiftData[assignedUserIndex].user.name}`
-              );
             } else {
-              console.log(`    - No user assigned for this shift`);
+              console.warn(` - No user assigned for this shift`);
             }
-          });
-        });
-
-        // Log the final assignments structure
-        console.log("Final assignments structure:");
-        posts.forEach((post, postIndex) => {
-          console.log(`  Post ${post.value}:`);
-          defaultHours.forEach((hour, hourIndex) => {
-            const assigned = newAssignments[postIndex][hourIndex];
-            console.log(
-              `    Hour ${hour.value}: ${
-                assigned ? assigned.name : "UNASSIGNED"
-              }`
-            );
           });
         });
       }
 
-      console.log("New assignments:", newAssignments);
       setAssignments(newAssignments);
-      console.log("Optimization complete - shift data updated");
     } catch (error) {
       console.error("Error during optimization:", error);
       // Reset assignments to all null values
@@ -384,7 +335,6 @@ export function ShiftManager() {
   };
 
   const handlePostEdit = (postId: string, newName: string) => {
-    console.log("Editing post:", postId, newName);
     setPosts((prev) =>
       prev.map((post) =>
         post.id === postId ? { ...post, value: newName } : post
@@ -444,20 +394,10 @@ export function ShiftManager() {
   const handleUserSelect = (userId: string | null) => {
     console.log("handleUserSelect called with userId:", userId);
     setSelectedUserId(userId);
-
-    if (userId) {
-      const selectedUserData = state.userShiftData.find(
-        (user) => user.user.id === userId
-      );
-      if (selectedUserData) {
-        console.log("SELECTED USER CONSTRAINTS:");
-        console.log(JSON.stringify(selectedUserData.constraints, null, 2));
-      }
-    }
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Shift Manager</h1>
         <EditButton
@@ -465,9 +405,9 @@ export function ShiftManager() {
           onToggle={() => setIsEditing(!isEditing)}
         />
       </div>
-      <div className="flex flex-col gap-4">
-        <Card>
-          <CardContent className="p-4">
+      <div className="flex flex-col h-full">
+        <Card className="h-full">
+          <CardContent className="p-4 h-full">
             <div className="mb-4">
               <h3 className="text-lg font-semibold mb-2">Shift Assignments</h3>
               <AvailabilityTableView
@@ -525,7 +465,7 @@ export function ShiftManager() {
             <SplitScreen
               leftWidth="30%"
               rightWidth="70%"
-              className="h-[400px]"
+              className="h-full"
               leftPanel={
                 <WorkerList
                   users={state.userShiftData.map((userData) => userData.user)}
