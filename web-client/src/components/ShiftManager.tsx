@@ -397,18 +397,21 @@ export function ShiftManager() {
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex justify-between items-center mb-4">
+    <div className="h-full flex flex-col">
+      <div
+        id="header"
+        className="flex-none flex justify-between items-center mb-4"
+      >
         <h1 className="text-2xl font-bold">Shift Manager</h1>
         <EditButton
           isEditing={isEditing}
           onToggle={() => setIsEditing(!isEditing)}
         />
       </div>
-      <div className="flex flex-col h-full">
+      <div id="content" className="flex-1 overflow-auto">
         <Card className="h-full">
-          <CardContent className="p-4 h-full">
-            <div className="mb-4">
+          <CardContent className="p-4 h-full flex flex-col gap-4">
+            <div className="flex-none" id="assignments-table">
               <h3 className="text-lg font-semibold mb-2">Shift Assignments</h3>
               <AvailabilityTableView
                 user={{ id: "shift-assignments", name: "Shift Assignments" }}
@@ -455,17 +458,18 @@ export function ShiftManager() {
             </div>
 
             <Button
+              id="optimize-button"
               onClick={handleOptimize}
               variant="default"
-              className="w-full mb-4"
+              className="flex-auto"
             >
               Optimize
             </Button>
 
             <SplitScreen
+              id="worker-info"
               leftWidth="30%"
               rightWidth="70%"
-              className="h-full"
               leftPanel={
                 <WorkerList
                   users={state.userShiftData.map((userData) => userData.user)}
@@ -497,13 +501,11 @@ export function ShiftManager() {
                     selectedUserId={selectedUserId}
                   />
                 ) : (
-                  <Card className="h-full">
-                    <CardContent className="flex items-center justify-center h-full">
-                      <CardTitle className="text-center">
-                        Select a worker to view their availability
-                      </CardTitle>
-                    </CardContent>
-                  </Card>
+                  <div className="h-full flex-col justify-center flex">
+                    <div className="font-semibold text-center self-center ">
+                      Select a worker to view their availability
+                    </div>
+                  </div>
                 )
               }
             />

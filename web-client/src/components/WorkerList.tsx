@@ -1,4 +1,3 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { User } from "../models";
 import { withActions, WithActionsProps } from "./withActions";
 import { colors } from "@/constants/colors";
@@ -58,16 +57,21 @@ export function WorkerList({
     onSelectUser(newSelectedUserId);
   };
 
+  const itemHeight = 1000; // height of each user item in pixels
+  const headerHeight = 32; // height of the header in pixels
+  const totalHeight =
+    users.length * itemHeight + headerHeight + (isEditing ? itemHeight : 0); // add extra height for the "Add Worker" button if editing
+
   return (
     <div className="flex flex-col h-full">
-      <h3 className="text-lg font-semibold">Personals</h3>
-      <div className="h-[calc(50vh)] overflow-y-auto">
-        <div className="flex flex-col gap-2 pr-4">
+      <h3 className="text-lg font-semibold mb-2">Personals</h3>
+      <div className="flex-1 overflow-y-scroll">
+        <div className="flex flex-col gap-2 min-h-full">
           {users.map((user) => {
             return (
               <div
                 key={user.id}
-                className={`h-full p-2 rounded-md cursor-pointer ${
+                className={`p-2 rounded-md cursor-pointer ${
                   selectedUserId === user.id
                     ? colors.selected.default
                     : colors.background.hover
