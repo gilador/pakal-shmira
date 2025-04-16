@@ -88,15 +88,15 @@ export function withActions<T extends WithActionsProps>(
 
     return (
       <div
-        className="relative"
+        className={`relative transition-all duration-100 ease-in-out ${
+          props.isEditing ? "translate-x-0" : "-translate-x-5"
+        }`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
         <div className="flex items-center w-full h-[32px]">
           <div
-            className={`flex items-center gap-2 transition-all duration-300 ease-in-out ${
-              props.isEditing ? "translate-x-0" : "-translate-x-12"
-            }`}
+            className={'flex items-center gap-2'}
           >
             {props.isEditing && (
               <Checkbox
@@ -113,18 +113,18 @@ export function withActions<T extends WithActionsProps>(
               />
             )}
           </div>
-          <div className="flex-1 pl-2 h-[32px] flex items-center">
+          <div className="flex-1 pl-2 h-[32px] flex items-center transition-all duration-300 ease-in-out">
             {isEditMode ? (
               <Input
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
                 onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
-                className="h-8 w-full"
+                className="h-8 w-full transition-all duration-300 ease-in-out"
                 autoFocus
               />
             ) : (
-              <div className="w-full">
+              <div className="w-full transition-all duration-300 ease-in-out">
                 <WrappedComponent {...props} name={name} />
               </div>
             )}
