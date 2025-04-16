@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { User, Constraint } from "../models";
-import { UniqueString } from "../models/index";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Pencil, X } from "lucide-react";
-import { withActions, WithActionsProps } from "./withActions";
 import { colors } from "@/constants/colors";
+import React, { useEffect, useState } from "react";
+import { Constraint, User } from "../models";
+import { UniqueString } from "../models/index";
+import { withActions, WithActionsProps } from "./withActions";
 
 export interface AvailabilityTableViewProps {
   user: User;
@@ -19,6 +17,7 @@ export interface AvailabilityTableViewProps {
   users?: User[]; // Add this prop for shift assignments
   mode?: "availability" | "assignments"; // Add mode prop to distinguish between views
   selectedUserId?: string | null; // Add selectedUserId prop
+  className?: string; // Add className prop
 }
 
 const AssignmentCell = ({
@@ -60,6 +59,7 @@ export function AvailabilityTableView({
   users = [], // Default to empty array
   mode = "availability", // Default to availability mode
   selectedUserId = null, // Add selectedUserId prop with default value
+  className = "", // Add className prop with default value
 }: AvailabilityTableViewProps) {
   useEffect(() => {
     console.log(
@@ -183,7 +183,7 @@ export function AvailabilityTableView({
   };
 
   return (
-    <div className="w-full h-full">
+    <div className={`w-full h-full ${className}`}>
       {mode === "availability" && (
         <h3 className="text-lg font-semibold mb-4">
           {user.name}'s Availability

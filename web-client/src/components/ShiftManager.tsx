@@ -414,6 +414,7 @@ export function ShiftManager() {
             <div className="flex-none" id="assignments-table">
               <h3 className="text-lg font-semibold mb-2">Shift Assignments</h3>
               <AvailabilityTableView
+                className="border-primary-rounded-lg"
                 user={{ id: "shift-assignments", name: "Shift Assignments" }}
                 constraints={assignments.map((postAssignments, postIndex) =>
                   postAssignments.map((user, hourIndex) => ({
@@ -484,6 +485,7 @@ export function ShiftManager() {
               rightPanel={
                 selectedUser ? (
                   <AvailabilityTableView
+                    className="border-primary-rounded-lg"
                     user={selectedUser.user}
                     constraints={selectedUser.constraints}
                     posts={posts}
@@ -501,7 +503,7 @@ export function ShiftManager() {
                     selectedUserId={selectedUserId}
                   />
                 ) : (
-                  <div className="h-full flex-col justify-center flex">
+                  <div className="h-full flex-col justify-center flex border-primary-rounded-lg">
                     <div className="font-semibold text-center self-center ">
                       Select a worker to view their availability
                     </div>

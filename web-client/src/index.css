@@ -105,3 +105,11 @@
 .allow-scroll::-webkit-scrollbar {
   display: block !important;
 }
+
+.border-primary-rounded-lg {
+  border-color: var(--primary) !important;
+  border-radius: 0.5rem !important;
+  border-width: 2px !important;
+  border-style: solid !important;
+  padding: 0.5rem !important;
+}

@@ -57,13 +57,8 @@ export function WorkerList({
     onSelectUser(newSelectedUserId);
   };
 
-  const itemHeight = 1000; // height of each user item in pixels
-  const headerHeight = 32; // height of the header in pixels
-  const totalHeight =
-    users.length * itemHeight + headerHeight + (isEditing ? itemHeight : 0); // add extra height for the "Add Worker" button if editing
-
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full border-primary-rounded-lg">
       <h3 className="text-lg font-semibold mb-2">Personals</h3>
       <div className="flex-1 overflow-y-scroll">
         <div className="flex flex-col gap-2 min-h-full">
