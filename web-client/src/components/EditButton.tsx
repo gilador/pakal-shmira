@@ -34,14 +34,14 @@ export function EditButton({
       variant="ghost"
       size="icon"
       onClick={handleClick}
-      className={` ease-in-out transform hover:scale-110 ${
+      className={` ease-in-out transform hover:scale-100 ${
         isEditing
           ? "bg-primary text-primary-foreground hover:bg-primary"
           : "bg-transparent hover:bg-transparent"
       } ${className}`}
     >
       <Pencil
-        className={`h-4 w-4 transition-transform duration-500 ${
+        className={`h-4 w-4 transition-transform duration-100 ${
           isEditing
             ? "-rotate-90 text-primary-foreground"
             : "hover:text-foreground/80"

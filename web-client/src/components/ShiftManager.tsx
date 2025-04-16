@@ -400,17 +400,21 @@ export function ShiftManager() {
     <div className="h-full flex flex-col">
       <div
         id="header"
-        className="flex-none flex justify-between items-center mb-4"
+        className="flex-none flex justify-start items-start mb-4"
       >
         <h1 className="text-2xl font-bold">Shift Manager</h1>
-        <EditButton
-          isEditing={isEditing}
-          onToggle={() => setIsEditing(!isEditing)}
-        />
       </div>
       <div id="content" className="flex-1 overflow-auto">
-        <Card className="h-full">
-          <CardContent className="p-4 h-full flex flex-col gap-4">
+        <Card className="h-full flex flex-row">
+          <Card className="h-full flex flex-col gap-2">
+            <EditButton
+              className="flex-none"
+              isEditing={isEditing}
+              onToggle={() => setIsEditing(!isEditing)}
+            />
+
+          </Card>
+          <CardContent className="p-4 flex flex-1 flex-col gap-2">
             <div className="flex-none" id="assignments-table">
               <h3 className="text-lg font-semibold mb-2">Shift Assignments</h3>
               <AvailabilityTableView
@@ -462,7 +466,7 @@ export function ShiftManager() {
               id="optimize-button"
               onClick={handleOptimize}
               variant="default"
-              className="flex-auto"
+              className="flex-none w-full"
             >
               Optimize
             </Button>

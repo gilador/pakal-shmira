@@ -7,6 +7,8 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+.vite/
+node_modules/
 .Python
 build/
 develop-eggs/
