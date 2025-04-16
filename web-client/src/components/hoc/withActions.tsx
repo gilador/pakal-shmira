@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MinusCircle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Pencil } from "lucide-react";
 import React, { useEffect, useState, useCallback, memo } from "react";
-import { EditButton } from "./EditButton";
+import { EditButton } from "../EditButton";
 
 export interface WithActionsProps {
   isEditing: boolean;
@@ -20,6 +21,7 @@ export function withActions<T extends WithActionsProps>(
     const [isEditMode, setIsEditMode] = useState(false);
     const [name, setName] = useState(props.initialName);
     const [isHovered, setIsHovered] = useState(false);
+    const [isChecked, setIsChecked] = useState(false);
 
     // Reset state when edit mode changes
     useEffect(() => {
@@ -69,6 +71,16 @@ export function withActions<T extends WithActionsProps>(
       [handleBlur, props.initialName]
     );
 
+    const handleCheckboxChange = useCallback(
+      (checked: boolean) => {
+        setIsChecked(checked);
+        if (checked) {
+          props.onDelete(props.userId);
+        }
+      },
+      [props.userId, props.onDelete]
+    );
+
     // Skip rendering for empty cells
     if (!props.userId) {
       return <WrappedComponent {...props} />;
@@ -76,45 +88,45 @@ export function withActions<T extends WithActionsProps>(
 
     return (
       <div
-        className="relative group"
+        className="relative"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="flex items-center w-full">
+        <div className="flex items-center w-full h-[32px]">
           <div
             className={`flex items-center gap-2 transition-all duration-300 ease-in-out ${
               props.isEditing ? "translate-x-0" : "-translate-x-12"
             }`}
           >
             {props.isEditing && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => props.onDelete(props.userId)}
-                className="h-8 w-8 p-0"
-              >
-                <MinusCircle className="h-4 w-4 text-destructive" />
-              </Button>
+              <Checkbox
+                checked={isChecked}
+                onCheckedChange={handleCheckboxChange}
+                className="h-4 w-4"
+              />
             )}
             {props.isEditing && (
               <EditButton
                 isEditing={isEditMode}
                 onToggle={() => setIsEditMode(!isEditMode)}
+                className="h-[32px]"
               />
             )}
           </div>
-          <div className="flex-1 pl-2">
+          <div className="flex-1 pl-2 h-[32px] flex items-center">
             {isEditMode ? (
               <Input
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
                 onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
-                className="h-8"
+                className="h-8 w-full"
                 autoFocus
               />
             ) : (
-              <WrappedComponent {...props} name={name} />
+              <div className="w-full">
+                <WrappedComponent {...props} name={name} />
+              </div>
             )}
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { User } from "../models";
-import { withActions, WithActionsProps } from "./withActions";
+import { withActions, WithActionsProps } from "./hoc/withActions";
 import { colors } from "@/constants/colors";
 
 export interface WorkerListProps {

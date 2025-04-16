@@ -3,7 +3,7 @@ import { colors } from "@/constants/colors";
 import React, { useEffect, useState } from "react";
 import { Constraint, User } from "../models";
 import { UniqueString } from "../models/index";
-import { withActions, WithActionsProps } from "./withActions";
+import { withActions, WithActionsProps } from "./hoc/withActions";
 
 export interface AvailabilityTableViewProps {
   user: User;
