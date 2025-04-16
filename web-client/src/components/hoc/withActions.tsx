@@ -12,6 +12,7 @@ export interface WithActionsProps {
   initialName: string;
   userId: string;
   children?: React.ReactNode;
+  leftPadding?: string;
 }
 
 export function withActions<T extends WithActionsProps>(
@@ -90,14 +91,12 @@ export function withActions<T extends WithActionsProps>(
       <div
         className={`relative transition-all duration-100 ease-in-out ${
           props.isEditing ? "translate-x-0" : "-translate-x-5"
-        }`}
+        } ${props.leftPadding || ""}`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="flex items-center w-full h-[32px]">
-          <div
-            className={'flex items-center gap-2'}
-          >
+        <div className="flex items-center w-[148px] h-[32px]">
+          <div className={"flex items-center gap-2"}>
             {props.isEditing && (
               <Checkbox
                 checked={isChecked}
@@ -113,7 +112,7 @@ export function withActions<T extends WithActionsProps>(
               />
             )}
           </div>
-          <div className="flex-1 pl-2 h-[32px] flex items-center transition-all duration-300 ease-in-out">
+          <div className="flex-1 h-[32px] flex items-center transition-all duration-300 ease-in-out">
             {isEditMode ? (
               <Input
                 value={name}

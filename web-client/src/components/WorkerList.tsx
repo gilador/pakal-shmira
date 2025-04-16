@@ -82,6 +82,7 @@ export function WorkerList({
                   isSelected={selectedUserId === user.id}
                   onClick={() => handleUserClick(user.id)}
                   name={user.name}
+                  leftPadding={"pl-5"}
                 />
               </div>
             );

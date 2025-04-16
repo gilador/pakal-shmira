@@ -38,7 +38,7 @@ const AssignmentCell = ({
 }) => {
   return (
     <div className={`flex items-center gap-2 w-full `}>
-      <span className={`cursor-pointer pl-3 mr-10 `} onClick={onClick}>
+      <span className={`cursor-pointer pl-3 `} onClick={onClick}>
         {initialName}
       </span>
     </div>
@@ -193,30 +193,15 @@ export function AvailabilityTableView({
         className="grid grid-cols-[auto_repeat(var(--hours),1fr)] gap-1 w-full"
         style={{ "--hours": hours.length } as React.CSSProperties}
       >
-        {/* Header row */}
-        <div className="font-semibold p-2">
-          {mode === "assignments" ? (
-            <AssignmentCellWithActions
-              isEditing={isEditing}
-              onNameChange={handlePostNameChange}
-              onDelete={handlePostRemove}
-              initialName="Post"
-              userId="post-header"
-              isSelected={false}
-              onClick={() => {}}
-              isAssigned={false}
-            />
-          ) : (
-            "Post"
-          )}
-        </div>
+        {/* Header Row */}
+        <div className="font-semibold p-2 text-center">Post</div>
         {hours.map((hour) => (
           <div key={hour.id} className="font-semibold p-2 text-center">
             {hour.value}
           </div>
         ))}
 
-        {/* Data rows */}
+        {/* Assignment Table */}
         {posts.map((post, postIndex) => (
           <React.Fragment key={post.id}>
             <div className="font-semibold p-2">
