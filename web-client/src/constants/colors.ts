@@ -6,8 +6,8 @@ export const colors = {
   },
   // Available but unassigned cells
   available: {
-    default: "bg-[#9dffbf]",
-    hover: "hover:bg-[#9dffbf]/50",
+    default: `bg-[#9dffbf]`,
+    hover: `hover:bg-[#9dffbf]/50`,
   },
   // Unavailable cells
   unavailable: {
@@ -22,5 +22,11 @@ export const colors = {
   // Text colors
   text: {
     default: "text-gray-600",
+  },
+  // Button colors
+  button: {
+    default: "bg-primary/5",
+    hover: `hover:bg-[#9dffbf]/80`,
+    hover_negative: `hover:bg-[#ff9d9d]/80`,
   },
 } as const;

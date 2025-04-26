@@ -12,6 +12,11 @@ import { SplitScreen } from "./SplitScreen";
 import { WorkerList } from "./WorkerList";
 import { optimizeShift } from "@/service/shiftOptimizedService";
 
+interface ShiftState {
+  userShiftData: UserShiftData[];
+  hasInitialized: boolean;
+}
+
 const defaultHours: UniqueString[] = [
   { id: "hour-1", value: "08:00" },
   { id: "hour-2", value: "09:00" },
@@ -67,7 +72,7 @@ export function ShiftManager() {
 
   // Initialize store with default workers if empty
   useEffect(() => {
-    if (state.userShiftData.length === 0) {
+    if (state.userShiftData.length === 0 && !state.hasInitialized) {
       const defaultWorkers: UserShiftData[] = [
         {
           user: { id: "worker-1", name: "John Doe" },
@@ -133,6 +138,7 @@ export function ShiftManager() {
       setState((prev) => ({
         ...prev,
         userShiftData: defaultWorkers,
+        hasInitialized: true,
       }));
     }
   }, [state.userShiftData.length, setState]);
@@ -186,11 +192,11 @@ export function ShiftManager() {
     }));
   };
 
-  const removeUser = (userId: string) => {
+  const removeUsers = (userIds: string[]) => {
     setState((prev) => ({
       ...prev,
       userShiftData: prev.userShiftData.filter(
-        (userData) => userData.user.id !== userId
+        (userData) => !userIds.includes(userData.user.id)
       ),
     }));
   };
@@ -412,7 +418,6 @@ export function ShiftManager() {
               isEditing={isEditing}
               onToggle={() => setIsEditing(!isEditing)}
             />
-
           </Card>
           <CardContent className="p-4 flex flex-1 flex-col gap-2">
             <div className="flex-none" id="assignments-table">
@@ -482,7 +487,8 @@ export function ShiftManager() {
                   onSelectUser={handleUserSelect}
                   onEditUser={setEditingUserId}
                   onAddUser={addUser}
-                  onRemoveUser={removeUser}
+                  onUpdateUserName={updateUserName}
+                  onRemoveUsers={removeUsers}
                   isEditing={isEditing}
                 />
               }

@@ -23,8 +23,7 @@ export interface AvailabilityTableViewProps {
 const AssignmentCell = ({
   isEditing,
   onNameChange,
-  onDelete,
-  initialName,
+  onCheck: onDelete,
   userId,
   isSelected,
   onClick,
@@ -39,7 +38,7 @@ const AssignmentCell = ({
   return (
     <div className={`flex items-center gap-2 w-full `}>
       <span className={`cursor-pointer pl-3 `} onClick={onClick}>
-        {initialName}
+        {name}
       </span>
     </div>
   );
@@ -209,12 +208,13 @@ export function AvailabilityTableView({
                 <AssignmentCellWithActions
                   isEditing={isEditing}
                   onNameChange={handlePostNameChange}
-                  onDelete={handlePostRemove}
-                  initialName={post.value}
+                  onCheck={handlePostRemove}
+                  onUncheck={handlePostRemove}
                   userId={post.id}
                   isSelected={false}
                   onClick={() => {}}
                   isAssigned={false}
+                  name={post.value}
                 />
               ) : mode === "availability" && isEditing ? (
                 <div className="flex items-center gap-2">
@@ -261,8 +261,8 @@ export function AvailabilityTableView({
                         <AssignmentCell
                           isEditing={false}
                           onNameChange={(userId: string, newName: string) => {}}
-                          onDelete={() => {}}
-                          initialName={assignedUser.name}
+                          onCheck={() => {}}
+                          onUncheck={() => {}}
                           userId={assignedUser.id}
                           isSelected={selectedUserId === assignedUser.id}
                           onClick={() => {}}
@@ -283,8 +283,8 @@ export function AvailabilityTableView({
                       <AssignmentCell
                         isEditing={false}
                         onNameChange={(userId: string, newName: string) => {}}
-                        onDelete={() => {}}
-                        initialName=""
+                        onCheck={() => {}}
+                        onUncheck={() => {}}
                         userId=""
                         isSelected={false}
                         onClick={() => {}}
@@ -302,8 +302,8 @@ export function AvailabilityTableView({
                     key={`${post.id}-${hour.id}`}
                     className={`p-2 text-center cursor-pointer ${
                       isAvailable
-                        ? colors.available.default
-                        : colors.unavailable.default
+                        ? `${colors.available.default} ${colors.available.hover}`
+                        : `${colors.unavailable.default} ${colors.unavailable.hover}`
                     }`}
                     onClick={() => toggleAvailability(postIndex, hourIndex)}
                   >

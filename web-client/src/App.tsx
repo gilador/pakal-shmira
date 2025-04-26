@@ -9,9 +9,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <RecoilRoot>
         <div className="min-h-screen bg-background h-screen flex flex-col">
-          <header className="border-b">
-            <div className="container flex h-16 items-center px-4"></div>
-          </header>
+          <div className="container flex h-4"></div>
           <main className="container flex-1 overflow-y-auto pb-1">
             <ShiftManager />
           </main>

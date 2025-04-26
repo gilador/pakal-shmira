@@ -7,6 +7,7 @@ interface EditButtonProps {
   onToggle: () => void;
   className?: string;
   debounceMs?: number;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 export function EditButton({
@@ -14,14 +15,16 @@ export function EditButton({
   onToggle,
   className = "",
   debounceMs = 300,
+  onClick,
 }: EditButtonProps) {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
     if (timeoutRef.current) {
       return;
     }
 
+    onClick?.(e);
     onToggle();
 
     timeoutRef.current = setTimeout(() => {

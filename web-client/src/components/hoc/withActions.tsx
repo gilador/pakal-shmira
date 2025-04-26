@@ -2,17 +2,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pencil } from "lucide-react";
-import React, { useEffect, useState, useCallback, memo } from "react";
+import React, { useEffect, useState, useCallback, memo, useRef } from "react";
 import { EditButton } from "../EditButton";
 
 export interface WithActionsProps {
   isEditing: boolean;
   onNameChange: (userId: string, newName: string) => void;
-  onDelete: (userId: string) => void;
-  initialName: string;
+  onCheck: (userId: string) => void;
+  onUncheck: (userId: string) => void;
+  // initialName: string;
+  name: string;
   userId: string;
   children?: React.ReactNode;
   leftPadding?: string;
+  shouldFocus?: boolean;
 }
 
 export function withActions<T extends WithActionsProps>(
@@ -20,29 +23,38 @@ export function withActions<T extends WithActionsProps>(
 ) {
   const WithActionsComponent = memo(function WithActionsComponent(props: T) {
     const [isEditMode, setIsEditMode] = useState(false);
-    const [name, setName] = useState(props.initialName);
+    const [controlledName, setControlledName] = useState(props.name);
     const [isHovered, setIsHovered] = useState(false);
     const [isChecked, setIsChecked] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    console.log("WithActionsComponent-> name:", controlledName);
+    // Set initial focus if shouldFocus is true
+    useEffect(() => {
+      if (isEditMode && inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, [isEditMode]);
 
     // Reset state when edit mode changes
     useEffect(() => {
       setIsEditMode(false);
       setIsHovered(false);
-    }, [props.isEditing]);
+    }, []);
 
     // Update name when initialName changes
     useEffect(() => {
-      if (props.initialName !== name) {
-        setName(props.initialName);
+      if (props.name !== controlledName) {
+        setControlledName(props.name);
       }
-    }, [props.initialName]);
+    }, [props.name]);
 
     const handleNameChange = useCallback(
       (newName: string) => {
-        setName(newName);
-        props.onNameChange(props.userId, newName);
+        setControlledName(newName);
+        // props.onNameChange(props.userId, newName);
       },
-      [props.userId, props.onNameChange]
+      [props.userId]
     );
 
     const handleMouseEnter = useCallback(() => {
@@ -54,32 +66,44 @@ export function withActions<T extends WithActionsProps>(
     }, []);
 
     const handleBlur = useCallback(() => {
-      if (name !== props.initialName) {
-        props.onNameChange(props.userId, name);
+      console.log("WithActionsComponent-> handleBlur called");
+      if (controlledName !== props.name) {
+        console.log(
+          "WithActionsComponent-> handleBlur-> name !== props.name"
+        );
+        setControlledName(controlledName);
+        props.onNameChange(props.userId, controlledName);
       }
       setIsEditMode(false);
-    }, [name, props.initialName, props.userId, props.onNameChange]);
+    }, [controlledName, props.name, props.userId, props.onNameChange]);
+
+    const handleFocus = useCallback(() => {
+      console.log("handleFocus called");
+      setIsEditMode(true);
+    }, []);
 
     const handleKeyDown = useCallback(
       (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
           handleBlur();
         } else if (e.key === "Escape") {
-          setName(props.initialName);
+          setControlledName(props.name);
           setIsEditMode(false);
         }
       },
-      [handleBlur, props.initialName]
+      [handleBlur, props.name]
     );
 
     const handleCheckboxChange = useCallback(
       (checked: boolean) => {
         setIsChecked(checked);
         if (checked) {
-          props.onDelete(props.userId);
+          props.onCheck(props.userId);
+        } else {
+          props.onUncheck(props.userId);
         }
       },
-      [props.userId, props.onDelete]
+      [props.userId, props.onCheck]
     );
 
     // Skip rendering for empty cells
@@ -95,13 +119,17 @@ export function withActions<T extends WithActionsProps>(
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="flex items-center w-[148px] h-[32px]">
-          <div className={"flex items-center gap-2"}>
+        <div className="flex items-center w-full h-[32px]">
+          <div
+            className={"flex items-center gap-2"}
+            onClick={(e) => e.stopPropagation()}
+          >
             {props.isEditing && (
               <Checkbox
                 checked={isChecked}
                 onCheckedChange={handleCheckboxChange}
                 className="h-4 w-4"
+                onClick={(e) => e.stopPropagation()}
               />
             )}
             {props.isEditing && (
@@ -109,22 +137,25 @@ export function withActions<T extends WithActionsProps>(
                 isEditing={isEditMode}
                 onToggle={() => setIsEditMode(!isEditMode)}
                 className="h-[32px]"
+                onClick={(e) => e.stopPropagation()}
               />
             )}
           </div>
-          <div className="flex-1 h-[32px] flex items-center transition-all duration-300 ease-in-out">
+          <div className="flex-1 h-[32px] w-full flex items-center transition-all duration-300 ease-in-out">
             {isEditMode ? (
               <Input
-                value={name}
+                ref={inputRef}
+                value={controlledName}
                 onChange={(e) => handleNameChange(e.target.value)}
-                onBlur={handleBlur}
+                onBlur={isEditMode && handleBlur}
+                onFocus={handleFocus}
                 onKeyDown={handleKeyDown}
                 className="h-8 w-full transition-all duration-300 ease-in-out"
                 autoFocus
               />
             ) : (
               <div className="w-full transition-all duration-300 ease-in-out">
-                <WrappedComponent {...props} name={name} />
+                <WrappedComponent {...props} name={controlledName} />
               </div>
             )}
           </div>
