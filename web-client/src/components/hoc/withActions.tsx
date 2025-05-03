@@ -10,7 +10,7 @@ export interface WithActionsProps {
   onNameChange: (userId: string, newName: string) => void;
   onCheck: (userId: string) => void;
   onUncheck: (userId: string) => void;
-  // initialName: string;
+  isCheckedProp: boolean;
   name: string;
   userId: string;
   children?: React.ReactNode;
@@ -25,10 +25,9 @@ export function withActions<T extends WithActionsProps>(
     const [isEditMode, setIsEditMode] = useState(false);
     const [controlledName, setControlledName] = useState(props.name);
     const [isHovered, setIsHovered] = useState(false);
-    const [isChecked, setIsChecked] = useState(false);
+    // const [isChecked, setIsChecked] = useState(props.isCheckedProp);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    console.log("WithActionsComponent-> name:", controlledName);
     // Set initial focus if shouldFocus is true
     useEffect(() => {
       if (isEditMode && inputRef.current) {
@@ -96,7 +95,6 @@ export function withActions<T extends WithActionsProps>(
 
     const handleCheckboxChange = useCallback(
       (checked: boolean) => {
-        setIsChecked(checked);
         if (checked) {
           props.onCheck(props.userId);
         } else {
@@ -126,7 +124,7 @@ export function withActions<T extends WithActionsProps>(
           >
             {props.isEditing && (
               <Checkbox
-                checked={isChecked}
+                checked={props.isCheckedProp}
                 onCheckedChange={handleCheckboxChange}
                 className="h-4 w-4"
                 onClick={(e) => e.stopPropagation()}

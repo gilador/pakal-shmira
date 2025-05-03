@@ -493,32 +493,34 @@ export function ShiftManager() {
                 />
               }
               rightPanel={
-                selectedUser ? (
-                  <AvailabilityTableView
-                    className="border-primary-rounded-lg"
-                    user={selectedUser.user}
-                    constraints={selectedUser.constraints}
-                    posts={posts}
-                    hours={defaultHours}
-                    mode="availability"
-                    onConstraintsChange={(newConstraints) =>
+                // selectedUser ? (
+                <AvailabilityTableView
+                  className="border-primary-rounded-lg"
+                  user={selectedUser?.user}
+                  constraints={selectedUser?.constraints}
+                  posts={posts}
+                  hours={defaultHours}
+                  mode="availability"
+                  onConstraintsChange={(newConstraints) => {
+                    if (selectedUser) {
                       updateUserConstraints(
                         selectedUser.user.id,
                         newConstraints
-                      )
+                      );
                     }
-                    isEditing={isEditing}
-                    onPostEdit={handlePostEdit}
-                    onPostRemove={handlePostRemove}
-                    selectedUserId={selectedUserId}
-                  />
-                ) : (
-                  <div className="h-full flex-col justify-center flex border-primary-rounded-lg">
-                    <div className="font-semibold text-center self-center ">
-                      Select a worker to view their availability
-                    </div>
-                  </div>
-                )
+                  }}
+                  isEditing={isEditing}
+                  onPostEdit={handlePostEdit}
+                  onPostRemove={handlePostRemove}
+                  selectedUserId={selectedUserId}
+                />
+                // ) : (
+                  // <div className="h-full flex-col justify-center flex border-primary-rounded-lg mt-8">
+                  //   <div className="font-semibold text-center self-center ">
+                  //     Select a worker to view their availability
+                  //   </div>
+                  // </div>
+                // )
               }
             />
           </CardContent>

@@ -6,8 +6,8 @@ import { UniqueString } from "../models/index";
 import { withActions, WithActionsProps } from "./hoc/withActions";
 
 export interface AvailabilityTableViewProps {
-  user: User;
-  constraints: Constraint[][];
+  user?: User;
+  constraints?: Constraint[][];
   posts: UniqueString[];
   hours: UniqueString[];
   onConstraintsChange: (newConstraints: Constraint[][]) => void;
@@ -90,7 +90,7 @@ export function AvailabilityTableView({
     }
 
     console.log("===== TOGGLE AVAILABILITY =====");
-    console.log(`User: ${user.name} (${user.id})`);
+    console.log(`User: ${user?.name} (${user?.id})`);
     console.log(
       `Post: ${posts[postIndex].value} (${posts[postIndex].id}) at index ${postIndex}`
     );
@@ -147,7 +147,10 @@ export function AvailabilityTableView({
 
   // Initialize constraints if not provided
   const safeConstraints =
-    constraints || posts.map(() => hours.map(() => ({ availability: true })));
+    constraints ||
+    posts.map(() =>
+      hours.map(() => ({ availability: true, assignedUser: null }))
+    );
 
   const handlePostEdit = (post: UniqueString) => {
     if (!isEditing) return;
@@ -182,139 +185,155 @@ export function AvailabilityTableView({
   };
 
   return (
-    <div className={`w-full h-full ${className}`}>
+    <div className={`w-full h-full flex flex-col`}>
       {mode === "availability" && (
-        <h3 className="text-lg font-semibold mb-4">
-          {user.name}'s Availability
+        <h3 className="text-lg font-semibold h-10 flex items-center">
+          {constraints ? `${user?.name}'s Availability` : "\b"}
         </h3>
       )}
-      <div
-        className="grid grid-cols-[auto_repeat(var(--hours),1fr)] gap-1 w-full"
-        style={{ "--hours": hours.length } as React.CSSProperties}
-      >
-        {/* Header Row */}
-        <div className="font-semibold p-2 text-center">Post</div>
-        {hours.map((hour) => (
-          <div key={hour.id} className="font-semibold p-2 text-center">
-            {hour.value}
+      {mode === "availability" && !constraints ? (
+        <div className="h-full flex-1 justify-center flex border-primary-rounded-lg">
+          <div className="font-semibold text-center self-center ">
+            Select a worker to view their availability
           </div>
-        ))}
+        </div>
+      ) : (
+        <div className={`flex-1 ${className}`}>
+          <div
+            className="grid grid-cols-[auto_repeat(var(--hours),1fr)] gap-1 w-full"
+            style={{ "--hours": hours.length } as React.CSSProperties}
+          >
+            {/* Header Row */}
+            <div className="font-semibold p-2 text-center">Post</div>
+            {hours.map((hour) => (
+              <div key={hour.id} className="font-semibold p-2 text-center">
+                {hour.value}
+              </div>
+            ))}
 
-        {/* Assignment Table */}
-        {posts.map((post, postIndex) => (
-          <React.Fragment key={post.id}>
-            <div className="font-semibold p-2">
-              {mode === "assignments" ? (
-                <AssignmentCellWithActions
-                  isEditing={isEditing}
-                  onNameChange={handlePostNameChange}
-                  onCheck={handlePostRemove}
-                  onUncheck={handlePostRemove}
-                  userId={post.id}
-                  isSelected={false}
-                  onClick={() => {}}
-                  isAssigned={false}
-                  name={post.value}
-                />
-              ) : mode === "availability" && isEditing ? (
-                <div className="flex items-center gap-2">
-                  {editingPostId === post.id ? (
-                    <Input
-                      value={editingPostName}
-                      onChange={(e) => setEditingPostName(e.target.value)}
-                      onBlur={savePostEdit}
-                      onKeyDown={handlePostNameKeyDown}
-                      className="h-6 w-24"
-                      autoFocus
+            {/* Assignment Table */}
+            {posts.map((post, postIndex) => (
+              <React.Fragment key={post.id}>
+                <div className="font-semibold p-2">
+                  {mode === "assignments" ? (
+                    <AssignmentCellWithActions
+                      isEditing={isEditing}
+                      onNameChange={handlePostNameChange}
+                      onCheck={handlePostRemove}
+                      onUncheck={handlePostRemove}
+                      userId={post.id}
+                      isSelected={false}
+                      onClick={() => {}}
+                      isAssigned={false}
+                      name={post.value}
                     />
+                  ) : mode === "availability" && isEditing ? (
+                    <div className="flex items-center gap-2">
+                      {editingPostId === post.id ? (
+                        <Input
+                          value={editingPostName}
+                          onChange={(e) => setEditingPostName(e.target.value)}
+                          onBlur={savePostEdit}
+                          onKeyDown={handlePostNameKeyDown}
+                          className="h-6 w-24"
+                          autoFocus
+                        />
+                      ) : (
+                        <span
+                          className="cursor-pointer hover:underline"
+                          onClick={() => handlePostEdit(post)}
+                        >
+                          {post.value}
+                        </span>
+                      )}
+                    </div>
                   ) : (
-                    <span
-                      className="cursor-pointer hover:underline"
-                      onClick={() => handlePostEdit(post)}
-                    >
-                      {post.value}
-                    </span>
+                    post.value
                   )}
                 </div>
-              ) : (
-                post.value
-              )}
-            </div>
-            {hours.map((hour, hourIndex) => {
-              const constraint = safeConstraints[postIndex]?.[hourIndex];
-              const assignedUser = constraint?.assignedUser
-                ? users.find((u) => u.id === constraint.assignedUser)
-                : null;
+                {hours.map((hour, hourIndex) => {
+                  const constraint = safeConstraints[postIndex]?.[hourIndex];
+                  const assignedUser = constraint?.assignedUser
+                    ? users.find((u) => u.id === constraint.assignedUser)
+                    : null;
 
-              if (mode === "assignments") {
-                if (assignedUser) {
-                  return (
-                    <div
-                      key={`${post.id}-${hour.id}`}
-                      className={`p-2 text-center ${
-                        selectedUserId === assignedUser.id
-                          ? colors.selected.default
-                          : ""
-                      }`}
-                    >
-                      <div className="relative group">
-                        <AssignmentCell
-                          isEditing={false}
-                          onNameChange={(userId: string, newName: string) => {}}
-                          onCheck={() => {}}
-                          onUncheck={() => {}}
-                          userId={assignedUser.id}
-                          isSelected={selectedUserId === assignedUser.id}
-                          onClick={() => {}}
-                          name={assignedUser.name}
-                          isAssigned={true}
-                        />
+                  if (mode === "assignments") {
+                    if (assignedUser) {
+                      return (
+                        <div
+                          key={`${post.id}-${hour.id}`}
+                          className={`p-2 text-center ${
+                            selectedUserId === assignedUser.id
+                              ? colors.selected.default
+                              : ""
+                          }`}
+                        >
+                          <div className="relative group">
+                            <AssignmentCell
+                              isEditing={false}
+                              onNameChange={(
+                                userId: string,
+                                newName: string
+                              ) => {}}
+                              onCheck={() => {}}
+                              onUncheck={() => {}}
+                              userId={assignedUser.id}
+                              isSelected={selectedUserId === assignedUser.id}
+                              onClick={() => {}}
+                              name={assignedUser.name}
+                              isAssigned={true}
+                            />
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={`${post.id}-${hour.id}`}
+                        className="p-2 text-center"
+                      >
+                        <div className="relative group">
+                          <AssignmentCell
+                            isEditing={false}
+                            onNameChange={(
+                              userId: string,
+                              newName: string
+                            ) => {}}
+                            onCheck={() => {}}
+                            onUncheck={() => {}}
+                            userId=""
+                            isSelected={false}
+                            onClick={() => {}}
+                            name="-"
+                            isAssigned={false}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div
-                    key={`${post.id}-${hour.id}`}
-                    className="p-2 text-center"
-                  >
-                    <div className="relative group">
-                      <AssignmentCell
-                        isEditing={false}
-                        onNameChange={(userId: string, newName: string) => {}}
-                        onCheck={() => {}}
-                        onUncheck={() => {}}
-                        userId=""
-                        isSelected={false}
-                        onClick={() => {}}
-                        name="-"
-                        isAssigned={false}
-                      />
-                    </div>
-                  </div>
-                );
-              } else {
-                // Availability mode
-                const isAvailable = constraint?.availability ?? true;
-                return (
-                  <div
-                    key={`${post.id}-${hour.id}`}
-                    className={`p-2 text-center cursor-pointer ${
-                      isAvailable
-                        ? `${colors.available.default} ${colors.available.hover}`
-                        : `${colors.unavailable.default} ${colors.unavailable.hover}`
-                    }`}
-                    onClick={() => toggleAvailability(postIndex, hourIndex)}
-                  >
-                    {isAvailable ? "✓" : "✗"}
-                  </div>
-                );
-              }
-            })}
-          </React.Fragment>
-        ))}
-      </div>
+                    );
+                  } else {
+                    // Availability mode
+                    const isAvailable = constraint?.availability ?? true;
+                    return (
+                      <div
+                        key={`${post.id}-${hour.id}`}
+                        className={`p-2 text-center cursor-pointer ${
+                          isAvailable
+                            ? `${colors.available.default} ${colors.available.hover}`
+                            : `${colors.unavailable.default} ${colors.unavailable.hover}`
+                        }`}
+                        onClick={() => toggleAvailability(postIndex, hourIndex)}
+                      >
+                        {isAvailable ? "✓" : "✗"}
+                      </div>
+                    );
+                  }
+                })}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
