@@ -9,6 +9,7 @@ __pycache__/
 # Distribution / packaging
 .vite/
 node_modules/
+.vscode/
 .Python
 build/
 develop-eggs/

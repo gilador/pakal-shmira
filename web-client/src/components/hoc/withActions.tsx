@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Pencil } from "lucide-react";
-import React, { useEffect, useState, useCallback, memo, useRef } from "react";
+import { Input } from "@/components/ui/input";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import { EditButton } from "../EditButton";
 
 export interface WithActionsProps {
@@ -25,7 +23,6 @@ export function withActions<T extends WithActionsProps>(
     const [isEditMode, setIsEditMode] = useState(false);
     const [controlledName, setControlledName] = useState(props.name);
     const [isHovered, setIsHovered] = useState(false);
-    // const [isChecked, setIsChecked] = useState(props.isCheckedProp);
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Set initial focus if shouldFocus is true
@@ -65,11 +62,7 @@ export function withActions<T extends WithActionsProps>(
     }, []);
 
     const handleBlur = useCallback(() => {
-      console.log("WithActionsComponent-> handleBlur called");
       if (controlledName !== props.name) {
-        console.log(
-          "WithActionsComponent-> handleBlur-> name !== props.name"
-        );
         setControlledName(controlledName);
         props.onNameChange(props.userId, controlledName);
       }
@@ -77,7 +70,6 @@ export function withActions<T extends WithActionsProps>(
     }, [controlledName, props.name, props.userId, props.onNameChange]);
 
     const handleFocus = useCallback(() => {
-      console.log("handleFocus called");
       setIsEditMode(true);
     }, []);
 

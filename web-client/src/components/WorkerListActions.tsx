@@ -1,4 +1,8 @@
-import { IconUserPlus, IconUserMinus, IconSelectAll } from "@tabler/icons-react";
+import {
+  IconUserPlus,
+  IconUserMinus,
+  IconSelectAll,
+} from "@tabler/icons-react";
 import { colors } from "@/constants/colors";
 import {
   Dialog,
@@ -26,9 +30,17 @@ export function WorkerListActions({
 }: WorkerListActionsProps) {
   const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
 
-  const handleDeleteAll = () => {
-    onRemoveUsers(checkedUserIds);
-    setIsDeleteAllDialogOpen(false);
+  const handleDelete = () => {
+    if (checkedUserIds.length < 2) {
+      onRemoveUsers(checkedUserIds);
+    } else {
+      if (!isDeleteAllDialogOpen) {
+        setIsDeleteAllDialogOpen(true);
+      } else {
+        onRemoveUsers(checkedUserIds);
+        setIsDeleteAllDialogOpen(false);
+      }
+    }
   };
 
   return (
@@ -46,7 +58,7 @@ export function WorkerListActions({
         <IconUserPlus size={15} />
       </button>
       <button
-        onClick={() => onRemoveUsers(checkedUserIds)}
+        onClick={handleDelete}
         aria-label="Delete selected users"
         title="Delete selected users"
         className={`p-2 rounded-md ${colors.button.default} ${colors.button.hover_negative}`}
@@ -70,8 +82,7 @@ export function WorkerListActions({
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <p>
-              Are you sure you want to delete all users? This action cannot be
-              undone.
+              Are you sure you want to delete {checkedUserIds.length} users?
             </p>
             <div className="flex justify-end gap-2">
               <Button
@@ -80,8 +91,8 @@ export function WorkerListActions({
               >
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={handleDeleteAll}>
-                Delete All
+              <Button variant="destructive" onClick={handleDelete}>
+                Delete anyway
               </Button>
             </div>
           </div>

@@ -1,6 +1,6 @@
 import { colors } from "@/constants/colors";
 import { IconUser } from "@tabler/icons-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User } from "../models";
 import { withActions, WithActionsProps } from "./hoc/withActions";
 import { WorkerListActions } from "./WorkerListActions";
@@ -54,7 +54,6 @@ export function WorkerList({
 }: WorkerListProps) {
   // const checkedUserIdsRef = useRef<string[]>([]);
   const [checkedUserIds, setCheckedUserIds] = useState<string[]>([]);
-  const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
 
   const handleUserClick = (userId: string) => {
     console.log("handleUserClick called with userId:", userId);
@@ -65,23 +64,19 @@ export function WorkerList({
   };
   console.log("WorkerList- >checkedUserIds:", checkedUserIds.length);
 
+  useEffect(() => {
+    // Filter out checked user IDs that no longer exist in the users list
+    setCheckedUserIds((currentCheckedUserIds) =>
+      currentCheckedUserIds.filter((id) => users.some((user) => user.id === id))
+    );
+  }, [users]);
+
   const handleCheck = (userId: string) => {
-    // checkedUserIdsRef.current = [...checkedUserIdsRef.current, userId];
     setCheckedUserIds([...checkedUserIds, userId]);
   };
 
   const handleUncheck = (userId: string) => {
-    // checkedUserIdsRef.current = checkedUserIdsRef.current.filter(
-    //   (id) => id !== userId
-    // );
     setCheckedUserIds((ids) => ids.filter((id) => id !== userId));
-  };
-
-  const handleDeleteAll = () => {
-    const allUserIds = users.map((user) => user.id);
-    console.log("Deleting all users with IDs:", allUserIds);
-    onRemoveUsers(allUserIds);
-    setIsDeleteAllDialogOpen(false);
   };
 
   return (
