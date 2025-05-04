@@ -87,9 +87,9 @@ export function WorkerList({
           isEditing={isEditing}
           onAddUser={onAddUser}
           onRemoveUsers={onRemoveUsers}
-          onCheckAll={() => {
+          onCheckAll={(allWasClicked) => {
             console.log("onCheckAll called");
-            setCheckedUserIds(users.map((user) => user.id));
+            setCheckedUserIds(allWasClicked ? users.map((user) => user.id) : []);
           }}
           checkedUserIds={checkedUserIds}
         />

@@ -2,6 +2,7 @@ import {
   IconUserPlus,
   IconUserMinus,
   IconSelectAll,
+  IconDeselect,
 } from "@tabler/icons-react";
 import { colors } from "@/constants/colors";
 import {
@@ -11,14 +12,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface WorkerListActionsProps {
   isEditing: boolean;
   onAddUser: () => void;
   onRemoveUsers: (userIds: string[]) => void;
   checkedUserIds: string[];
-  onCheckAll: () => void;
+  onCheckAll: (allWasClicked: boolean) => void;
 }
 
 export function WorkerListActions({
@@ -28,19 +29,29 @@ export function WorkerListActions({
   checkedUserIds,
   onCheckAll,
 }: WorkerListActionsProps) {
-  const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
-
+  const [isDeleteManyDialogOpen, setIsDeleteManyDialogOpen] = useState(false);
+  const [checkAllEnabled, setCheckAllEnabled] = useState(false);
+  
   const handleDelete = () => {
     if (checkedUserIds.length < 2) {
       onRemoveUsers(checkedUserIds);
     } else {
-      if (!isDeleteAllDialogOpen) {
-        setIsDeleteAllDialogOpen(true);
+      if (!isDeleteManyDialogOpen) {
+        setIsDeleteManyDialogOpen(true);
       } else {
         onRemoveUsers(checkedUserIds);
-        setIsDeleteAllDialogOpen(false);
+        setIsDeleteManyDialogOpen(false);
       }
     }
+    setCheckAllEnabled(false);
+  };
+
+  const handleCheckAll = () => {
+    setCheckAllEnabled((prev) => {
+      const newValue = !prev;
+      onCheckAll(newValue);
+      return newValue;
+    });
   };
 
   return (
@@ -66,15 +77,20 @@ export function WorkerListActions({
         <IconUserMinus size={15} />
       </button>
       <button
+        onClick={handleCheckAll}
         aria-label="Select all users"
         title="Select all users"
         className={`p-2 rounded-md ${colors.button.default} ${colors.button.hover}`}
       >
-        <IconSelectAll size={15} strokeWidth={2} onClick={onCheckAll} />
+        {checkAllEnabled ? (
+          <IconDeselect size={15} strokeWidth={2} />
+        ) : (
+          <IconSelectAll size={15} strokeWidth={2} />
+        )}
       </button>
       <Dialog
-        open={isDeleteAllDialogOpen}
-        onOpenChange={setIsDeleteAllDialogOpen}
+        open={isDeleteManyDialogOpen}
+        onOpenChange={setIsDeleteManyDialogOpen}
       >
         <DialogContent>
           <DialogHeader>
@@ -87,7 +103,7 @@ export function WorkerListActions({
             <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
-                onClick={() => setIsDeleteAllDialogOpen(false)}
+                onClick={() => setIsDeleteManyDialogOpen(false)}
               >
                 Cancel
               </Button>
