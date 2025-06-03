@@ -24,7 +24,7 @@ export function withActions<T extends WithActionsProps>(
     const [controlledName, setControlledName] = useState(props.name);
     const [isHovered, setIsHovered] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
-
+    console.log("1-name", props.name);
     // Set initial focus if shouldFocus is true
     useEffect(() => {
       if (isEditMode && inputRef.current) {
@@ -47,6 +47,7 @@ export function withActions<T extends WithActionsProps>(
 
     const handleNameChange = useCallback(
       (newName: string) => {
+        console.log("1-handleNameChange", newName);
         setControlledName(newName);
         // props.onNameChange(props.userId, newName);
       },
@@ -61,28 +62,48 @@ export function withActions<T extends WithActionsProps>(
       setIsHovered(false);
     }, []);
 
-    const handleBlur = useCallback(() => {
+    // const handleBlur = useCallback(() => {
+    //   console.log("1-handleBlur");
+    //   setIsEditMode(false);
+    //   if (controlledName !== props.name) {
+    //     // setControlledName(controlledName);
+    //     props.onNameChange(props.userId, controlledName);
+    //   }
+    // }, [controlledName, props.name, props.userId, props.onNameChange]);
+
+    // const handleFocus = useCallback(() => {
+    //   console.log("1-handleFocus");
+    //   isEditMode && setIsEditMode(true);
+    //   console.log("1-handleFocus2");
+    // }, []);
+
+    const toggleEditMode = useCallback(() => {
+      console.log(
+        "1-toggleEditMode",
+        controlledName,
+        "props.userId",
+        props.userId
+      );
+
+      // Save the name change if it's different
       if (controlledName !== props.name) {
-        setControlledName(controlledName);
         props.onNameChange(props.userId, controlledName);
       }
+
+      // Exit edit mode
       setIsEditMode(false);
     }, [controlledName, props.name, props.userId, props.onNameChange]);
-
-    const handleFocus = useCallback(() => {
-      setIsEditMode(true);
-    }, []);
 
     const handleKeyDown = useCallback(
       (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
-          handleBlur();
+          toggleEditMode();
         } else if (e.key === "Escape") {
           setControlledName(props.name);
           setIsEditMode(false);
         }
       },
-      [handleBlur, props.name]
+      [toggleEditMode, props.name]
     );
 
     const handleCheckboxChange = useCallback(
@@ -137,8 +158,7 @@ export function withActions<T extends WithActionsProps>(
                 ref={inputRef}
                 value={controlledName}
                 onChange={(e) => handleNameChange(e.target.value)}
-                onBlur={isEditMode && handleBlur}
-                onFocus={handleFocus}
+                onBlur={toggleEditMode}
                 onKeyDown={handleKeyDown}
                 className="h-8 w-full transition-all duration-300 ease-in-out"
                 autoFocus

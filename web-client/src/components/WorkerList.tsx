@@ -25,7 +25,6 @@ const UserNameComp = ({
   isSelected: boolean;
   onClick: () => void;
 }) => {
-  console.log("UserNameComp-> name:", name);
   return (
     <div className="flex items-center gap-2 w-full">
       <span

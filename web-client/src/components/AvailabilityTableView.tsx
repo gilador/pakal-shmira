@@ -29,11 +29,13 @@ const AssignmentCell = ({
   onClick,
   name,
   isAssigned,
+  isCheckedProp,
 }: WithActionsProps & {
   isSelected: boolean;
   onClick: () => void;
   name?: string;
   isAssigned: boolean;
+  isCheckedProp: boolean;
 }) => {
   return (
     <div className={`flex items-center gap-2 w-full `}>
@@ -66,6 +68,14 @@ export function AvailabilityTableView({
       selectedUserId
     );
   }, [selectedUserId]);
+
+  // Add debugging for users prop changes
+  useEffect(() => {
+    console.log(
+      "AvailabilityTableView users prop changed:",
+      users.map((u) => ({ id: u.id, name: u.name }))
+    );
+  }, [users]);
 
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingPostName, setEditingPostName] = useState("");
@@ -226,6 +236,7 @@ export function AvailabilityTableView({
                       onClick={() => {}}
                       isAssigned={false}
                       name={post.value}
+                      isCheckedProp={false}
                     />
                   ) : mode === "availability" && isEditing ? (
                     <div className="flex items-center gap-2">
@@ -282,6 +293,7 @@ export function AvailabilityTableView({
                               onClick={() => {}}
                               name={assignedUser.name}
                               isAssigned={true}
+                              isCheckedProp={false}
                             />
                           </div>
                         </div>
@@ -307,6 +319,7 @@ export function AvailabilityTableView({
                             onClick={() => {}}
                             name="-"
                             isAssigned={false}
+                            isCheckedProp={false}
                           />
                         </div>
                       </div>

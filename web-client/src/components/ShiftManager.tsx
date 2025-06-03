@@ -50,16 +50,13 @@ export function ShiftManager() {
     [posts]
   );
 
-  const [assignments, setAssignments] = useState<(User | null)[][]>(() => {
+  const [assignments, setAssignments] = useState<(string | null)[][]>(() => {
     // Initialize assignments from mock data
     return posts.map((post, postIndex) =>
       defaultHours.map((hour, hourIndex) => {
         const assignmentKey = `${post.id}-${hour.id}`;
         const assignedUserId = mockShiftAssignments[assignmentKey];
-        return assignedUserId
-          ? state.userShiftData.find((u) => u.user.id === assignedUserId)
-              ?.user || null
-          : null;
+        return assignedUserId || null;
       })
     );
   });
@@ -144,9 +141,11 @@ export function ShiftManager() {
   }, [state.userShiftData.length, setState]);
 
   const selectedUser = useMemo(() => {
-    return state.userShiftData.find(
-      (userData) => userData.user.id === selectedUserId
-    );
+    return selectedUserId
+      ? state.userShiftData.find(
+          (userData) => userData.user.id === selectedUserId
+        )
+      : undefined;
   }, [selectedUserId, state.userShiftData]);
 
   const addUser = () => {
@@ -182,6 +181,7 @@ export function ShiftManager() {
   };
 
   const updateUserName = (userId: string, newName: string) => {
+    console.log("1 - newName: ", newName);
     setState((prev) => ({
       ...prev,
       userShiftData: prev.userShiftData.map((userData) =>
@@ -298,7 +298,7 @@ export function ShiftManager() {
       const optimizedResult = await optimizeShift(state.userShiftData);
 
       // Initialize assignments with null values
-      const newAssignments: (User | null)[][] = posts.map(() =>
+      const newAssignments: (string | null)[][] = posts.map(() =>
         defaultHours.map(() => null)
       );
 
@@ -308,12 +308,6 @@ export function ShiftManager() {
         // The result is in format [posts][shifts][users]
         optimizedResult.result.forEach((postAssignments, postIndex) => {
           postAssignments.forEach((shiftAssignments, shiftIndex) => {
-            // Log shift details for debugging
-            const hourName =
-              shiftIndex < defaultHours.length
-                ? defaultHours[shiftIndex].value
-                : `Unknown(${shiftIndex})`;
-
             // Find the first assigned user for this shift
             const assignedUserIndex = shiftAssignments.findIndex(
               (isAssigned) => isAssigned
@@ -324,9 +318,9 @@ export function ShiftManager() {
               assignedUserIndex < state.userShiftData.length
             ) {
               newAssignments[postIndex][shiftIndex] =
-                state.userShiftData[assignedUserIndex].user;
+                state.userShiftData[assignedUserIndex].user.id;
             } else {
-              console.warn(` - No user assigned for this shift`);
+              newAssignments[postIndex][shiftIndex] = null;
             }
           });
         });
@@ -350,6 +344,13 @@ export function ShiftManager() {
 
   const handlePostRemove = (postId: string) => {
     setPosts((prev) => prev.filter((post) => post.id !== postId));
+    setAssignments((prev) => {
+      const postIndex = posts.findIndex((post) => post.id === postId);
+      if (postIndex === -1) return prev;
+      const newAssignments = [...prev];
+      newAssignments.splice(postIndex, 1);
+      return newAssignments;
+    });
   };
 
   const startEditingPost = (post: UniqueString) => {
@@ -390,9 +391,7 @@ export function ShiftManager() {
       if (!newAssignments[postIndex]) {
         newAssignments[postIndex] = [];
       }
-      newAssignments[postIndex][hourIndex] = userId
-        ? state.userShiftData.find((u) => u.user.id === userId)?.user || null
-        : null;
+      newAssignments[postIndex][hourIndex] = userId || null;
       return newAssignments;
     });
   };
@@ -423,14 +422,17 @@ export function ShiftManager() {
             <div className="flex-none" id="assignments-table">
               <h3 className="text-lg font-semibold mb-2">Shift Assignments</h3>
               <AvailabilityTableView
+                key={`assignments-${state.userShiftData
+                  .map((u) => u.user.name)
+                  .join("-")}`}
                 className="border-primary-rounded-lg"
                 user={{ id: "shift-assignments", name: "Shift Assignments" }}
                 constraints={assignments.map((postAssignments, postIndex) =>
-                  postAssignments.map((user, hourIndex) => ({
+                  postAssignments.map((userId, hourIndex) => ({
                     postID: posts[postIndex]?.id || "",
                     hourID: defaultHours[hourIndex]?.id || "",
-                    availability: !!user,
-                    assignedUser: user?.id,
+                    availability: !!userId,
+                    assignedUser: userId || undefined,
                   }))
                 )}
                 posts={posts}
@@ -439,25 +441,18 @@ export function ShiftManager() {
                 mode="assignments"
                 selectedUserId={selectedUserId}
                 onConstraintsChange={(newConstraints) => {
-                  // Convert constraints back to assignments
+                  // Convert constraints back to assignments (user IDs)
                   const newAssignments = newConstraints.map(
                     (postConstraints, postIndex) =>
-                      postConstraints.map((constraint, hourIndex) =>
-                        constraint.assignedUser
-                          ? state.userShiftData.find(
-                              (u) => u.user.id === constraint.assignedUser
-                            )?.user || null
-                          : null
+                      postConstraints.map(
+                        (constraint, hourIndex) =>
+                          constraint.assignedUser || null
                       )
                   );
                   // Update assignments
                   newAssignments.forEach((postAssignments, postIndex) => {
-                    postAssignments.forEach((user, hourIndex) => {
-                      handleAssignmentChange(
-                        postIndex,
-                        hourIndex,
-                        user?.id || null
-                      );
+                    postAssignments.forEach((userId, hourIndex) => {
+                      handleAssignmentChange(postIndex, hourIndex, userId);
                     });
                   });
                 }}
@@ -493,10 +488,18 @@ export function ShiftManager() {
                 />
               }
               rightPanel={
-                // selectedUser ? (
                 <AvailabilityTableView
+                  key={`availability-${selectedUserId}-${state.userShiftData
+                    .map((u) => u.user.name)
+                    .join("-")}`}
                   className="border-primary-rounded-lg"
-                  user={selectedUser?.user}
+                  user={
+                    selectedUserId
+                      ? state.userShiftData.find(
+                          (u) => u.user.id === selectedUserId
+                        )?.user
+                      : undefined
+                  }
                   constraints={selectedUser?.constraints}
                   posts={posts}
                   hours={defaultHours}
@@ -513,14 +516,8 @@ export function ShiftManager() {
                   onPostEdit={handlePostEdit}
                   onPostRemove={handlePostRemove}
                   selectedUserId={selectedUserId}
+                  users={state.userShiftData.map((userData) => userData.user)}
                 />
-                // ) : (
-                  // <div className="h-full flex-col justify-center flex border-primary-rounded-lg mt-8">
-                  //   <div className="font-semibold text-center self-center ">
-                  //     Select a worker to view their availability
-                  //   </div>
-                  // </div>
-                // )
               }
             />
           </CardContent>
