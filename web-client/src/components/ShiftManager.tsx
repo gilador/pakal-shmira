@@ -10,6 +10,7 @@ import { EditButton } from "./EditButton";
 import { SplitScreen } from "./SplitScreen";
 import { WorkerList } from "./WorkerList";
 import { optimizeShift } from "@/service/shiftOptimizedService";
+import { PostListActions } from "./PostListActions";
 
 interface ShiftState {
   userShiftData: UserShiftData[];
@@ -196,14 +197,14 @@ export function ShiftManager() {
   };
 
   const addPost = () => {
-    if (!newPostName.trim()) return;
+    const postName = newPostName.trim() || `New Post ${posts.length + 1}`;
 
-    const newPost: UniqueString = {
+    const newPostData: UniqueString = {
       id: `post-${Date.now()}`,
-      value: newPostName.trim(),
+      value: postName,
     };
 
-    setPosts((prev) => [...prev, newPost]);
+    setPosts((prev) => [...prev, newPostData]);
     setNewPostName("");
 
     // Update complete shift data with new post
@@ -211,7 +212,7 @@ export function ShiftManager() {
       const newConstraints = [...prev];
       const newPostConstraints = defaultHours.map((hour) => ({
         availability: true,
-        postID: newPost.id,
+        postID: newPostData.id,
         hourID: hour.id,
       }));
       newConstraints.push(newPostConstraints);
@@ -403,6 +404,14 @@ export function ShiftManager() {
     setCheckedPostIds((ids) => ids.filter((id) => id !== postId));
   };
 
+  const handlePostCheckAll = (allWasClicked: boolean) => {
+    if (allWasClicked) {
+      setCheckedPostIds(posts.map((post) => post.id));
+    } else {
+      setCheckedPostIds([]);
+    }
+  };
+
   const handleRemovePosts = (postIds: string[]) => {
     // Remove posts from the posts array
     setPosts((prev) => prev.filter((post) => !postIds.includes(post.id)));
@@ -442,7 +451,16 @@ export function ShiftManager() {
           </Card>
           <CardContent className="p-4 flex flex-1 flex-col gap-2">
             <div className="flex-none" id="assignments-table">
-              <h3 className="text-lg font-semibold mb-2">Shift Assignments</h3>
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-lg font-semibold">Shift Assignments</h3>
+                <PostListActions
+                  isEditing={isEditing}
+                  onAddPost={addPost}
+                  onRemovePosts={handleRemovePosts}
+                  checkedPostIds={checkedPostIds}
+                  onCheckAll={handlePostCheckAll}
+                />
+              </div>
               <AvailabilityTableView
                 key={`assignments-${state.userShiftData
                   .map((u) => u.user.name)
