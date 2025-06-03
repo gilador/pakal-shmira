@@ -4,17 +4,23 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useRecoilState } from "recoil";
 import { Constraint, ShiftMap, User, UserShiftData } from "../models";
 import { UniqueString } from "../models/index";
-import { shiftState } from "../stores/shiftStore";
+import {
+  shiftState,
+  ShiftState as RecoilShiftState,
+} from "../stores/shiftStore";
 import { AvailabilityTableView } from "./AvailabilityTableView";
 import { EditButton } from "./EditButton";
 import { SplitScreen } from "./SplitScreen";
 import { WorkerList } from "./WorkerList";
 import { optimizeShift } from "@/service/shiftOptimizedService";
 import { PostListActions } from "./PostListActions";
+import { SyncStatus, SyncStatusIcon } from "./ui/SyncStatusIcon";
+import { VerticalActionGroup } from "./ui/VerticalActionGroup";
 
 interface ShiftState {
   userShiftData: UserShiftData[];
   hasInitialized: boolean;
+  syncStatus: SyncStatus;
 }
 
 const defaultHours: UniqueString[] = [
@@ -35,7 +41,7 @@ export function ShiftManager() {
   const [shiftMap, setShiftMap] = useState<ShiftMap>(new ShiftMap());
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const [state, setState] = useRecoilState(shiftState);
+  const [recoilState, setRecoilState] = useRecoilState(shiftState);
   const [isEditing, setIsEditing] = useState(false);
   const [completeShiftData, setCompleteShiftData] = useState<Constraint[][]>(
     getDefaultConstraints(defaultPosts, defaultHours)
@@ -56,15 +62,18 @@ export function ShiftManager() {
     return posts.map(() => defaultHours.map(() => null));
   });
 
+  // Extract syncStatus from recoilState for convenience
+  const syncStatus = recoilState.syncStatus;
+
   useEffect(() => {
     setShiftMap((oldMap) =>
-      deriveUserDataMap(state.userShiftData, defaultConstraints, oldMap)
+      deriveUserDataMap(recoilState.userShiftData, defaultConstraints, oldMap)
     );
-  }, [state.userShiftData, defaultConstraints]);
+  }, [recoilState.userShiftData, defaultConstraints]);
 
   // Initialize store with default workers if empty
   useEffect(() => {
-    if (state.userShiftData.length === 0 && !state.hasInitialized) {
+    if (recoilState.userShiftData.length === 0 && !recoilState.hasInitialized) {
       const defaultWorkers: UserShiftData[] = [
         {
           user: { id: "worker-1", name: "John Doe" },
@@ -127,32 +136,36 @@ export function ShiftManager() {
           totalAssignments: 0,
         },
       ];
-      setState((prev) => ({
+      setRecoilState((prev) => ({
         ...prev,
         userShiftData: defaultWorkers,
         hasInitialized: true,
       }));
     }
-  }, [state.userShiftData.length, setState]);
+  }, [
+    recoilState.userShiftData.length,
+    recoilState.hasInitialized,
+    setRecoilState,
+  ]);
 
   const selectedUser = useMemo(() => {
     return selectedUserId
-      ? state.userShiftData.find(
+      ? recoilState.userShiftData.find(
           (userData) => userData.user.id === selectedUserId
         )
       : undefined;
-  }, [selectedUserId, state.userShiftData]);
+  }, [selectedUserId, recoilState.userShiftData]);
 
   const addUser = () => {
     const newUser: UserShiftData = {
       user: {
-        id: `worker-${state.userShiftData.length + 1}`,
+        id: `worker-${recoilState.userShiftData.length + 1}`,
         name: "New User",
       },
       constraints: getDefaultConstraints(posts, defaultHours),
       totalAssignments: 0,
     };
-    setState((prev) => ({
+    setRecoilState((prev) => ({
       ...prev,
       userShiftData: [newUser, ...prev.userShiftData],
     }));
@@ -165,7 +178,7 @@ export function ShiftManager() {
     // Print only the user availability object
     console.log(JSON.stringify(newConstraints, null, 2));
 
-    setState((prev) => ({
+    setRecoilState((prev) => ({
       ...prev,
       userShiftData: prev.userShiftData.map((userData) =>
         userData.user.id === userId
@@ -177,7 +190,7 @@ export function ShiftManager() {
 
   const updateUserName = (userId: string, newName: string) => {
     console.log("1 - newName: ", newName);
-    setState((prev) => ({
+    setRecoilState((prev) => ({
       ...prev,
       userShiftData: prev.userShiftData.map((userData) =>
         userData.user.id === userId
@@ -188,7 +201,7 @@ export function ShiftManager() {
   };
 
   const removeUsers = (userIds: string[]) => {
-    setState((prev) => ({
+    setRecoilState((prev) => ({
       ...prev,
       userShiftData: prev.userShiftData.filter(
         (userData) => !userIds.includes(userData.user.id)
@@ -286,11 +299,11 @@ export function ShiftManager() {
     console.log("Current state:", {
       posts: posts,
       hours: defaultHours,
-      userShiftData: state.userShiftData,
+      userShiftData: recoilState.userShiftData,
     });
 
     try {
-      const optimizedResult = await optimizeShift(state.userShiftData);
+      const optimizedResult = await optimizeShift(recoilState.userShiftData);
 
       // Initialize assignments with null values
       const newAssignments: (string | null)[][] = posts.map(() =>
@@ -310,10 +323,10 @@ export function ShiftManager() {
 
             if (
               assignedUserIndex >= 0 &&
-              assignedUserIndex < state.userShiftData.length
+              assignedUserIndex < recoilState.userShiftData.length
             ) {
               newAssignments[postIndex][shiftIndex] =
-                state.userShiftData[assignedUserIndex].user.id;
+                recoilState.userShiftData[assignedUserIndex].user.id;
             } else {
               newAssignments[postIndex][shiftIndex] = null;
             }
@@ -442,12 +455,14 @@ export function ShiftManager() {
       </div>
       <div id="content" className="flex-1 overflow-auto">
         <Card className="h-full flex flex-row">
-          <Card className="h-full flex flex-col gap-2">
-            <EditButton
-              className="flex-none"
-              isEditing={isEditing}
-              onToggle={() => setIsEditing(!isEditing)}
-            />
+          <Card className="h-full flex flex-col gap-2 p-2">
+            <VerticalActionGroup className="flex-none">
+              <SyncStatusIcon status={syncStatus} size={18} />
+              <EditButton
+                isEditing={isEditing}
+                onToggle={() => setIsEditing(!isEditing)}
+              />
+            </VerticalActionGroup>
           </Card>
           <CardContent className="p-4 flex flex-1 flex-col gap-2">
             <div className="flex-none" id="assignments-table">
@@ -462,7 +477,7 @@ export function ShiftManager() {
                 />
               </div>
               <AvailabilityTableView
-                key={`assignments-${state.userShiftData
+                key={`assignments-${recoilState.userShiftData
                   .map((u) => u.user.name)
                   .join("-")}`}
                 className="border-primary-rounded-lg"
@@ -477,7 +492,9 @@ export function ShiftManager() {
                 )}
                 posts={posts}
                 hours={defaultHours}
-                users={state.userShiftData.map((userData) => userData.user)}
+                users={recoilState.userShiftData.map(
+                  (userData) => userData.user
+                )}
                 mode="assignments"
                 selectedUserId={selectedUserId}
                 onConstraintsChange={(newConstraints) => {
@@ -520,7 +537,9 @@ export function ShiftManager() {
               rightWidth="70%"
               leftPanel={
                 <WorkerList
-                  users={state.userShiftData.map((userData) => userData.user)}
+                  users={recoilState.userShiftData.map(
+                    (userData) => userData.user
+                  )}
                   selectedUserId={selectedUserId}
                   onSelectUser={handleUserSelect}
                   onEditUser={setEditingUserId}
@@ -532,13 +551,13 @@ export function ShiftManager() {
               }
               rightPanel={
                 <AvailabilityTableView
-                  key={`availability-${selectedUserId}-${state.userShiftData
+                  key={`availability-${selectedUserId}-${recoilState.userShiftData
                     .map((u) => u.user.name)
                     .join("-")}`}
                   className="border-primary-rounded-lg"
                   user={
                     selectedUserId
-                      ? state.userShiftData.find(
+                      ? recoilState.userShiftData.find(
                           (u) => u.user.id === selectedUserId
                         )?.user
                       : undefined
@@ -558,7 +577,9 @@ export function ShiftManager() {
                   isEditing={isEditing}
                   onPostEdit={handlePostEdit}
                   selectedUserId={selectedUserId}
-                  users={state.userShiftData.map((userData) => userData.user)}
+                  users={recoilState.userShiftData.map(
+                    (userData) => userData.user
+                  )}
                   checkedPostIds={checkedPostIds}
                   onPostCheck={handlePostCheck}
                   onPostUncheck={handlePostUncheck}

@@ -1,9 +1,11 @@
 import { atom } from "recoil";
 import { UserShiftData } from "../models";
+import { SyncStatus } from "../components/ui/SyncStatusIcon";
 
-interface ShiftState {
+export interface ShiftState {
   userShiftData: UserShiftData[];
   hasInitialized: boolean;
+  syncStatus: SyncStatus;
 }
 
 export const shiftState = atom<ShiftState>({
@@ -11,5 +13,6 @@ export const shiftState = atom<ShiftState>({
   default: {
     userShiftData: [],
     hasInitialized: false,
+    syncStatus: "synced",
   },
 });
