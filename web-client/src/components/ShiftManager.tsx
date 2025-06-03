@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import React, { useEffect, useMemo, useState } from "react";
 import { useRecoilState } from "recoil";
-import { mockShiftAssignments } from "../mocks/shiftAssignments";
 import { Constraint, ShiftMap, User, UserShiftData } from "../models";
 import { UniqueString } from "../models/index";
 import { shiftState } from "../stores/shiftStore";
@@ -44,6 +43,7 @@ export function ShiftManager() {
   const [newPostName, setNewPostName] = useState("");
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingPostName, setEditingPostName] = useState("");
+  const [checkedPostIds, setCheckedPostIds] = useState<string[]>([]);
 
   const defaultConstraints = useMemo(
     () => getDefaultConstraints(posts, defaultHours),
@@ -51,14 +51,8 @@ export function ShiftManager() {
   );
 
   const [assignments, setAssignments] = useState<(string | null)[][]>(() => {
-    // Initialize assignments from mock data
-    return posts.map((post, postIndex) =>
-      defaultHours.map((hour, hourIndex) => {
-        const assignmentKey = `${post.id}-${hour.id}`;
-        const assignedUserId = mockShiftAssignments[assignmentKey];
-        return assignedUserId || null;
-      })
-    );
+    // Start with empty assignments - user must click "Optimize" to populate
+    return posts.map(() => defaultHours.map(() => null));
   });
 
   useEffect(() => {
@@ -401,6 +395,34 @@ export function ShiftManager() {
     setSelectedUserId(userId);
   };
 
+  const handlePostCheck = (postId: string) => {
+    setCheckedPostIds([...checkedPostIds, postId]);
+  };
+
+  const handlePostUncheck = (postId: string) => {
+    setCheckedPostIds((ids) => ids.filter((id) => id !== postId));
+  };
+
+  const handleRemovePosts = (postIds: string[]) => {
+    // Remove posts from the posts array
+    setPosts((prev) => prev.filter((post) => !postIds.includes(post.id)));
+
+    // Remove assignments for removed posts
+    setAssignments((prev) => {
+      const newAssignments = [...prev];
+      const remainingPosts = posts.filter((post) => !postIds.includes(post.id));
+      return remainingPosts.map((post) => {
+        const postIndex = posts.findIndex((p) => p.id === post.id);
+        return postIndex !== -1
+          ? prev[postIndex]
+          : defaultHours.map(() => null);
+      });
+    });
+
+    // Clear checked post IDs
+    setCheckedPostIds([]);
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div
@@ -458,7 +480,10 @@ export function ShiftManager() {
                 }}
                 isEditing={isEditing}
                 onPostEdit={handlePostEdit}
-                onPostRemove={handlePostRemove}
+                checkedPostIds={checkedPostIds}
+                onPostCheck={handlePostCheck}
+                onPostUncheck={handlePostUncheck}
+                onPostRemove={(postIds) => handleRemovePosts([postIds])}
               />
             </div>
 
@@ -514,9 +539,12 @@ export function ShiftManager() {
                   }}
                   isEditing={isEditing}
                   onPostEdit={handlePostEdit}
-                  onPostRemove={handlePostRemove}
                   selectedUserId={selectedUserId}
                   users={state.userShiftData.map((userData) => userData.user)}
+                  checkedPostIds={checkedPostIds}
+                  onPostCheck={handlePostCheck}
+                  onPostUncheck={handlePostUncheck}
+                  onPostRemove={(postIds) => handleRemovePosts([postIds])}
                 />
               }
             />

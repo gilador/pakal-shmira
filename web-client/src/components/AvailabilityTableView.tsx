@@ -1,9 +1,10 @@
-import { Input } from "@/components/ui/input";
 import { colors } from "@/constants/colors";
 import React, { useEffect, useState } from "react";
 import { Constraint, User } from "../models";
 import { UniqueString } from "../models/index";
-import { withActions, WithActionsProps } from "./hoc/withActions";
+import { EditableText } from "./ui/EditableText";
+import { Checkbox } from "@/components/ui/checkbox";
+import { EditButton } from "./EditButton";
 
 export interface AvailabilityTableViewProps {
   user?: User;
@@ -18,24 +19,21 @@ export interface AvailabilityTableViewProps {
   mode?: "availability" | "assignments"; // Add mode prop to distinguish between views
   selectedUserId?: string | null; // Add selectedUserId prop
   className?: string; // Add className prop
+  checkedPostIds?: string[]; // Add checked posts
+  onPostCheck?: (postId: string) => void; // Add post check handler
+  onPostUncheck?: (postId: string) => void; // Add post uncheck handler
 }
 
 const AssignmentCell = ({
-  isEditing,
-  onNameChange,
-  onCheck: onDelete,
-  userId,
+  name,
   isSelected,
   onClick,
-  name,
   isAssigned,
-  isCheckedProp,
-}: WithActionsProps & {
+}: {
   isSelected: boolean;
   onClick: () => void;
   name?: string;
   isAssigned: boolean;
-  isCheckedProp: boolean;
 }) => {
   return (
     <div className={`flex items-center gap-2 w-full `}>
@@ -46,7 +44,76 @@ const AssignmentCell = ({
   );
 };
 
-const AssignmentCellWithActions = withActions(AssignmentCell);
+const PostNameComp = ({
+  post,
+  isEditing,
+  onUpdatePostName,
+  onPostRemove,
+  isChecked,
+  onCheck,
+  onUncheck,
+}: {
+  post: UniqueString;
+  isEditing: boolean;
+  onUpdatePostName: (postId: string, newName: string) => void;
+  onPostRemove?: (postId: string) => void;
+  isChecked: boolean;
+  onCheck: () => void;
+  onUncheck: () => void;
+}) => {
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  return (
+    <div className="flex items-center gap-2 w-full h-[32px]">
+      {/* Editing controls */}
+      <div
+        className={`flex items-center gap-2 transition-all duration-100 ease-in-out ${
+          isEditing ? "translate-x-0" : "-translate-x-5"
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {isEditing && (
+          <>
+            <Checkbox
+              checked={isChecked}
+              onCheckedChange={(checked) => (checked ? onCheck() : onUncheck())}
+              className="h-4 w-4"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <EditButton
+              isEditing={isEditMode}
+              onToggle={() => setIsEditMode(!isEditMode)}
+              className="h-[32px]"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </>
+        )}
+      </div>
+
+      {/* Name display/edit */}
+      <div className="flex-1 h-[32px] w-full flex items-center">
+        <EditableText
+          value={post.value}
+          onSave={(newName) => onUpdatePostName(post.id, newName)}
+          isEditing={isEditMode}
+          onEditingChange={setIsEditMode}
+          className="w-full"
+          inputClassName="h-8"
+          displayClassName="font-semibold"
+        >
+          {(name, editing) => (
+            <span
+              className="font-semibold"
+              onClick={editing ? undefined : undefined}
+            >
+              {name}
+            </span>
+          )}
+        </EditableText>
+      </div>
+    </div>
+  );
+};
 
 export function AvailabilityTableView({
   user,
@@ -61,6 +128,9 @@ export function AvailabilityTableView({
   mode = "availability", // Default to availability mode
   selectedUserId = null, // Add selectedUserId prop with default value
   className = "", // Add className prop with default value
+  checkedPostIds = [], // Default to empty array
+  onPostCheck,
+  onPostUncheck,
 }: AvailabilityTableViewProps) {
   useEffect(() => {
     console.log(
@@ -76,9 +146,6 @@ export function AvailabilityTableView({
       users.map((u) => ({ id: u.id, name: u.name }))
     );
   }, [users]);
-
-  const [editingPostId, setEditingPostId] = useState<string | null>(null);
-  const [editingPostName, setEditingPostName] = useState("");
 
   const toggleAvailability = (postIndex: number, hourIndex: number) => {
     // Validate input data
@@ -162,29 +229,6 @@ export function AvailabilityTableView({
       hours.map(() => ({ availability: true, assignedUser: null }))
     );
 
-  const handlePostEdit = (post: UniqueString) => {
-    if (!isEditing) return;
-    setEditingPostId(post.id);
-    setEditingPostName(post.value);
-  };
-
-  const savePostEdit = () => {
-    if (!isEditing || !editingPostId || !editingPostName.trim()) return;
-    onPostEdit?.(editingPostId, editingPostName.trim());
-    setEditingPostId(null);
-    setEditingPostName("");
-  };
-
-  const handlePostNameKeyDown = (e: React.KeyboardEvent) => {
-    if (!isEditing) return;
-    if (e.key === "Enter") {
-      savePostEdit();
-    } else if (e.key === "Escape") {
-      setEditingPostId(null);
-      setEditingPostName("");
-    }
-  };
-
   const handlePostNameChange = (postId: string, newName: string) => {
     console.log("handlePostNameChange called with:", { postId, newName });
     onPostEdit?.(postId, newName);
@@ -225,42 +269,15 @@ export function AvailabilityTableView({
             {posts.map((post, postIndex) => (
               <React.Fragment key={post.id}>
                 <div className="font-semibold p-2">
-                  {mode === "assignments" ? (
-                    <AssignmentCellWithActions
-                      isEditing={isEditing}
-                      onNameChange={handlePostNameChange}
-                      onCheck={handlePostRemove}
-                      onUncheck={handlePostRemove}
-                      userId={post.id}
-                      isSelected={false}
-                      onClick={() => {}}
-                      isAssigned={false}
-                      name={post.value}
-                      isCheckedProp={false}
-                    />
-                  ) : mode === "availability" && isEditing ? (
-                    <div className="flex items-center gap-2">
-                      {editingPostId === post.id ? (
-                        <Input
-                          value={editingPostName}
-                          onChange={(e) => setEditingPostName(e.target.value)}
-                          onBlur={savePostEdit}
-                          onKeyDown={handlePostNameKeyDown}
-                          className="h-6 w-24"
-                          autoFocus
-                        />
-                      ) : (
-                        <span
-                          className="cursor-pointer hover:underline"
-                          onClick={() => handlePostEdit(post)}
-                        >
-                          {post.value}
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    post.value
-                  )}
+                  <PostNameComp
+                    post={post}
+                    isEditing={isEditing}
+                    onUpdatePostName={handlePostNameChange}
+                    onPostRemove={handlePostRemove}
+                    isChecked={checkedPostIds.includes(post.id)}
+                    onCheck={() => onPostCheck?.(post.id)}
+                    onUncheck={() => onPostUncheck?.(post.id)}
+                  />
                 </div>
                 {hours.map((hour, hourIndex) => {
                   const constraint = safeConstraints[postIndex]?.[hourIndex];
@@ -281,19 +298,10 @@ export function AvailabilityTableView({
                         >
                           <div className="relative group">
                             <AssignmentCell
-                              isEditing={false}
-                              onNameChange={(
-                                userId: string,
-                                newName: string
-                              ) => {}}
-                              onCheck={() => {}}
-                              onUncheck={() => {}}
-                              userId={assignedUser.id}
                               isSelected={selectedUserId === assignedUser.id}
                               onClick={() => {}}
                               name={assignedUser.name}
                               isAssigned={true}
-                              isCheckedProp={false}
                             />
                           </div>
                         </div>
@@ -307,19 +315,10 @@ export function AvailabilityTableView({
                       >
                         <div className="relative group">
                           <AssignmentCell
-                            isEditing={false}
-                            onNameChange={(
-                              userId: string,
-                              newName: string
-                            ) => {}}
-                            onCheck={() => {}}
-                            onUncheck={() => {}}
-                            userId=""
                             isSelected={false}
                             onClick={() => {}}
                             name="-"
                             isAssigned={false}
-                            isCheckedProp={false}
                           />
                         </div>
                       </div>

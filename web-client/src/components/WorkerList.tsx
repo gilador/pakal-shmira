@@ -2,7 +2,9 @@ import { colors } from "@/constants/colors";
 import { IconUser } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { User } from "../models";
-import { withActions, WithActionsProps } from "./hoc/withActions";
+import { Checkbox } from "@/components/ui/checkbox";
+import { EditButton } from "./EditButton";
+import { EditableText } from "./ui/EditableText";
 import { WorkerListActions } from "./WorkerListActions";
 
 export interface WorkerListProps {
@@ -17,29 +19,81 @@ export interface WorkerListProps {
 }
 
 const UserNameComp = ({
-  onCheck: onDelete,
+  user,
   isSelected,
   onClick,
-  name,
-}: WithActionsProps & {
+  isEditing,
+  onUpdateUserName,
+  isChecked,
+  onCheck,
+  onUncheck,
+}: {
+  user: User;
   isSelected: boolean;
   onClick: () => void;
+  isEditing: boolean;
+  onUpdateUserName: (userId: string, newName: string) => void;
+  isChecked: boolean;
+  onCheck: () => void;
+  onUncheck: () => void;
 }) => {
+  const [isEditMode, setIsEditMode] = useState(false);
+
   return (
-    <div className="flex items-center gap-2 w-full">
-      <span
-        className={`cursor-pointer pl-3 mr-10 ${
-          isSelected ? "font-semibold" : ""
+    <div className="flex items-center gap-2 w-full h-[32px]">
+      {/* Editing controls */}
+      <div
+        className={`flex items-center gap-2 transition-all duration-100 ease-in-out ${
+          isEditing ? "translate-x-0" : "-translate-x-5"
         }`}
-        onClick={onClick}
+        onClick={(e) => e.stopPropagation()}
       >
-        {name}
-      </span>
+        {isEditing && (
+          <>
+            <Checkbox
+              checked={isChecked}
+              onCheckedChange={(checked) => (checked ? onCheck() : onUncheck())}
+              className="h-4 w-4"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <EditButton
+              isEditing={isEditMode}
+              onToggle={() => setIsEditMode(!isEditMode)}
+              className="h-[32px]"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </>
+        )}
+      </div>
+
+      {/* Name display/edit */}
+      <div className="flex-1 h-[32px] w-full flex items-center">
+        <EditableText
+          value={user.name}
+          onSave={(newName) => onUpdateUserName(user.id, newName)}
+          isEditing={isEditMode}
+          onEditingChange={setIsEditMode}
+          className="w-full"
+          inputClassName="h-8"
+          displayClassName={`cursor-pointer pl-3 mr-10 ${
+            isSelected ? "font-semibold" : ""
+          }`}
+        >
+          {(name, editing) => (
+            <span
+              className={`cursor-pointer pl-3 mr-10 ${
+                isSelected ? "font-semibold" : ""
+              }`}
+              onClick={editing ? undefined : onClick}
+            >
+              {name}
+            </span>
+          )}
+        </EditableText>
+      </div>
     </div>
   );
 };
-
-const UserNameWithActions = withActions(UserNameComp);
 
 export function WorkerList({
   users,
@@ -51,7 +105,6 @@ export function WorkerList({
   isEditing,
   onUpdateUserName,
 }: WorkerListProps) {
-  // const checkedUserIdsRef = useRef<string[]>([]);
   const [checkedUserIds, setCheckedUserIds] = useState<string[]>([]);
 
   const handleUserClick = (userId: string) => {
@@ -88,7 +141,9 @@ export function WorkerList({
           onRemoveUsers={onRemoveUsers}
           onCheckAll={(allWasClicked) => {
             console.log("onCheckAll called");
-            setCheckedUserIds(allWasClicked ? users.map((user) => user.id) : []);
+            setCheckedUserIds(
+              allWasClicked ? users.map((user) => user.id) : []
+            );
           }}
           checkedUserIds={checkedUserIds}
         />
@@ -115,17 +170,15 @@ export function WorkerList({
                   }`}
                   onClick={() => handleUserClick(user.id)}
                 >
-                  <UserNameWithActions
+                  <UserNameComp
+                    user={user}
+                    isSelected={selectedUserId === user.id}
+                    onClick={() => handleUserClick(user.id)}
                     isEditing={isEditing}
-                    onNameChange={onUpdateUserName}
+                    onUpdateUserName={onUpdateUserName}
+                    isChecked={checkedUserIds.includes(user.id)}
                     onCheck={() => handleCheck(user.id)}
                     onUncheck={() => handleUncheck(user.id)}
-                    userId={user.id}
-                    isSelected={selectedUserId === user.id}
-                    isCheckedProp={checkedUserIds.includes(user.id)}
-                    onClick={() => handleUserClick(user.id)}
-                    name={user.name}
-                    leftPadding={"pl-5"}
                   />
                 </div>
               );
