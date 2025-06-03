@@ -649,9 +649,10 @@ export function ShiftManager() {
     <div className="h-full flex flex-col">
       <div
         id="header"
-        className="flex-none flex justify-start items-start mb-4"
+        className="flex-none flex flex-col justify-start items-start mb-4"
       >
-        <h1 className="text-2xl font-bold">Shift Manager</h1>
+        <h1 className="text-2xl font-bold">Tumbleweed</h1>
+        <h2 className="text-md text-gray-400">Shift Manager</h2>
       </div>
       <div id="content" className="flex-1 overflow-auto">
         <Card className="h-full flex flex-row">

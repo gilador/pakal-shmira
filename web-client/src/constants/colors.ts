@@ -23,6 +23,9 @@ export const colors = {
   text: {
     default: "text-gray-600",
   },
+  subtitle: {
+    default: "text-gray-400",
+  },
   // Button colors
   button: {
     default: "bg-primary/5",
