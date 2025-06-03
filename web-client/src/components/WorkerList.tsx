@@ -44,7 +44,7 @@ const UserNameComp = ({
       {/* Editing controls */}
       <div
         className={`flex items-center gap-2 transition-all duration-100 ease-in-out ${
-          isEditing ? "translate-x-0" : "-translate-x-5"
+          isEditing ? "w-16 opacity-100" : "w-0 opacity-0"
         }`}
         onClick={(e) => e.stopPropagation()}
       >
@@ -75,13 +75,13 @@ const UserNameComp = ({
           onEditingChange={setIsEditMode}
           className="w-full"
           inputClassName="h-8"
-          displayClassName={`cursor-pointer pl-3 mr-10 ${
+          displayClassName={`cursor-pointer ${
             isSelected ? "font-semibold" : ""
           }`}
         >
           {(name, editing) => (
             <span
-              className={`cursor-pointer pl-3 mr-10 ${
+              className={`cursor-pointer truncate ${
                 isSelected ? "font-semibold" : ""
               }`}
               onClick={editing ? undefined : onClick}
