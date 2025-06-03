@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRecoilState } from "recoil";
 import { Constraint, ShiftMap, User, UserShiftData } from "../models";
 import { UniqueString } from "../models/index";
@@ -58,10 +58,15 @@ export function ShiftManager() {
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingPostName, setEditingPostName] = useState("");
   const [checkedPostIds, setCheckedPostIds] = useState<string[]>([]);
+  const [isOptimizeDisabled, setIsOptimizeDisabled] = useState(true);
+  const [optimizeButtonTitle, setOptimizeButtonTitle] = useState(
+    "Optimize shift assignments"
+  );
+  const lastAppliedConstraintsSignature = useRef<string | null>(null);
 
   // Effect for initial loading from localStorage AND setting default workers if needed
   useEffect(() => {
-    let isMounted = true;
+    const isMounted = { current: true };
     console.log(
       "[ShiftManager useEffect] Initial data setup. Current recoilState:",
       recoilState
@@ -70,7 +75,7 @@ export function ShiftManager() {
     const setupInitialData = async () => {
       console.log("[ShiftManager useEffect] setupInitialData: Starting.");
       // 1. Set to syncing
-      if (isMounted) {
+      if (isMounted.current) {
         setRecoilState((prev) => {
           console.log(
             "[ShiftManager useEffect] setupInitialData: Setting syncStatus to 'syncing'. Prev state:",
@@ -102,27 +107,27 @@ export function ShiftManager() {
           savedData
         );
 
-        if (!isMounted) return;
+        if (!isMounted.current) return;
 
-        if (savedData) {
+        if (savedData && savedData.hasInitialized) {
           console.log(
-            "[ShiftManager useEffect] setupInitialData: Found saved data. Setting state."
+            `[ShiftManager useEffect] setupInitialData: Found saved data. Setting state.`,
+            savedData
           );
-          // Ensure posts and assignments from savedData are consistent, or re-initialize assignments if structure mismatch
-          // For now, assume savedData.assignments is valid if present
-          const currentPosts =
-            savedData.userShiftData.length > 0 ? posts : defaultPosts; // Simplified: use current posts or default if no users (might need refinement)
-          const finalAssignments =
-            savedData.assignments &&
-            savedData.assignments.length === currentPosts.length
-              ? savedData.assignments
-              : currentPosts.map(() => defaultHours.map(() => null));
-
-          setRecoilState({
-            ...savedData, // This includes userShiftData, hasInitialized
-            assignments: finalAssignments, // Use assignments from savedData or re-initialized
+          setRecoilState((prev) => ({
+            ...prev,
+            userShiftData: savedData.userShiftData || [],
+            assignments:
+              savedData.assignments ||
+              posts.map(() => defaultHours.map(() => null)),
             hasInitialized: true,
-            syncStatus: "synced",
+            syncStatus: "syncing",
+          }));
+          // Set initial signature based on loaded data
+          lastAppliedConstraintsSignature.current = JSON.stringify({
+            userShiftData: savedData.userShiftData || [],
+            posts: posts,
+            hours: defaultHours,
           });
         } else {
           // 3. No saved data, so set default workers and initial assignments
@@ -191,14 +196,20 @@ export function ShiftManager() {
               totalAssignments: 0,
             },
           ];
-          const initialAssignments = defaultPosts.map(() =>
+          const initialAssignments = posts.map(() =>
             defaultHours.map(() => null)
           );
-          setRecoilState({
+          setRecoilState((prev) => ({
             userShiftData: defaultWorkers,
             hasInitialized: true,
-            syncStatus: "synced",
+            syncStatus: "syncing",
             assignments: initialAssignments,
+          }));
+          // Set initial signature for default state
+          lastAppliedConstraintsSignature.current = JSON.stringify({
+            userShiftData: defaultWorkers,
+            posts: posts,
+            hours: defaultHours,
           });
           console.log(
             "[ShiftManager useEffect] setupInitialData: Default workers and assignments set. State updated."
@@ -209,7 +220,7 @@ export function ShiftManager() {
           "[ShiftManager useEffect] setupInitialData: Error during initial data setup:",
           error
         );
-        if (isMounted) {
+        if (isMounted.current) {
           const errorAssignments = defaultPosts.map(() =>
             defaultHours.map(() => null)
           );
@@ -279,9 +290,9 @@ export function ShiftManager() {
     return () => {
       console.log(
         "[ShiftManager useEffect] Cleanup: Component unmounting or deps changed. isMounted was:",
-        isMounted
+        isMounted.current
       );
-      isMounted = false;
+      isMounted.current = false;
     };
     // Key dependency: recoilState.hasInitialized.
     // setRecoilState is stable and doesn't need to be a dependency.
@@ -294,6 +305,79 @@ export function ShiftManager() {
     setRecoilState,
     recoilState.assignments,
   ]); // Added posts, defaultHours, recoilState.assignments
+
+  useEffect(() => {
+    const currentSyncStatus = recoilState.syncStatus;
+    const currentAssignments = recoilState.assignments;
+    const currentUserShiftData = recoilState.userShiftData;
+    let newTitle = "Optimize shift assignments"; // Default title
+
+    // Condition 1: Sync status is problematic
+    if (
+      currentSyncStatus === "syncing" ||
+      currentSyncStatus === "out-of-sync"
+    ) {
+      setIsOptimizeDisabled(true);
+      newTitle =
+        currentSyncStatus === "syncing"
+          ? "Cannot optimize: Data is currently syncing."
+          : "Cannot optimize: Data is out of sync.";
+      setOptimizeButtonTitle(newTitle);
+      return;
+    }
+
+    // Condition 2: No actual assignments currently exist in the state.
+    const hasAnyActualAssignments =
+      currentAssignments &&
+      currentAssignments.flat().some((userId) => userId !== null);
+    if (!hasAnyActualAssignments) {
+      if (currentUserShiftData && currentUserShiftData.length > 0) {
+        setIsOptimizeDisabled(false);
+        newTitle = "Generate initial shift assignments.";
+      } else {
+        setIsOptimizeDisabled(true);
+        newTitle = "Cannot optimize: No users or constraints available.";
+      }
+      setOptimizeButtonTitle(newTitle);
+      return;
+    }
+
+    // Condition 3: Assignments exist. Button disabled if current constraints match those that produced these assignments.
+    if (lastAppliedConstraintsSignature.current === null) {
+      console.warn(
+        "[isOptimizeDisabled] lastAppliedConstraintsSignature.current is null, but assignments exist. Enabling button."
+      );
+      setIsOptimizeDisabled(false);
+      newTitle =
+        "Optimize current assignments with potentially new constraints.";
+      setOptimizeButtonTitle(newTitle);
+      return;
+    }
+
+    const currentConstraintsSignature = JSON.stringify({
+      userShiftData: currentUserShiftData,
+      posts: posts,
+      hours: defaultHours,
+    });
+
+    if (
+      currentConstraintsSignature === lastAppliedConstraintsSignature.current
+    ) {
+      setIsOptimizeDisabled(true);
+      newTitle =
+        "Cannot optimize: Constraints have not changed since last optimization.";
+    } else {
+      setIsOptimizeDisabled(false);
+      newTitle = "Optimize with updated constraints.";
+    }
+    setOptimizeButtonTitle(newTitle);
+  }, [
+    recoilState.syncStatus,
+    recoilState.assignments,
+    recoilState.userShiftData,
+    posts,
+    defaultHours,
+  ]);
 
   const defaultConstraints = useMemo(
     () => getDefaultConstraints(posts, defaultHours),
@@ -461,6 +545,12 @@ export function ShiftManager() {
   };
 
   const handleOptimize = async () => {
+    console.log("Optimization process started.");
+    if (isOptimizeDisabled) {
+      console.log("Optimization skipped: button is disabled.");
+      return;
+    }
+
     console.log("Starting optimization process...");
     console.log("Current state:", {
       posts: posts,
@@ -498,6 +588,15 @@ export function ShiftManager() {
         });
       }
       setRecoilState((prev) => ({ ...prev, assignments: newAssignments }));
+
+      // Capture the signature of constraints that led to THIS successful optimization
+      lastAppliedConstraintsSignature.current = JSON.stringify({
+        userShiftData: recoilState.userShiftData, // Constraints used for this optimization
+        posts: posts,
+        hours: defaultHours,
+      });
+
+      console.log("Optimization successful, new assignments applied.");
     } catch (error) {
       console.error("Error during optimization:", error);
       setRecoilState((prev) => ({
@@ -568,34 +667,14 @@ export function ShiftManager() {
     hourIndex: number,
     userId: string | null
   ) => {
-    setRecoilState((prev) => {
-      // Deep copy assignments to ensure we're not mutating the previous state directly
-      const newAssignments = prev.assignments
-        ? prev.assignments.map((row) => [...row])
-        : posts.map(() => defaultHours.map(() => null));
-
-      if (
-        postIndex < newAssignments.length &&
-        hourIndex < (newAssignments[postIndex]?.length || 0)
-      ) {
-        newAssignments[postIndex][hourIndex] = userId || null;
-      } else {
-        // This case should ideally not happen if `posts` and `assignments` are in sync.
-        // Might indicate a need to resize `newAssignments` if `posts` grew and `useEffect` hasn't caught up.
-        console.warn(
-          "handleAssignmentChange: postIndex or hourIndex out of bounds. Assignments might be stale."
-        );
-        // Defensive: Ensure the row exists
-        while (newAssignments.length <= postIndex) {
-          newAssignments.push(defaultHours.map(() => null));
-        }
-        // Ensure the cell exists
-        while (newAssignments[postIndex].length <= hourIndex) {
-          newAssignments[postIndex].push(null);
-        }
-        newAssignments[postIndex][hourIndex] = userId || null;
-      }
-      return { ...prev, assignments: newAssignments };
+    setRecoilState((prevState) => {
+      const newAssignments = prevState.assignments.map((row) => [...row]);
+      newAssignments[postIndex][hourIndex] = userId;
+      console.log("Assignments updated:", newAssignments);
+      return {
+        ...prevState,
+        assignments: newAssignments,
+      };
     });
   };
 
@@ -725,7 +804,9 @@ export function ShiftManager() {
                 id="optimize-button"
                 onClick={handleOptimize}
                 variant="default"
-                className="w-full mt-2"
+                className="w-full mt-2 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={isOptimizeDisabled}
+                title={optimizeButtonTitle}
               >
                 Optimize
               </Button>
