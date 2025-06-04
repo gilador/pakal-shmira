@@ -1,6 +1,6 @@
 import {
-  IconUserPlus,
-  IconUserMinus,
+  IconArmchair,
+  IconArmchairOff,
   IconSelectAll,
   IconDeselect,
 } from "@tabler/icons-react";
@@ -66,7 +66,7 @@ export function PostListActions({
         title="Add post"
         className={`p-2 rounded-md ${colors.button.default} ${colors.button.hover}`}
       >
-        <IconUserPlus size={15} />
+        <IconArmchair size={15} />
       </button>
       <button
         onClick={handleDelete}
@@ -74,7 +74,7 @@ export function PostListActions({
         title="Delete selected posts"
         className={`p-2 rounded-md ${colors.button.default} ${colors.button.hover_negative}`}
       >
-        <IconUserMinus size={15} />
+        <IconArmchairOff size={15} />
       </button>
       <button
         onClick={handleCheckAll}

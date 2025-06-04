@@ -113,3 +113,13 @@
   border-style: solid !important;
   padding: 0.5rem !important;
 }
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 2s linear infinite;
+}

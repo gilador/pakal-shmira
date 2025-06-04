@@ -86,22 +86,24 @@ export function ShiftManager() {
             ...prev,
             syncStatus: "syncing",
             assignments: initialAssignments,
+            manuallyEditedSlots: prev.manuallyEditedSlots || {},
+            customCellDisplayNames: prev.customCellDisplayNames || {},
           };
         });
       }
 
       try {
         // 2. Try loading from localStorage
-        console.log(
-          "[ShiftManager useEffect] setupInitialData: Attempting to load from localStorage."
-        );
+        // console.log(
+        //   "[ShiftManager useEffect] setupInitialData: Attempting to load from localStorage."
+        // );
         const savedData = await loadStateFromLocalStorage<PersistedShiftData>(
           LOCAL_STORAGE_KEY
         );
-        console.log(
-          "[ShiftManager useEffect] setupInitialData: Data from localStorage:",
-          savedData
-        );
+        // console.log(
+        //   "[ShiftManager useEffect] setupInitialData: Data from localStorage:",
+        //   savedData
+        // );
 
         if (!isMounted.current) return;
 
@@ -118,6 +120,8 @@ export function ShiftManager() {
               posts.map(() => defaultHours.map(() => null)),
             hasInitialized: true,
             syncStatus: "syncing",
+            manuallyEditedSlots: savedData.manuallyEditedSlots || {},
+            customCellDisplayNames: savedData.customCellDisplayNames || {},
           }));
           // Set initial signature based on loaded data
           lastAppliedConstraintsSignature.current = JSON.stringify({
@@ -127,9 +131,9 @@ export function ShiftManager() {
           });
         } else {
           // 3. No saved data, so set default workers and initial assignments
-          console.log(
-            "[ShiftManager useEffect] setupInitialData: No saved data. Setting default workers and assignments."
-          );
+          // console.log(
+          //   "[ShiftManager useEffect] setupInitialData: No saved data. Setting default workers and assignments."
+          // );
           const defaultWorkers: UserShiftData[] = [
             {
               user: { id: "worker-1", name: "John Doe" },
@@ -200,6 +204,8 @@ export function ShiftManager() {
             hasInitialized: true,
             syncStatus: "syncing",
             assignments: initialAssignments,
+            manuallyEditedSlots: {},
+            customCellDisplayNames: {},
           }));
           // Set initial signature for default state
           lastAppliedConstraintsSignature.current = JSON.stringify({
@@ -207,9 +213,9 @@ export function ShiftManager() {
             posts: posts,
             hours: defaultHours,
           });
-          console.log(
-            "[ShiftManager useEffect] setupInitialData: Default workers and assignments set. State updated."
-          );
+          // console.log(
+          //   "[ShiftManager useEffect] setupInitialData: Default workers and assignments set. State updated."
+          // );
         }
       } catch (error) {
         console.error(
@@ -228,29 +234,31 @@ export function ShiftManager() {
               prev.assignments && prev.assignments.length > 0
                 ? prev.assignments
                 : errorAssignments, // Keep existing or fallback
+            manuallyEditedSlots: prev.manuallyEditedSlots || {},
+            customCellDisplayNames: prev.customCellDisplayNames || {},
           }));
         }
       }
     };
 
     if (!recoilState.hasInitialized) {
-      console.log(
-        "[ShiftManager useEffect] Initial data setup: hasInitialized is false. Running setup."
-      );
+      // console.log(
+      //   "[ShiftManager useEffect] Initial data setup: hasInitialized is false. Running setup."
+      // );
       setupInitialData();
     } else {
-      console.log(
-        "[ShiftManager useEffect] Initial data setup: hasInitialized is true. Skipping setup. Current assignments length:",
-        recoilState.assignments?.length
-      );
+      // console.log(
+      //   "[ShiftManager useEffect] Initial data setup: hasInitialized is true. Skipping setup. Current assignments length:",
+      //   recoilState.assignments?.length
+      // );
       // Ensure assignments are consistent with posts if already initialized
       if (
         recoilState.assignments &&
         recoilState.assignments.length !== posts.length
       ) {
-        console.log(
-          "[ShiftManager useEffect] Post length changed, re-initializing assignments structure."
-        );
+        // console.log(
+        //   "[ShiftManager useEffect] Post length changed, re-initializing assignments structure."
+        // );
         const adjustedAssignments = posts.map((post, i) =>
           recoilState.assignments[i] &&
           recoilState.assignments[i].length === defaultHours.length
@@ -267,27 +275,31 @@ export function ShiftManager() {
         setRecoilState((prev) => ({
           ...prev,
           assignments: adjustedAssignments.slice(0, posts.length),
+          manuallyEditedSlots: prev.manuallyEditedSlots || {},
+          customCellDisplayNames: prev.customCellDisplayNames || {},
         }));
       } else if (!recoilState.assignments && posts.length > 0) {
         // Case: assignments is null/undefined but posts exist (e.g. initial state before full init)
-        console.log(
-          "[ShiftManager useEffect] Initializing assignments structure as it was null/undefined."
-        );
+        // console.log(
+        //   "[ShiftManager useEffect] Initializing assignments structure as it was null/undefined."
+        // );
         const initialAssignments = posts.map(() =>
           defaultHours.map(() => null)
         );
         setRecoilState((prev) => ({
           ...prev,
           assignments: initialAssignments,
+          manuallyEditedSlots: prev.manuallyEditedSlots || {},
+          customCellDisplayNames: prev.customCellDisplayNames || {},
         }));
       }
     }
 
     return () => {
-      console.log(
-        "[ShiftManager useEffect] Cleanup: Component unmounting or deps changed. isMounted was:",
-        isMounted.current
-      );
+      // console.log(
+      //   "[ShiftManager useEffect] Cleanup: Component unmounting or deps changed. isMounted was:",
+      //   isMounted.current
+      // );
       isMounted.current = false;
     };
     // Key dependency: recoilState.hasInitialized.
@@ -419,6 +431,8 @@ export function ShiftManager() {
     setRecoilState((prev) => ({
       ...prev,
       userShiftData: [newUser, ...prev.userShiftData],
+      manuallyEditedSlots: prev.manuallyEditedSlots || {},
+      customCellDisplayNames: prev.customCellDisplayNames || {},
     }));
   };
 
@@ -436,6 +450,8 @@ export function ShiftManager() {
           ? { ...userData, constraints: newConstraints }
           : userData
       ),
+      manuallyEditedSlots: prev.manuallyEditedSlots || {},
+      customCellDisplayNames: prev.customCellDisplayNames || {},
     }));
   };
 
@@ -448,6 +464,8 @@ export function ShiftManager() {
           ? { ...userData, user: { ...userData.user, name: newName } }
           : userData
       ),
+      manuallyEditedSlots: prev.manuallyEditedSlots || {},
+      customCellDisplayNames: prev.customCellDisplayNames || {},
     }));
   };
 
@@ -457,6 +475,8 @@ export function ShiftManager() {
       userShiftData: prev.userShiftData.filter(
         (userData) => !userIds.includes(userData.user.id)
       ),
+      manuallyEditedSlots: prev.manuallyEditedSlots || {},
+      customCellDisplayNames: prev.customCellDisplayNames || {},
     }));
   };
 
@@ -475,7 +495,12 @@ export function ShiftManager() {
     setRecoilState((prev) => {
       const newAssignments = prev.assignments ? [...prev.assignments] : [];
       newAssignments.push(defaultHours.map(() => null)); // Add a new row for the new post
-      return { ...prev, assignments: newAssignments };
+      return {
+        ...prev,
+        assignments: newAssignments,
+        manuallyEditedSlots: prev.manuallyEditedSlots || {},
+        customCellDisplayNames: prev.customCellDisplayNames || {},
+      };
     });
   };
 
@@ -583,7 +608,12 @@ export function ShiftManager() {
           }
         });
       }
-      setRecoilState((prev) => ({ ...prev, assignments: newAssignments }));
+      setRecoilState((prev) => ({
+        ...prev,
+        assignments: newAssignments,
+        manuallyEditedSlots: prev.manuallyEditedSlots || {},
+        customCellDisplayNames: prev.customCellDisplayNames || {},
+      }));
 
       // Capture the signature of constraints that led to THIS successful optimization
       lastAppliedConstraintsSignature.current = JSON.stringify({
@@ -598,6 +628,8 @@ export function ShiftManager() {
       setRecoilState((prev) => ({
         ...prev,
         assignments: posts.map(() => defaultHours.map(() => null)),
+        manuallyEditedSlots: prev.manuallyEditedSlots || {},
+        customCellDisplayNames: prev.customCellDisplayNames || {},
       }));
     }
   };
@@ -625,7 +657,12 @@ export function ShiftManager() {
         if (postIndexToRemove < updatedAssignments.length) {
           updatedAssignments.splice(postIndexToRemove, 1); // Remove the row
         }
-        return { ...prev, assignments: updatedAssignments };
+        return {
+          ...prev,
+          assignments: updatedAssignments,
+          manuallyEditedSlots: prev.manuallyEditedSlots || {},
+          customCellDisplayNames: prev.customCellDisplayNames || {},
+        };
       });
     }
   };
@@ -665,11 +702,65 @@ export function ShiftManager() {
   ) => {
     setRecoilState((prevState) => {
       const newAssignments = prevState.assignments.map((row) => [...row]);
+      const originalUserIdInSlot = newAssignments[postIndex][hourIndex];
       newAssignments[postIndex][hourIndex] = userId;
+
+      console.log(
+        "[handleAssignmentChange] Prev manuallyEditedSlots:",
+        prevState.manuallyEditedSlots
+      );
+      const newManuallyEditedSlots = { ...prevState.manuallyEditedSlots };
+      const slotKey = `${postIndex}-${hourIndex}`;
+
+      // Since this function is now only for assigning EXISTING users,
+      // we always clear any custom display name for this slot.
+      const newCustomCellDisplayNames = { ...prevState.customCellDisplayNames };
+      if (newCustomCellDisplayNames[slotKey]) {
+        delete newCustomCellDisplayNames[slotKey];
+        console.log(
+          `[handleAssignmentChange] Cleared customDisplayName for ${slotKey}`
+        );
+      }
+
+      // Update manuallyEditedSlots based on the change in the official assignments grid
+      if (originalUserIdInSlot !== userId) {
+        // If there's an actual change
+        const existingEdit = newManuallyEditedSlots[slotKey];
+        if (existingEdit) {
+          // Slot was already manually edited, update currentUserId
+          // If the new userId is the same as the very original one, remove the entry
+          if (userId === existingEdit.originalUserId) {
+            delete newManuallyEditedSlots[slotKey];
+          } else {
+            newManuallyEditedSlots[slotKey] = {
+              ...existingEdit,
+              currentUserId: userId,
+            };
+          }
+        } else {
+          // First manual edit for this slot
+          newManuallyEditedSlots[slotKey] = {
+            originalUserId: originalUserIdInSlot,
+            currentUserId: userId,
+          };
+        }
+      } else {
+        // If the change results in originalUserId === userId (e.g., an edit was undone indirectly)
+        // we might still want to remove it if it existed, though the above if should handle it.
+        // This specific case might be redundant if the above logic (userId === existingEdit.originalUserId) is hit.
+      }
+
       console.log("Assignments updated:", newAssignments);
+      console.log(
+        "[handleAssignmentChange] Next manuallyEditedSlots:",
+        newManuallyEditedSlots
+      );
+
       return {
         ...prevState,
         assignments: newAssignments,
+        manuallyEditedSlots: newManuallyEditedSlots,
+        customCellDisplayNames: newCustomCellDisplayNames, // Include updated custom names
       };
     });
   };
@@ -703,14 +794,95 @@ export function ShiftManager() {
     const userToAssign = recoilState.userShiftData.find(
       (userData) => userData.user.name === newUserName
     );
+    const slotKey = `${postIndex}-${hourIndex}`;
 
     if (userToAssign) {
+      // User found, this is an assignment to an existing worker
+      console.log(
+        `[handleAssignmentNameUpdate] User "${newUserName}" found. Assigning userId: ${userToAssign.user.id}`
+      );
       handleAssignmentChange(postIndex, hourIndex, userToAssign.user.id);
     } else {
-      console.error(
-        `User with name "${newUserName}" not found. Assignment not changed.`
+      // User not found, this is a custom text entry for display purposes
+      console.log(
+        `[handleAssignmentNameUpdate] User "${newUserName}" not found. Setting as custom display name for slot ${slotKey}.`
       );
-      // Optionally, provide feedback to the user here
+      setRecoilState((prevState) => {
+        const newCustomCellDisplayNames = {
+          ...prevState.customCellDisplayNames,
+          [slotKey]: newUserName,
+        };
+
+        // How should manuallyEditedSlots be handled here?
+        // Option: If we set a custom name, we are essentially saying the "official" assignment for this slot is null (or its previous official value).
+        // The custom name overrides display. Let's record the change against the *underlying official assignment*.
+        const officialAssignmentInSlot =
+          prevState.assignments[postIndex][hourIndex];
+        const newManuallyEditedSlots = { ...prevState.manuallyEditedSlots };
+
+        // Check if this custom name reverts a previous manual edit to the original state.
+        // This is tricky because the "original" might have been an actual user.
+        // For now, if it's a custom name, it's a manual edit differing from the official assignment grid.
+        const existingEdit = newManuallyEditedSlots[slotKey];
+        if (existingEdit) {
+          // If an edit record exists, and we are now setting a custom name which is different from the original user of that edit record
+          // (or if original was null and custom name is not effectively 'empty')
+          // We are essentially saying: the official slot still holds 'existingEdit.originalUserId' (or null),
+          // but display is now 'newUserName'.
+          // The 'currentUserId' in manuallyEditedSlots should reflect what's in the *assignments* grid if this was a custom name.
+          // This part needs more thought if manuallyEditedSlots' currentUserId is to mean the UserID of the *displayed* user.
+          // For simplicity: if we set a custom name, we are overriding. Record this fact.
+          // If the underlying assignment was 'worker-A', and we type 'Custom Name',
+          // originalUserId: 'worker-A', currentUserId: null (because 'Custom Name' isn't a user in assignments grid)
+          // OR currentUserId: 'worker-A' (what IS in the assignments grid)
+          // Let's stick to originalUserId vs currentUserId in the *assignments* grid for manuallyEditedSlots.
+          // So, if we set a custom name, the assignments grid for this slot does NOT change from its previous official value.
+
+          if (
+            newUserName ===
+            prevState.userShiftData.find(
+              (u) => u.user.id === existingEdit.originalUserId
+            )?.user.name
+          ) {
+            // Custom name IS the name of the original user for this manual edit, so remove manual edit marker for this slot.
+            delete newManuallyEditedSlots[slotKey];
+            // Also remove from customCellDisplayNames as it's now effectively reverted to an official (though perhaps original) assignment.
+            delete newCustomCellDisplayNames[slotKey];
+          } else {
+            newManuallyEditedSlots[slotKey] = {
+              originalUserId: existingEdit.originalUserId,
+              currentUserId: officialAssignmentInSlot, // What's in the main assignments grid
+            };
+          }
+        } else if (officialAssignmentInSlot !== null || newUserName !== "") {
+          // Only add if there was something or custom name is not empty
+          // First manual override for this slot (setting a custom name)
+          newManuallyEditedSlots[slotKey] = {
+            originalUserId: officialAssignmentInSlot,
+            currentUserId: officialAssignmentInSlot, // The assignments grid doesn't change for a custom name
+          };
+        }
+
+        console.log(
+          "[handleAssignmentNameUpdate] Prev assignments:",
+          prevState.assignments
+        );
+        console.log(
+          "[handleAssignmentNameUpdate] Prev customCellDisplayNames:",
+          prevState.customCellDisplayNames
+        );
+        console.log(
+          "[handleAssignmentNameUpdate] Prev manuallyEditedSlots:",
+          prevState.manuallyEditedSlots
+        );
+
+        return {
+          ...prevState,
+          // assignments grid does NOT change when setting a custom name that doesn't match a user
+          customCellDisplayNames: newCustomCellDisplayNames,
+          manuallyEditedSlots: newManuallyEditedSlots,
+        };
+      });
     }
   };
 
@@ -734,7 +906,12 @@ export function ShiftManager() {
           updatedAssignments.splice(index, 1);
         }
       });
-      return { ...prev, assignments: updatedAssignments };
+      return {
+        ...prev,
+        assignments: updatedAssignments,
+        manuallyEditedSlots: prev.manuallyEditedSlots || {},
+        customCellDisplayNames: prev.customCellDisplayNames || {},
+      };
     });
     setCheckedPostIds([]);
   };
@@ -783,36 +960,21 @@ export function ShiftManager() {
                   .map((u) => u.user.name)
                   .join("-")}-${posts.map((p) => p.id).join("-")}`}
                 className="border-primary-rounded-lg flex-1"
-                user={{ id: "shift-assignments", name: "Shift Assignments" }}
-                constraints={assignments.map((postAssignments, postIndex) =>
-                  (postAssignments || []).map((userId, hourIndex) => ({
-                    postID: posts[postIndex]?.id || "",
-                    hourID: defaultHours[hourIndex]?.id || "",
-                    availability: !!userId,
-                    assignedUser: userId || undefined,
-                  }))
-                )}
                 posts={posts}
                 hours={defaultHours}
                 users={recoilState.userShiftData.map(
                   (userData) => userData.user
                 )}
                 mode="assignments"
+                assignments={assignments}
+                customCellDisplayNames={recoilState.customCellDisplayNames}
                 selectedUserId={selectedUserId}
                 onConstraintsChange={(newConstraints) => {
-                  // Convert constraints back to assignments (user IDs)
-                  const newAssignments = newConstraints.map(
-                    (postConstraints, postIndex) =>
-                      postConstraints.map(
-                        (constraint, hourIndex) =>
-                          constraint.assignedUser || null
-                      )
+                  const newAssignmentsGrid = newConstraints.map((postCons) =>
+                    postCons.map((c) => c.assignedUser || null)
                   );
-                  // Update assignments
-                  newAssignments.forEach((postAssignments, postIndex) => {
-                    postAssignments.forEach((userId, hourIndex) => {
-                      handleAssignmentChange(postIndex, hourIndex, userId);
-                    });
+                  newAssignmentsGrid.forEach((postAssignments, postIndex) => {
+                    postAssignments.forEach((userId, hourIndex) => {});
                   });
                 }}
                 isEditing={isEditing}
@@ -866,7 +1028,7 @@ export function ShiftManager() {
                         )?.user
                       : undefined
                   }
-                  constraints={selectedUser?.constraints}
+                  availabilityConstraints={selectedUser?.constraints}
                   posts={posts}
                   hours={defaultHours}
                   mode="availability"

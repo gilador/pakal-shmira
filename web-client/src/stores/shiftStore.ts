@@ -11,6 +11,13 @@ export interface PersistedShiftData {
   userShiftData: UserShiftData[];
   hasInitialized: boolean;
   assignments: (string | null)[][];
+  manuallyEditedSlots: {
+    [slotKey: string]: {
+      originalUserId: string | null;
+      currentUserId: string | null;
+    };
+  };
+  customCellDisplayNames: { [slotKey: string]: string };
 }
 
 // Full state including syncStatus
@@ -24,6 +31,8 @@ export const initialLoadState: ShiftState = {
   hasInitialized: false,
   syncStatus: "idle", // New status: idle, until component loads from storage
   assignments: [],
+  manuallyEditedSlots: {}, // Initialize as empty object
+  customCellDisplayNames: {}, // Initialize as empty object
 };
 
 // Define the persistence effect
@@ -37,9 +46,10 @@ const persistenceEffect: AtomEffect<ShiftState> = ({
   // A component (e.g., App or ShiftManager) will handle async loading in useEffect.
 
   onSet(async (newValue, oldValue) => {
+    console.log("[persistenceEffect] onSet triggered."); // Log trigger
     if (newValue instanceof DefaultValue) {
+      console.log("[persistenceEffect] Atom was reset.");
       // Atom was reset. Save the initialLoadState (or clear storage).
-      console.log("[shiftStore] onSet: Atom reset to DefaultValue.");
       try {
         const { syncStatus, ...persistableDefault } = initialLoadState;
         console.log(
@@ -63,16 +73,28 @@ const persistenceEffect: AtomEffect<ShiftState> = ({
     const oldConcreteValue =
       oldValue instanceof DefaultValue ? initialLoadState : oldValue;
 
-    console.log(
-      `[shiftStore] onSet: Triggered. Old status: ${oldConcreteValue.syncStatus}, New status (from incoming value): ${newValue.syncStatus}`
-    );
-
     const { syncStatus: newSS, ...newPersistedData } = newValue;
     const { syncStatus: oldSS, ...oldPersistedData } = oldConcreteValue;
 
-    // Only save if the actual data part has changed, and if the new status isn't an interim one from this effect.
-    if (JSON.stringify(newPersistedData) !== JSON.stringify(oldPersistedData)) {
-      console.log("[shiftStore] onSet: Data changed, proceeding with save.");
+    // Log the data being compared
+    console.log(
+      "[persistenceEffect] Old assignments:",
+      oldPersistedData.assignments
+    );
+    console.log(
+      "[persistenceEffect] New assignments:",
+      newPersistedData.assignments
+    );
+
+    const persistableDataChanged =
+      JSON.stringify(newPersistedData) !== JSON.stringify(oldPersistedData);
+    console.log(
+      "[persistenceEffect] Persistable data changed?",
+      persistableDataChanged
+    );
+
+    if (persistableDataChanged) {
+      console.log("[persistenceEffect] Data changed, proceeding with save.");
       // Set to syncing BEFORE the async operation
       setSelf((current) => {
         const base =
@@ -92,11 +114,11 @@ const persistenceEffect: AtomEffect<ShiftState> = ({
 
       try {
         console.log(
-          "[shiftStore] onSet: Attempting to save to localStorage. Data:",
+          "[persistenceEffect] Attempting to save to localStorage. Data:",
           newPersistedData
-        );
+        ); // Log data to be saved
         await saveStateToLocalStorage(LOCAL_STORAGE_KEY, newPersistedData);
-        console.log("[shiftStore] onSet: Successfully saved to localStorage.");
+        console.log("[persistenceEffect] Successfully saved to localStorage.");
         setSelf((currentState) => {
           const base =
             currentState instanceof DefaultValue
@@ -141,7 +163,7 @@ const persistenceEffect: AtomEffect<ShiftState> = ({
       }
     } else {
       console.log(
-        "[shiftStore] onSet: Data has not changed, or syncStatus change is internal. No save needed now. New syncStatus:",
+        "[persistenceEffect] Data has not changed, or syncStatus change is internal. No save needed now. New syncStatus:",
         newSS,
         "Old syncStatus:",
         oldSS
