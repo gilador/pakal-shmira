@@ -29,7 +29,7 @@ export function SyncStatusIcon({ status, size = 18 }: SyncStatusIconProps) {
           size={size}
           title="Status: Out of sync"
           aria-label="Status: Out of sync"
-          className="text-red-600 cursor-help"
+          className="text-red-600 cursor-help animate-pulse-error"
         />
       );
     case "syncing":

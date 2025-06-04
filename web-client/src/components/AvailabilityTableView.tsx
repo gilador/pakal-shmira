@@ -225,6 +225,16 @@ export function AvailabilityTableView({
   onAssignmentEdit,
   customCellDisplayNames = {},
 }: AvailabilityTableViewProps) {
+  const [optimisticLocalConstraints, setOptimisticLocalConstraints] = useState<
+    Constraint[][] | null
+  >(null);
+
+  useEffect(() => {
+    // When the source of truth (props) changes, it overrides any optimistic state.
+    // This also handles initial load and user switching correctly.
+    setOptimisticLocalConstraints(null);
+  }, [availabilityConstraints]); // availabilityConstraints is the prop from ShiftManager
+
   useEffect(() => {
     console.log(
       "AvailabilityTableView selectedUserId changed to:",
@@ -247,7 +257,13 @@ export function AvailabilityTableView({
     )
       return;
 
-    const currentConstraints = availabilityConstraints;
+    // Base the toggle on the most current view (optimistic or prop)
+    // Ensure that we only proceed if actual availabilityConstraints prop is present (meaning data is loaded for a user)
+    const baseConstraints =
+      optimisticLocalConstraints || availabilityConstraints;
+    if (!baseConstraints || !availabilityConstraints) return;
+
+    const currentConstraints = baseConstraints; // currentConstraints is now effectively baseConstraints
     if (postIndex < 0 || postIndex >= currentConstraints.length) return;
     if (hourIndex < 0 || hourIndex >= hours.length) return;
 
@@ -273,7 +289,9 @@ export function AvailabilityTableView({
       }
       return postCons;
     });
-    onConstraintsChange(newConstraints);
+
+    setOptimisticLocalConstraints(newConstraints); // Optimistically update UI
+    onConstraintsChange(newConstraints); // Notify parent
   };
 
   const handlePostNameChange = (postId: string, newName: string) => {
@@ -285,7 +303,8 @@ export function AvailabilityTableView({
   // create a default structure for rendering the table grid, but this doesn't mean data is "loaded".
   const effectiveAvailabilityConstraints =
     mode === "availability"
-      ? availabilityConstraints ||
+      ? optimisticLocalConstraints || // Prioritize optimistic updates for display
+        availabilityConstraints ||
         posts.map(() =>
           hours.map(
             () => ({ availability: true, postID: "", hourID: "" } as Constraint)

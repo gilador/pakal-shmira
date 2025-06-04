@@ -95,78 +95,94 @@ const persistenceEffect: AtomEffect<ShiftState> = ({
 
     if (persistableDataChanged) {
       console.log("[persistenceEffect] Data changed, proceeding with save.");
-      // Set to syncing BEFORE the async operation
-      setSelf((current) => {
-        const base =
-          current instanceof DefaultValue ? initialLoadState : current;
-        const nextState = {
-          ...newPersistedData,
-          syncStatus: "syncing" as SyncStatus,
-        };
-        console.log(
-          '[shiftStore] onSet: Setting status to "syncing". Current state syncStatus:',
-          base.syncStatus,
-          "New state syncStatus:",
-          nextState.syncStatus
-        );
-        return nextState; // Use newPersistedData as base
+      const startTime = Date.now(); // Record start time
+
+      // Set to syncing AND update to the new data immediately
+      setSelf({
+        ...newPersistedData, // Commit the new data part of the state
+        syncStatus: "syncing" as SyncStatus, // Set status to syncing
       });
+      // At this point, the Recoil state reflects newPersistedData and is "syncing"
+      console.log(
+        '[shiftStore] onSet: State updated immediately with new data and status "syncing". Start time:',
+        startTime,
+        "Persisted data committed:",
+        newPersistedData
+      );
 
       try {
         console.log(
           "[persistenceEffect] Attempting to save to localStorage. Data:",
           newPersistedData
-        ); // Log data to be saved
+        );
         await saveStateToLocalStorage(LOCAL_STORAGE_KEY, newPersistedData);
         console.log("[persistenceEffect] Successfully saved to localStorage.");
-        setSelf((currentState) => {
-          const base =
-            currentState instanceof DefaultValue
-              ? initialLoadState
-              : currentState;
-          // Ensure we are updating based on the data that was just saved (newPersistedData)
-          const nextState = {
-            ...newPersistedData,
-            syncStatus: "synced" as SyncStatus,
-          };
-          console.log(
-            '[shiftStore] onSet: Setting status to "synced". Current state syncStatus:',
-            base.syncStatus,
-            "New state syncStatus:",
-            nextState.syncStatus
-          );
-          return nextState;
-        });
+
+        const endTime = Date.now();
+        const elapsedTime = endTime - startTime;
+        const delayNeeded = Math.max(0, 1000 - elapsedTime);
+
+        console.log(
+          `[persistenceEffect] Save successful. Elapsed: ${elapsedTime}ms, Delay needed: ${delayNeeded}ms`
+        );
+
+        setTimeout(() => {
+          // After the delay, update ONLY the syncStatus.
+          // The rest of the state already reflects newPersistedData from the earlier setSelf.
+          setSelf((currentState) => {
+            const base =
+              currentState instanceof DefaultValue
+                ? initialLoadState
+                : currentState;
+            console.log(
+              '[shiftStore] onSet (after delay, success): Updating syncStatus to "synced". State before this update was:',
+              base
+            );
+            return {
+              ...base, // Spread the current state (which has the correct data and was syncing)
+              syncStatus: "synced" as SyncStatus,
+            };
+          });
+        }, delayNeeded);
       } catch (error) {
         console.error(
           "[shiftStore] onSet: Error saving state to localStorage:",
           error
         );
-        setSelf((currentState) => {
-          const base =
-            currentState instanceof DefaultValue
-              ? initialLoadState
-              : currentState;
-          // Ensure we are updating based on the data that was attempted to be saved (newPersistedData)
-          const nextState = {
-            ...newPersistedData,
-            syncStatus: "out-of-sync" as SyncStatus,
-          };
-          console.log(
-            '[shiftStore] onSet: Setting status to "out-of-sync" due to error. Current state syncStatus:',
-            base.syncStatus,
-            "New state syncStatus:",
-            nextState.syncStatus
-          );
-          return nextState;
-        });
+
+        const endTime = Date.now();
+        const elapsedTime = endTime - startTime;
+        const delayNeeded = Math.max(0, 1000 - elapsedTime);
+
+        console.log(
+          `[persistenceEffect] Save failed. Elapsed: ${elapsedTime}ms, Delay needed: ${delayNeeded}ms`
+        );
+
+        setTimeout(() => {
+          // After the delay, update ONLY the syncStatus.
+          // The rest of the state already reflects newPersistedData.
+          setSelf((currentState) => {
+            const base =
+              currentState instanceof DefaultValue
+                ? initialLoadState
+                : currentState;
+            console.log(
+              '[shiftStore] onSet (after delay, error): Updating syncStatus to "out-of-sync". State before this update was:',
+              base
+            );
+            return {
+              ...base, // Spread the current state (which has the correct data and was syncing)
+              syncStatus: "out-of-sync" as SyncStatus,
+            };
+          });
+        }, delayNeeded);
       }
     } else {
       console.log(
-        "[persistenceEffect] Data has not changed, or syncStatus change is internal. No save needed now. New syncStatus:",
-        newSS,
+        "[persistenceEffect] Data has not changed (persistable part), or syncStatus change is internal. No save needed now. New syncStatus:",
+        newValue instanceof DefaultValue ? "Default" : newValue.syncStatus,
         "Old syncStatus:",
-        oldSS
+        oldValue instanceof DefaultValue ? "Default" : oldValue.syncStatus
       );
     }
   });
