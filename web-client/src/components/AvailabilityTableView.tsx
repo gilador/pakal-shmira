@@ -1,10 +1,11 @@
+import { Checkbox } from "@/components/ui/checkbox";
 import { colors } from "@/constants/colors";
 import React, { useEffect, useState } from "react";
+import tumbleweedAnimation from "../../assets/tumbleweed-anim.gif";
 import { Constraint, User } from "../models";
 import { UniqueString } from "../models/index";
-import { EditableText } from "./ui/EditableText";
-import { Checkbox } from "@/components/ui/checkbox";
 import { EditButton } from "./EditButton";
+import { EditableText } from "./ui/EditableText";
 
 export interface AvailabilityTableViewProps {
   user?: User;
@@ -26,9 +27,7 @@ export interface AvailabilityTableViewProps {
 
 const AssignmentCell = ({
   name,
-  isSelected,
   onClick,
-  isAssigned,
 }: {
   isSelected: boolean;
   onClick: () => void;
@@ -246,9 +245,17 @@ export function AvailabilityTableView({
         </h3>
       )}
       {mode === "availability" && !constraints ? (
-        <div className="h-full flex-1 justify-center flex border-primary-rounded-lg">
+        <div className="h-full flex-1 justify-center flex flex-col items-center border-primary-rounded-lg">
           <div className="font-semibold text-center self-center ">
-            Select a worker to view their availability
+            It's a bit empty in here...
+          </div>
+          <img
+            src={tumbleweedAnimation}
+            alt="Tumbleweed"
+            className="h-12 mb-2 m-2 rounded-[10px]"
+          />
+          <div className="font-semibold text-center self-center ">
+            Select a Personnel to view their availability
           </div>
         </div>
       ) : (

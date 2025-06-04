@@ -1,34 +1,33 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { optimizeShift } from "@/service/shiftOptimizedService";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRecoilState } from "recoil";
-import { Constraint, ShiftMap, User, UserShiftData } from "../models";
-import { UniqueString } from "../models/index";
-import {
-  shiftState,
-  ShiftState as RecoilShiftState,
-  initialLoadState,
-  PersistedShiftData,
-} from "../stores/shiftStore";
-import { AvailabilityTableView } from "./AvailabilityTableView";
-import { EditButton } from "./EditButton";
-import { SplitScreen } from "./SplitScreen";
-import { WorkerList } from "./WorkerList";
-import { optimizeShift } from "@/service/shiftOptimizedService";
-import { PostListActions } from "./PostListActions";
-import { SyncStatus, SyncStatusIcon } from "./ui/SyncStatusIcon";
-import { VerticalActionGroup } from "./ui/VerticalActionGroup";
+import tumbleweedIcon from "../../assets/tumbleweed.svg";
 import {
   loadStateFromLocalStorage,
   LOCAL_STORAGE_KEY,
 } from "../lib/localStorageUtils";
+import { Constraint, ShiftMap, UserShiftData } from "../models";
+import { UniqueString } from "../models/index";
+import {
+  PersistedShiftData,
+  shiftState
+} from "../stores/shiftStore";
+import { AvailabilityTableView } from "./AvailabilityTableView";
+import { EditButton } from "./EditButton";
+import { PostListActions } from "./PostListActions";
+import { SplitScreen } from "./SplitScreen";
+import { SyncStatusIcon } from "./ui/SyncStatusIcon";
+import { VerticalActionGroup } from "./ui/VerticalActionGroup";
+import { WorkerList } from "./WorkerList";
 
-interface ShiftState {
-  userShiftData: UserShiftData[];
-  hasInitialized: boolean;
-  syncStatus: SyncStatus;
-  assignments: (string | null)[][];
-}
+// interface ShiftState {
+//   userShiftData: UserShiftData[];
+//   hasInitialized: boolean;
+//   syncStatus: SyncStatus;
+//   assignments: (string | null)[][];
+// }
 
 const defaultHours: UniqueString[] = [
   { id: "hour-1", value: "08:00" },
@@ -728,10 +727,17 @@ export function ShiftManager() {
     <div className="h-full flex flex-col">
       <div
         id="header"
-        className="flex-none flex flex-col justify-start items-start mb-4"
+        className="grid grid-cols-[auto_1fr] gap-x-4 items-start mb-4"
       >
-        <h1 className="text-2xl font-bold">Tumbleweed</h1>
-        <h2 className="text-md text-gray-400">Shift Manager</h2>
+        <img
+          src={tumbleweedIcon}
+          alt="Tumbleweed Icon"
+          className="w-16 h-full"
+        />
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-bold">Tumbleweed</h1>
+          <h2 className="text-md text-gray-400">Shift Manager</h2>
+        </div>
       </div>
       <div id="content" className="flex-1 overflow-auto">
         <Card className="h-full flex flex-row">
