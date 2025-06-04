@@ -39,8 +39,8 @@ export function EditButton({
       onClick={handleClick}
       className={` ease-in-out transform hover:scale-100 ${
         isEditing
-          ? "bg-primary text-primary-foreground hover:bg-primary"
-          : "bg-transparent hover:bg-transparent"
+          ? "bg-primary text-primary-foreground hover:bg-primary h-8 w-8"
+          : "bg-transparent hover:bg-transparent h-8 w-8"
       } ${className}`}
     >
       <Pencil

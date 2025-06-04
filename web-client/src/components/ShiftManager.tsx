@@ -935,7 +935,7 @@ export function ShiftManager() {
       <div id="content" className="flex-1 overflow-auto">
         <Card className="h-full flex flex-row">
           <Card className="h-full flex flex-col gap-2 p-2">
-            <VerticalActionGroup className="flex-none">
+            <VerticalActionGroup className="flex-none gap-3">
               <SyncStatusIcon status={syncStatus} size={18} />
               <EditButton
                 isEditing={isEditing}
