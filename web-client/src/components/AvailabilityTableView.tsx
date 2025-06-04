@@ -1,6 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { colors } from "@/constants/colors";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import tumbleweedAnimation from "../../assets/tumbleweed-anim.gif";
 import { Constraint, User } from "../models";
 import { UniqueString } from "../models/index";
@@ -23,21 +23,125 @@ export interface AvailabilityTableViewProps {
   checkedPostIds?: string[]; // Add checked posts
   onPostCheck?: (postId: string) => void; // Add post check handler
   onPostUncheck?: (postId: string) => void; // Add post uncheck handler
+  onAssignmentEdit?: (
+    postIndex: number,
+    hourIndex: number,
+    newUserName: string
+  ) => void; // For editing assignment names
 }
 
 const AssignmentCell = ({
   name,
-  onClick,
+  mode,
+  assignedUserId,
+  isShiftEditing,
+  onSaveName,
 }: {
   isSelected: boolean;
-  onClick: () => void;
   name?: string;
   isAssigned: boolean;
+  mode: "availability" | "assignments";
+  assignedUserId?: string;
+  isShiftEditing?: boolean;
+  onSaveName?: (newUserName: string) => void;
 }) => {
+  const [isNameEditingLocal, setIsNameEditingLocal] = useState(false);
+  const [optimisticName, setOptimisticName] = useState<string | null>(null);
+  const previousNameProp = useRef(name); // To track actual changes in the 'name' prop
+
+  // Effect to keep previousNameProp.current updated with the latest 'name' prop value
+  useEffect(() => {
+    previousNameProp.current = name;
+  }, [name]);
+
+  // Effect to manage optimisticName lifecycle
+  useEffect(() => {
+    if (isNameEditingLocal) {
+      // If editing starts, clear any optimistic name.
+      setOptimisticName(null);
+      return; // Exit early
+    }
+
+    // The following logic applies only when not editing (isNameEditingLocal is false)
+    if (optimisticName !== null) {
+      if (name === optimisticName) {
+        // Authoritative 'name' prop has caught up and matches optimisticName.
+        // Clear optimisticName as it's no longer needed.
+        setOptimisticName(null);
+      } else if (name !== previousNameProp.current && name !== undefined) {
+        // Authoritative 'name' prop has changed from its previous value,
+        // and it's different from the current optimisticName.
+        // This means an external update has occurred (e.g. Recoil state propagated),
+        // and it should take precedence. Clear optimisticName to show the new 'name' prop.
+        setOptimisticName(null);
+      }
+    }
+  }, [isNameEditingLocal, name, optimisticName]); // previousNameProp is not a dependency here
+
+  const handleSave = (newName: string) => {
+    onSaveName?.(newName); // Trigger the actual save process (e.g., update Recoil state)
+    setOptimisticName(newName); // Optimistically set the name for immediate display
+    // EditableText component will call its onEditingChange prop (setIsNameEditingLocal) to set isNameEditingLocal to false
+  };
+
+  const turnOnEditing = () => {
+    if (isShiftEditing && assignedUserId) {
+      setIsNameEditingLocal(true);
+    }
+  };
+
+  // Determine the value to show in the span when NOT editing
+  const currentDisplayValue =
+    !isNameEditingLocal && optimisticName !== null ? optimisticName : name;
+
+  if (!assignedUserId && mode === "assignments") {
+    return (
+      <div className={`flex items-center gap-2 w-full h-[32px]`}>
+        <span className={`pl-3 w-full truncate cursor-default`}>-</span>
+      </div>
+    );
+  }
+
+  if (mode === "assignments" && assignedUserId) {
+    return (
+      <div className={`flex items-center gap-2 w-full h-[32px]`}>
+        <EditableText
+          value={name || ""} // EditableText always gets the authoritative 'name' prop as its base value.
+          // It uses its internal state for the input during editing.
+          onSave={handleSave}
+          isEditing={isNameEditingLocal}
+          onEditingChange={setIsNameEditingLocal}
+          className="w-full"
+          inputClassName="h-8"
+          disabled={!isShiftEditing}
+        >
+          {(_nameFromETValueProp, _isCurrentlyEditingInternally) => (
+            // This child function renders what's displayed when EditableText is NOT in its input/editing mode.
+            <span
+              className={`pl-3 w-full truncate ${
+                isShiftEditing
+                  ? "cursor-pointer hover:underline"
+                  : "cursor-default"
+              }`}
+              onClick={isShiftEditing ? turnOnEditing : undefined}
+            >
+              {currentDisplayValue}{" "}
+              {/* Display the optimistic or actual name here */}
+            </span>
+          )}
+        </EditableText>
+      </div>
+    );
+  }
+
   return (
-    <div className={`flex items-center gap-2 w-full `}>
-      <span className={`cursor-pointer pl-3 `} onClick={onClick}>
-        {name}
+    <div className={`flex items-center gap-2 w-full h-[32px]`}>
+      <span
+        className={`pl-3 ${
+          mode === "assignments" ? "cursor-default" : "cursor-pointer"
+        }`}
+      >
+        {name || "-"}
       </span>
     </div>
   );
@@ -130,6 +234,7 @@ export function AvailabilityTableView({
   checkedPostIds = [], // Default to empty array
   onPostCheck,
   onPostUncheck,
+  onAssignmentEdit,
 }: AvailabilityTableViewProps) {
   useEffect(() => {
     console.log(
@@ -211,12 +316,12 @@ export function AvailabilityTableView({
       return postConstraints;
     });
 
-    // Print the new constraints structure
-    console.log("USER CONSTRAINTS (AFTER):");
-    console.log(JSON.stringify(newConstraints, null, 2));
-    console.log(
-      `Toggled [${postIndex}][${hourIndex}] from ${constraints[postIndex]?.[hourIndex]?.availability} to ${newConstraints[postIndex][hourIndex].availability}`
-    );
+    // // Print the new constraints structure
+    // console.log("USER CONSTRAINTS (AFTER):");
+    // console.log(JSON.stringify(newConstraints, null, 2));
+    // console.log(
+    //   `Toggled [${postIndex}][${hourIndex}] from ${constraints[postIndex]?.[hourIndex]?.availability} to ${newConstraints[postIndex][hourIndex].availability}`
+    // );
 
     onConstraintsChange(newConstraints);
   };
@@ -306,9 +411,20 @@ export function AvailabilityTableView({
                           <div className="relative group">
                             <AssignmentCell
                               isSelected={selectedUserId === assignedUser.id}
-                              onClick={() => {}}
                               name={assignedUser.name}
                               isAssigned={true}
+                              mode="assignments"
+                              assignedUserId={assignedUser.id}
+                              isShiftEditing={isEditing}
+                              onSaveName={(newUserName) => {
+                                if (onAssignmentEdit) {
+                                  onAssignmentEdit(
+                                    postIndex,
+                                    hourIndex,
+                                    newUserName
+                                  );
+                                }
+                              }}
                             />
                           </div>
                         </div>
@@ -323,9 +439,9 @@ export function AvailabilityTableView({
                         <div className="relative group">
                           <AssignmentCell
                             isSelected={false}
-                            onClick={() => {}}
                             name="-"
                             isAssigned={false}
+                            mode="assignments"
                           />
                         </div>
                       </div>

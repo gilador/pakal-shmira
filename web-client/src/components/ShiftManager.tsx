@@ -10,10 +10,7 @@ import {
 } from "../lib/localStorageUtils";
 import { Constraint, ShiftMap, UserShiftData } from "../models";
 import { UniqueString } from "../models/index";
-import {
-  PersistedShiftData,
-  shiftState
-} from "../stores/shiftStore";
+import { PersistedShiftData, shiftState } from "../stores/shiftStore";
 import { AvailabilityTableView } from "./AvailabilityTableView";
 import { EditButton } from "./EditButton";
 import { PostListActions } from "./PostListActions";
@@ -698,6 +695,25 @@ export function ShiftManager() {
     }
   };
 
+  const handleAssignmentNameUpdate = (
+    postIndex: number,
+    hourIndex: number,
+    newUserName: string
+  ) => {
+    const userToAssign = recoilState.userShiftData.find(
+      (userData) => userData.user.name === newUserName
+    );
+
+    if (userToAssign) {
+      handleAssignmentChange(postIndex, hourIndex, userToAssign.user.id);
+    } else {
+      console.error(
+        `User with name "${newUserName}" not found. Assignment not changed.`
+      );
+      // Optionally, provide feedback to the user here
+    }
+  };
+
   const handleRemovePosts = (postIdsToRemove: string[]) => {
     // Get indices of posts to remove BEFORE updating the posts state
     const indicesToRemove = postIdsToRemove
@@ -805,6 +821,7 @@ export function ShiftManager() {
                 onPostCheck={handlePostCheck}
                 onPostUncheck={handlePostUncheck}
                 onPostRemove={(postIds) => handleRemovePosts([postIds])}
+                onAssignmentEdit={handleAssignmentNameUpdate}
               />
               <Button
                 id="optimize-button"
