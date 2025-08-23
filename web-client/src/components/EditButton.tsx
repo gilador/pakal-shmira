@@ -37,6 +37,8 @@ export function EditButton({
       variant="ghost"
       size="icon"
       onClick={handleClick}
+      data-testid="edit-toggle-button"
+      aria-label={isEditing ? "Exit edit mode" : "Enter edit mode"}
       className={` ease-in-out transform hover:scale-100 ${
         isEditing
           ? "bg-primary text-primary-foreground hover:bg-primary h-8 w-8"

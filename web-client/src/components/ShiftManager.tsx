@@ -430,10 +430,11 @@ export function ShiftManager() {
   }, [selectedUserId, recoilState.userShiftData]);
 
   const addUser = () => {
+    const currentUserCount = recoilState.userShiftData?.length || 0;
     const newUser: UserShiftData = {
       user: {
-        id: `worker-${(recoilState.userShiftData?.length || 0) + 1}`,
-        name: "New User",
+        id: `worker-${currentUserCount + 1}`,
+        name: `New User ${currentUserCount + 1}`,
       },
       constraints: getDefaultConstraints(
         recoilState.posts || [],

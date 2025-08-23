@@ -163,6 +163,7 @@ export function WorkerList({
               return (
                 <div
                   key={user.id}
+                  data-testid="staff-member"
                   className={`p-2 rounded-md cursor-pointer ${
                     selectedUserId === user.id
                       ? colors.selected.default
