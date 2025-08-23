@@ -187,7 +187,9 @@ test.describe("Staff Management", () => {
     // Exit edit mode
     await editToggleButton.click();
   });
+});
 
+test.describe("Post Management", () => {
   test("can add a new post", async ({ page }) => {
     await page.goto("/");
 
