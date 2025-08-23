@@ -1,3 +1,4 @@
+//FIXME move under '/models'
 export interface User {
   id: string;
   name: string;

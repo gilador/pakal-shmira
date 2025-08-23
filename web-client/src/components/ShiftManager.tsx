@@ -19,13 +19,6 @@ import { SyncStatusIcon } from "./ui/SyncStatusIcon";
 import { VerticalActionGroup } from "./ui/VerticalActionGroup";
 import { WorkerList } from "./WorkerList";
 
-// interface ShiftState {
-//   userShiftData: UserShiftData[];
-//   hasInitialized: boolean;
-//   syncStatus: SyncStatus;
-//   assignments: (string | null)[][];
-// }
-
 const defaultHours: UniqueString[] = [
   { id: "hour-1", value: "08:00" },
   { id: "hour-2", value: "09:00" },
@@ -41,7 +34,7 @@ const defaultPosts: UniqueString[] = [
 ];
 
 export function ShiftManager() {
-  const [shiftMap, setShiftMap] = useState<ShiftMap>(new ShiftMap());
+  const [shiftMap, setShiftMap] = useState<ShiftMap>(new ShiftMap()); //FIXME seems redundant due to recoil state
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [recoilState, setRecoilState] = useRecoilState(shiftState);
@@ -49,7 +42,6 @@ export function ShiftManager() {
   const [completeShiftData, setCompleteShiftData] = useState<Constraint[][]>(
     getDefaultConstraints(defaultPosts, defaultHours)
   );
-  const [posts, setPosts] = useState<UniqueString[]>(defaultPosts);
   const [newPostName, setNewPostName] = useState("");
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingPostName, setEditingPostName] = useState("");
@@ -114,10 +106,12 @@ export function ShiftManager() {
           );
           setRecoilState((prev) => ({
             ...prev,
+            posts: savedData.posts || [],
+            hours: savedData.hours || defaultHours,
             userShiftData: savedData.userShiftData || [],
             assignments:
               savedData.assignments ||
-              posts.map(() => defaultHours.map(() => null)),
+              savedData.posts.map(() => defaultHours.map(() => null)),
             hasInitialized: true,
             syncStatus: "syncing",
             manuallyEditedSlots: savedData.manuallyEditedSlots || {},
@@ -126,8 +120,8 @@ export function ShiftManager() {
           // Set initial signature based on loaded data
           lastAppliedConstraintsSignature.current = JSON.stringify({
             userShiftData: savedData.userShiftData || [],
-            posts: posts,
-            hours: defaultHours,
+            posts: savedData.posts || [],
+            hours: savedData.hours || defaultHours,
           });
         } else {
           // 3. No saved data, so set default workers and initial assignments
@@ -196,21 +190,23 @@ export function ShiftManager() {
               totalAssignments: 0,
             },
           ];
-          const initialAssignments = posts.map(() =>
+          const initialAssignments = recoilState.posts.map(() =>
             defaultHours.map(() => null)
           );
-          setRecoilState((prev) => ({
+          setRecoilState({
+            hours: defaultHours,
+            posts: defaultPosts,
             userShiftData: defaultWorkers,
             hasInitialized: true,
             syncStatus: "syncing",
             assignments: initialAssignments,
             manuallyEditedSlots: {},
             customCellDisplayNames: {},
-          }));
+          });
           // Set initial signature for default state
           lastAppliedConstraintsSignature.current = JSON.stringify({
             userShiftData: defaultWorkers,
-            posts: posts,
+            posts: defaultPosts,
             hours: defaultHours,
           });
           // console.log(
@@ -246,45 +242,66 @@ export function ShiftManager() {
       //   "[ShiftManager useEffect] Initial data setup: hasInitialized is false. Running setup."
       // );
       setupInitialData();
-    } else {
-      // console.log(
-      //   "[ShiftManager useEffect] Initial data setup: hasInitialized is true. Skipping setup. Current assignments length:",
-      //   recoilState.assignments?.length
-      // );
+    }
+
+    return () => {
+      isMounted.current = false;
+    };
+    // Key dependency: recoilState.hasInitialized.
+    // setRecoilState is stable and doesn't need to be a dependency.
+    // defaultPosts and defaultHours are used for default data but should be stable or memoized.
+    // If they change and we want to re-init, this logic would need adjustment, but for initial load this is fine.
+  }, [
+    recoilState.hasInitialized,
+    recoilState.posts,
+    recoilState.hours,
+    setRecoilState,
+  ]); // Removed recoilState.assignments to prevent infinite loop
+
+  // Separate useEffect to handle assignments consistency when posts change
+  useEffect(() => {
+    if (recoilState.hasInitialized && recoilState.posts) {
       // Ensure assignments are consistent with posts if already initialized
       if (
         recoilState.assignments &&
-        recoilState.assignments.length !== posts.length
+        recoilState.assignments.length !== (recoilState.posts?.length || 0)
       ) {
-        // console.log(
-        //   "[ShiftManager useEffect] Post length changed, re-initializing assignments structure."
-        // );
-        const adjustedAssignments = posts.map((post, i) =>
+        const adjustedAssignments = (recoilState.posts || []).map((_, i) =>
           recoilState.assignments[i] &&
-          recoilState.assignments[i].length === defaultHours.length
+          recoilState.assignments[i].length ===
+            (recoilState.hours?.length || defaultHours.length)
             ? recoilState.assignments[i]
-            : defaultHours.map(() => null)
+            : (recoilState.hours || defaultHours).map(() => null)
         );
         // Ensure new posts get new assignment rows
         const currentAssignmentsLength = recoilState.assignments
           ? recoilState.assignments.length
           : 0;
-        for (let i = currentAssignmentsLength; i < posts.length; i++) {
-          adjustedAssignments.push(defaultHours.map(() => null));
+        for (
+          let i = currentAssignmentsLength;
+          i < (recoilState.posts?.length || 0);
+          i++
+        ) {
+          adjustedAssignments.push(
+            (recoilState.hours || defaultHours).map(() => null)
+          );
         }
         setRecoilState((prev) => ({
           ...prev,
-          assignments: adjustedAssignments.slice(0, posts.length),
+          assignments: adjustedAssignments.slice(
+            0,
+            recoilState.posts?.length || 0
+          ),
           manuallyEditedSlots: prev.manuallyEditedSlots || {},
           customCellDisplayNames: prev.customCellDisplayNames || {},
         }));
-      } else if (!recoilState.assignments && posts.length > 0) {
+      } else if (
+        !recoilState.assignments &&
+        (recoilState.posts?.length || 0) > 0
+      ) {
         // Case: assignments is null/undefined but posts exist (e.g. initial state before full init)
-        // console.log(
-        //   "[ShiftManager useEffect] Initializing assignments structure as it was null/undefined."
-        // );
-        const initialAssignments = posts.map(() =>
-          defaultHours.map(() => null)
+        const initialAssignments = (recoilState.posts || []).map(() =>
+          (recoilState.hours || defaultHours).map(() => null)
         );
         setRecoilState((prev) => ({
           ...prev,
@@ -294,25 +311,12 @@ export function ShiftManager() {
         }));
       }
     }
-
-    return () => {
-      // console.log(
-      //   "[ShiftManager useEffect] Cleanup: Component unmounting or deps changed. isMounted was:",
-      //   isMounted.current
-      // );
-      isMounted.current = false;
-    };
-    // Key dependency: recoilState.hasInitialized.
-    // setRecoilState is stable and doesn't need to be a dependency.
-    // defaultPosts and defaultHours are used for default data but should be stable or memoized.
-    // If they change and we want to re-init, this logic would need adjustment, but for initial load this is fine.
   }, [
     recoilState.hasInitialized,
-    posts,
-    defaultHours,
+    recoilState.posts,
+    recoilState.hours,
     setRecoilState,
-    recoilState.assignments,
-  ]); // Added posts, defaultHours, recoilState.assignments
+  ]);
 
   useEffect(() => {
     const currentSyncStatus = recoilState.syncStatus;
@@ -364,8 +368,8 @@ export function ShiftManager() {
 
     const currentConstraintsSignature = JSON.stringify({
       userShiftData: currentUserShiftData,
-      posts: posts,
-      hours: defaultHours,
+      posts: recoilState.posts,
+      hours: recoilState.hours,
     });
 
     if (
@@ -383,18 +387,24 @@ export function ShiftManager() {
     recoilState.syncStatus,
     recoilState.assignments,
     recoilState.userShiftData,
-    posts,
-    defaultHours,
+    recoilState.posts,
+    recoilState.hours,
   ]);
 
   const defaultConstraints = useMemo(
-    () => getDefaultConstraints(posts, defaultHours),
-    [posts, defaultHours] // Added defaultHours
+    () =>
+      getDefaultConstraints(
+        recoilState.posts || [],
+        recoilState.hours || defaultHours
+      ),
+    [recoilState.posts, recoilState.hours] // Added recoilState.hours
   );
 
   const assignments =
     recoilState.assignments ||
-    defaultPosts.map(() => defaultHours.map(() => null));
+    (recoilState.posts || []).map(() =>
+      (recoilState.hours || defaultHours).map(() => null)
+    );
 
   // Extract syncStatus from recoilState for convenience
   const syncStatus = recoilState.syncStatus;
@@ -413,7 +423,7 @@ export function ShiftManager() {
 
   const selectedUser = useMemo(() => {
     return selectedUserId
-      ? recoilState.userShiftData.find(
+      ? recoilState.userShiftData?.find(
           (userData) => userData.user.id === selectedUserId
         )
       : undefined;
@@ -422,15 +432,18 @@ export function ShiftManager() {
   const addUser = () => {
     const newUser: UserShiftData = {
       user: {
-        id: `worker-${recoilState.userShiftData.length + 1}`,
+        id: `worker-${(recoilState.userShiftData?.length || 0) + 1}`,
         name: "New User",
       },
-      constraints: getDefaultConstraints(posts, defaultHours),
+      constraints: getDefaultConstraints(
+        recoilState.posts || [],
+        recoilState.hours || defaultHours
+      ),
       totalAssignments: 0,
     };
     setRecoilState((prev) => ({
       ...prev,
-      userShiftData: [newUser, ...prev.userShiftData],
+      userShiftData: [newUser, ...(prev.userShiftData || [])],
       manuallyEditedSlots: prev.manuallyEditedSlots || {},
       customCellDisplayNames: prev.customCellDisplayNames || {},
     }));
@@ -445,7 +458,7 @@ export function ShiftManager() {
 
     setRecoilState((prev) => ({
       ...prev,
-      userShiftData: prev.userShiftData.map((userData) =>
+      userShiftData: (prev.userShiftData || []).map((userData) =>
         userData.user.id === userId
           ? { ...userData, constraints: newConstraints }
           : userData
@@ -459,7 +472,7 @@ export function ShiftManager() {
     console.log("1 - newName: ", newName);
     setRecoilState((prev) => ({
       ...prev,
-      userShiftData: prev.userShiftData.map((userData) =>
+      userShiftData: (prev.userShiftData || []).map((userData) =>
         userData.user.id === userId
           ? { ...userData, user: { ...userData.user, name: newName } }
           : userData
@@ -472,7 +485,7 @@ export function ShiftManager() {
   const removeUsers = (userIds: string[]) => {
     setRecoilState((prev) => ({
       ...prev,
-      userShiftData: prev.userShiftData.filter(
+      userShiftData: (prev.userShiftData || []).filter(
         (userData) => !userIds.includes(userData.user.id)
       ),
       manuallyEditedSlots: prev.manuallyEditedSlots || {},
@@ -481,23 +494,40 @@ export function ShiftManager() {
   };
 
   const addPost = () => {
-    const postName = newPostName.trim() || `New Post ${posts.length + 1}`;
+    const postName =
+      newPostName.trim() || `New Post ${(recoilState.posts?.length || 0) + 1}`;
 
     const newPostData: UniqueString = {
       id: `post-${Date.now()}`,
       value: postName,
     };
 
-    setPosts((prevPosts) => [...prevPosts, newPostData]);
     setNewPostName("");
 
-    // Update assignments in Recoil state
+    // Update assignments and posts in Recoil state
     setRecoilState((prev) => {
       const newAssignments = prev.assignments ? [...prev.assignments] : [];
-      newAssignments.push(defaultHours.map(() => null)); // Add a new row for the new post
+      newAssignments.push((prev.hours || defaultHours).map(() => null)); // Add a new row for the new post
+
+      const updatedUserShiftData = (prev.userShiftData || []).map(
+        (userData) => {
+          const newConstraints = [...userData.constraints];
+          newConstraints.push(
+            (prev.hours || defaultHours).map((hour) => ({
+              postID: newPostData.id,
+              hourID: hour.id,
+              availability: true,
+            }))
+          );
+          return { ...userData, constraints: newConstraints };
+        }
+      );
+
       return {
         ...prev,
+        posts: [...(prev.posts || []), newPostData],
         assignments: newAssignments,
+        userShiftData: updatedUserShiftData,
         manuallyEditedSlots: prev.manuallyEditedSlots || {},
         customCellDisplayNames: prev.customCellDisplayNames || {},
       };
@@ -518,10 +548,10 @@ export function ShiftManager() {
 
     // Log detailed post/hour mapping
     console.log("Posts and hours mapping:");
-    posts.forEach((post, postIndex) => {
+    recoilState.posts?.forEach((post, postIndex) => {
       console.log(`  Post ${postIndex}: ${post.value} (${post.id})`);
     });
-    defaultHours.forEach((hour, hourIndex) => {
+    (recoilState.hours || defaultHours).forEach((hour, hourIndex) => {
       console.log(`  Hour ${hourIndex}: ${hour.value} (${hour.id})`);
     });
 
@@ -529,14 +559,14 @@ export function ShiftManager() {
     console.log("Constraint details:");
     newConstraints.forEach((postConstraints, postIndex) => {
       const postName =
-        postIndex < posts.length
-          ? posts[postIndex].value
+        postIndex < (recoilState.posts?.length || 0)
+          ? recoilState.posts[postIndex].value
           : `Unknown(${postIndex})`;
       console.log(`  Post ${postIndex} (${postName}):`);
       postConstraints.forEach((constraint, hourIndex) => {
         const hourName =
-          hourIndex < defaultHours.length
-            ? defaultHours[hourIndex].value
+          hourIndex < (recoilState.hours?.length || defaultHours.length)
+            ? (recoilState.hours || defaultHours)[hourIndex].value
             : `Unknown(${hourIndex})`;
         console.log(
           `    Hour ${hourIndex} (${hourName}): Availability=${constraint.availability}, PostID=${constraint.postID}, HourID=${constraint.hourID}`
@@ -574,15 +604,17 @@ export function ShiftManager() {
 
     console.log("Starting optimization process...");
     console.log("Current state:", {
-      posts: posts,
-      hours: defaultHours,
+      posts: recoilState.posts,
+      hours: recoilState.hours,
       userShiftData: recoilState.userShiftData,
     });
 
     try {
-      const optimizedResult = await optimizeShift(recoilState.userShiftData);
-      let newAssignments: (string | null)[][] = posts.map(() =>
-        defaultHours.map(() => null)
+      const optimizedResult = await optimizeShift(
+        recoilState.userShiftData || []
+      );
+      let newAssignments: (string | null)[][] = (recoilState.posts || []).map(
+        () => (recoilState.hours || defaultHours).map(() => null)
       );
 
       if (optimizedResult.isOptim) {
@@ -596,10 +628,11 @@ export function ShiftManager() {
                 );
                 if (
                   assignedUserIndex >= 0 &&
-                  assignedUserIndex < recoilState.userShiftData.length
+                  assignedUserIndex < (recoilState.userShiftData?.length || 0)
                 ) {
                   newAssignments[postIndex][shiftIndex] =
-                    recoilState.userShiftData[assignedUserIndex].user.id;
+                    recoilState.userShiftData?.[assignedUserIndex]?.user.id ||
+                    null;
                 } else {
                   newAssignments[postIndex][shiftIndex] = null;
                 }
@@ -618,8 +651,8 @@ export function ShiftManager() {
       // Capture the signature of constraints that led to THIS successful optimization
       lastAppliedConstraintsSignature.current = JSON.stringify({
         userShiftData: recoilState.userShiftData, // Constraints used for this optimization
-        posts: posts,
-        hours: defaultHours,
+        posts: recoilState.posts,
+        hours: recoilState.hours,
       });
 
       console.log("Optimization successful, new assignments applied.");
@@ -627,7 +660,9 @@ export function ShiftManager() {
       console.error("Error during optimization:", error);
       setRecoilState((prev) => ({
         ...prev,
-        assignments: posts.map(() => defaultHours.map(() => null)),
+        assignments: (recoilState.posts || []).map(() =>
+          (recoilState.hours || defaultHours).map(() => null)
+        ),
         manuallyEditedSlots: prev.manuallyEditedSlots || {},
         customCellDisplayNames: prev.customCellDisplayNames || {},
       }));
@@ -635,19 +670,20 @@ export function ShiftManager() {
   };
 
   const handlePostEdit = (postId: string, newName: string) => {
-    setPosts((prev) =>
-      prev.map((post) =>
+    // Update assignments and posts in Recoil state
+    setRecoilState((prev) => ({
+      ...prev,
+      posts: (prev.posts || []).map((post) =>
         post.id === postId ? { ...post, value: newName } : post
-      )
-    );
+      ),
+      manuallyEditedSlots: prev.manuallyEditedSlots || {},
+      customCellDisplayNames: prev.customCellDisplayNames || {},
+    }));
   };
 
   const handlePostRemove = (postIdToRemove: string) => {
-    const postIndexToRemove = posts.findIndex((p) => p.id === postIdToRemove);
-
-    setPosts((prevPosts) =>
-      prevPosts.filter((post) => post.id !== postIdToRemove)
-    );
+    const postIndexToRemove =
+      recoilState.posts?.findIndex((p) => p.id === postIdToRemove) || -1;
 
     if (postIndexToRemove !== -1) {
       setRecoilState((prev) => {
@@ -659,6 +695,9 @@ export function ShiftManager() {
         }
         return {
           ...prev,
+          posts: (prev.posts || []).filter(
+            (post) => post.id !== postIdToRemove
+          ),
           assignments: updatedAssignments,
           manuallyEditedSlots: prev.manuallyEditedSlots || {},
           customCellDisplayNames: prev.customCellDisplayNames || {},
@@ -675,13 +714,17 @@ export function ShiftManager() {
   const savePostEdit = () => {
     if (!editingPostId || !editingPostName.trim()) return;
 
-    setPosts((prev) =>
-      prev.map((post) =>
+    // Update assignments and posts in Recoil state
+    setRecoilState((prev) => ({
+      ...prev,
+      posts: (prev.posts || []).map((post) =>
         post.id === editingPostId
           ? { ...post, value: editingPostName.trim() }
           : post
-      )
-    );
+      ),
+      manuallyEditedSlots: prev.manuallyEditedSlots || {},
+      customCellDisplayNames: prev.customCellDisplayNames || {},
+    }));
     setEditingPostId(null);
     setEditingPostName("");
   };
@@ -780,7 +823,7 @@ export function ShiftManager() {
 
   const handlePostCheckAll = (allWasClicked: boolean) => {
     if (allWasClicked) {
-      setCheckedPostIds(posts.map((post) => post.id));
+      setCheckedPostIds(recoilState.posts?.map((post) => post.id) || []);
     } else {
       setCheckedPostIds([]);
     }
@@ -791,7 +834,7 @@ export function ShiftManager() {
     hourIndex: number,
     newUserName: string
   ) => {
-    const userToAssign = recoilState.userShiftData.find(
+    const userToAssign = recoilState.userShiftData?.find(
       (userData) => userData.user.name === newUserName
     );
     const slotKey = `${postIndex}-${hourIndex}`;
@@ -840,7 +883,7 @@ export function ShiftManager() {
 
           if (
             newUserName ===
-            prevState.userShiftData.find(
+            prevState.userShiftData?.find(
               (u) => u.user.id === existingEdit.originalUserId
             )?.user.name
           ) {
@@ -887,17 +930,16 @@ export function ShiftManager() {
   };
 
   const handleRemovePosts = (postIdsToRemove: string[]) => {
-    // Get indices of posts to remove BEFORE updating the posts state
-    const indicesToRemove = postIdsToRemove
-      .map((id) => posts.findIndex((p) => p.id === id))
-      .filter((index) => index !== -1)
-      .sort((a, b) => b - a); // Sort descending to splice correctly
-
-    setPosts((prevPosts) =>
-      prevPosts.filter((post) => !postIdsToRemove.includes(post.id))
-    );
-
     setRecoilState((prev) => {
+      const indicesToRemove = (prev.posts || [])
+        .map((p, index) => (postIdsToRemove.includes(p.id) ? index : -1))
+        .filter((index) => index !== -1)
+        .sort((a, b) => b - a); // Sort descending to splice correctly
+
+      if (indicesToRemove.length === 0) {
+        return prev; // No posts found to remove
+      }
+
       let updatedAssignments = prev.assignments
         ? prev.assignments.map((row) => [...row])
         : [];
@@ -906,9 +948,25 @@ export function ShiftManager() {
           updatedAssignments.splice(index, 1);
         }
       });
+
+      const updatedUserShiftData = (prev.userShiftData || []).map(
+        (userData) => {
+          const newConstraints = userData.constraints.filter(
+            (_, index) => !indicesToRemove.includes(index)
+          );
+          return { ...userData, constraints: newConstraints };
+        }
+      );
+
+      const updatedPosts = (prev.posts || []).filter(
+        (post) => !postIdsToRemove.includes(post.id)
+      );
+
       return {
         ...prev,
+        posts: updatedPosts,
         assignments: updatedAssignments,
+        userShiftData: updatedUserShiftData,
         manuallyEditedSlots: prev.manuallyEditedSlots || {},
         customCellDisplayNames: prev.customCellDisplayNames || {},
       };
@@ -956,15 +1014,20 @@ export function ShiftManager() {
                 />
               </div>
               <AvailabilityTableView
-                key={`assignments-${recoilState.userShiftData
-                  .map((u) => u.user.name)
-                  .join("-")}-${posts.map((p) => p.id).join("-")}`}
+                key={`assignments-${
+                  recoilState.userShiftData
+                    ?.map((u) => u.user.name)
+                    .join("-") || "no-users"
+                }-${
+                  recoilState.posts?.map((p) => p.id).join("-") || "no-posts"
+                }`}
                 className="border-primary-rounded-lg flex-1"
-                posts={posts}
-                hours={defaultHours}
-                users={recoilState.userShiftData.map(
-                  (userData) => userData.user
-                )}
+                posts={recoilState.posts}
+                hours={recoilState.hours || defaultHours}
+                users={
+                  recoilState.userShiftData?.map((userData) => userData.user) ||
+                  []
+                }
                 mode="assignments"
                 assignments={assignments}
                 customCellDisplayNames={recoilState.customCellDisplayNames}
@@ -1003,9 +1066,11 @@ export function ShiftManager() {
               rightWidth="70%"
               leftPanel={
                 <WorkerList
-                  users={recoilState.userShiftData.map(
-                    (userData) => userData.user
-                  )}
+                  users={
+                    recoilState.userShiftData?.map(
+                      (userData) => userData.user
+                    ) || []
+                  }
                   selectedUserId={selectedUserId}
                   onSelectUser={handleUserSelect}
                   onEditUser={setEditingUserId}
@@ -1017,20 +1082,22 @@ export function ShiftManager() {
               }
               rightPanel={
                 <AvailabilityTableView
-                  key={`availability-${selectedUserId}-${recoilState.userShiftData
-                    .map((u) => u.user.name)
-                    .join("-")}`}
+                  key={`availability-${selectedUserId}-${
+                    recoilState.userShiftData
+                      ?.map((u) => u.user.name)
+                      .join("-") || "no-users"
+                  }`}
                   className="border-primary-rounded-lg"
                   user={
                     selectedUserId
-                      ? recoilState.userShiftData.find(
+                      ? recoilState.userShiftData?.find(
                           (u) => u.user.id === selectedUserId
                         )?.user
                       : undefined
                   }
                   availabilityConstraints={selectedUser?.constraints}
-                  posts={posts}
-                  hours={defaultHours}
+                  posts={recoilState.posts}
+                  hours={recoilState.hours || defaultHours}
                   mode="availability"
                   onConstraintsChange={(newConstraints) => {
                     if (selectedUser) {
@@ -1043,9 +1110,11 @@ export function ShiftManager() {
                   isEditing={isEditing}
                   onPostEdit={handlePostEdit}
                   selectedUserId={selectedUserId}
-                  users={recoilState.userShiftData.map(
-                    (userData) => userData.user
-                  )}
+                  users={
+                    recoilState.userShiftData?.map(
+                      (userData) => userData.user
+                    ) || []
+                  }
                   checkedPostIds={checkedPostIds}
                   onPostCheck={handlePostCheck}
                   onPostUncheck={handlePostUncheck}

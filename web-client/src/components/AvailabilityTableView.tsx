@@ -36,10 +36,8 @@ export interface AvailabilityTableViewProps {
 const AssignmentCell = ({
   name,
   isAssigned,
-  assignedUserId,
   isShiftEditing,
   onSaveName,
-  isSelected,
 }: {
   name?: string;
   isAssigned: boolean;
@@ -97,7 +95,7 @@ const AssignmentCell = ({
   ) {
     return (
       <div className={`flex items-center w-full h-[32px]`}>
-        <span className={`pl-3 w-full truncate cursor-default`}>-</span>
+        <span className={` w-full truncate cursor-default`}>-</span>
       </div>
     );
   }
@@ -110,12 +108,12 @@ const AssignmentCell = ({
         isEditing={isNameEditingLocal}
         onEditingChange={setIsNameEditingLocal}
         className="w-full"
-        inputClassName="h-8"
+        inputClassName="h-8 text-center"
         disabled={!isShiftEditing}
       >
         {(_etValue, _etEditing) => (
           <span
-            className={`pl-3 w-full truncate ${
+            className={`w-full truncate text-center ${
               isShiftEditing && (isAssigned || (name && name !== "-"))
                 ? "cursor-pointer hover:underline"
                 : "cursor-default"
@@ -140,7 +138,6 @@ const PostNameComp = ({
   post,
   isEditing,
   onUpdatePostName,
-  onPostRemove,
   isChecked,
   onCheck,
   onUncheck,
@@ -336,7 +333,7 @@ export function AvailabilityTableView({
             className="h-12 mb-2 m-2 rounded-[10px]"
           />
           <div className="font-semibold text-center self-center ">
-            Select a Personnel to view their availability
+            Pick a staff member to view their availability.
           </div>
         </div>
       ) : (
@@ -387,7 +384,7 @@ export function AvailabilityTableView({
                     return (
                       <div
                         key={`${post.id}-${hour.id}`}
-                        className={`p-2 text-center ${
+                        className={`p-2 text-center rounded-md ${
                           isCellSelected ? colors.selected.default : ""
                         }`}
                       >
@@ -424,7 +421,7 @@ export function AvailabilityTableView({
                     return (
                       <div
                         key={`${post.id}-${hour.id}`}
-                        className={`p-2 text-center cursor-pointer ${
+                        className={`p-2 cursor-pointer flex items-center justify-center ${
                           isAvailable
                             ? `${colors.available.default} ${colors.available.hover}`
                             : `${colors.unavailable.default} ${colors.unavailable.hover}`

@@ -1,4 +1,5 @@
 import { atom, AtomEffect, DefaultValue } from "recoil";
+import { UniqueString } from "../models/index";
 import { UserShiftData } from "../models";
 import { SyncStatus } from "../components/ui/SyncStatusIcon";
 import {
@@ -8,6 +9,8 @@ import {
 
 // Data structure for persistence, excluding syncStatus
 export interface PersistedShiftData {
+  posts: UniqueString[];
+  hours: UniqueString[];
   userShiftData: UserShiftData[];
   hasInitialized: boolean;
   assignments: (string | null)[][];
@@ -27,6 +30,8 @@ export interface ShiftState extends PersistedShiftData {
 
 // This is the true initial state before any localStorage interaction from component
 export const initialLoadState: ShiftState = {
+  posts: [],
+  hours: [],
   userShiftData: [],
   hasInitialized: false,
   syncStatus: "idle", // New status: idle, until component loads from storage
@@ -75,6 +80,55 @@ const persistenceEffect: AtomEffect<ShiftState> = ({
 
     const { syncStatus: newSS, ...newPersistedData } = newValue;
     const { syncStatus: oldSS, ...oldPersistedData } = oldConcreteValue;
+
+    // If userShiftData is empty and the state has been initialized,
+    // it implies a reset of user-specific data, so clear related slot edits and names.
+    if (
+      newPersistedData.hasInitialized &&
+      newPersistedData.userShiftData && // Ensure userShiftData exists on the object
+      newPersistedData.userShiftData.length === 0
+    ) {
+      if (Object.keys(newPersistedData.manuallyEditedSlots).length > 0) {
+        newPersistedData.manuallyEditedSlots = {};
+        console.log(
+          "[persistenceEffect] Cleared manuallyEditedSlots as userShiftData is empty and state initialized."
+        );
+      }
+      if (Object.keys(newPersistedData.customCellDisplayNames).length > 0) {
+        newPersistedData.customCellDisplayNames = {};
+        console.log(
+          "[persistenceEffect] Cleared customCellDisplayNames as userShiftData is empty and state initialized."
+        );
+      }
+    }
+
+    // Log addition or removal of posts (columns in the assignments array)
+    const oldAssignmentsData = oldPersistedData.assignments || [];
+    const newAssignmentsData = newPersistedData.assignments || [];
+
+    const oldNumPosts =
+      oldAssignmentsData.length > 0 && oldAssignmentsData[0]
+        ? oldAssignmentsData[0].length
+        : 0;
+    const newNumPosts =
+      newAssignmentsData.length > 0 && newAssignmentsData[0]
+        ? newAssignmentsData[0].length
+        : 0;
+
+    if (newNumPosts !== oldNumPosts) {
+      if (newNumPosts > oldNumPosts) {
+        console.log(
+          `DELETE: Post(s) ADDED. Old column count: ${oldNumPosts}, New column count: ${newNumPosts}. Reflected assignments state:`,
+          JSON.stringify(newAssignmentsData)
+        );
+      } else {
+        // newNumPosts < oldNumPosts
+        console.log(
+          `DELETE: Post(s) REMOVED. Old column count: ${oldNumPosts}, New column count: ${newNumPosts}. Reflected assignments state:`,
+          JSON.stringify(newAssignmentsData)
+        );
+      }
+    }
 
     // Log the data being compared
     console.log(

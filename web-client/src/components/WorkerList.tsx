@@ -134,7 +134,7 @@ export function WorkerList({
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center h-10">
-        <h3 className="text-lg font-semibold">Personals</h3>
+        <h3 className="text-lg font-semibold">Staff</h3>
         <WorkerListActions
           isEditing={isEditing}
           onAddUser={onAddUser}
