@@ -1,0 +1,35 @@
+---
+alwaysApply: true
+---
+
+# Architecture and Integration Rules
+
+## Integration Guidelines
+
+- Respect existing module boundaries and data flow
+- Integrate new functionality with existing Recoil state management
+- Use established patterns from [ShiftManager.tsx](mdc:src/components/ShiftManager.tsx)
+- Follow the service layer pattern established in [shiftOptimizedService.ts](mdc:src/service/shiftOptimizedService.ts)
+
+## State Management
+
+- Use Recoil atoms defined in [shiftStore.ts](mdc:src/stores/shiftStore.ts) for global state
+- Keep component state local when possible using useState
+- Update state immutably
+- Handle loading and error states properly
+- Sync with localStorage using established patterns
+
+## File Structure Conventions
+
+- Services go in `src/service/`
+- Components in `src/components/` with UI components in `src/components/ui/`
+- Types and models in `src/models/` or `src/models.ts`
+- Tests in `tests/e2e/` for end-to-end tests
+- Constants in `src/constants/`
+
+## Component Communication
+
+- Pass data down through props
+- Use callback functions for child-to-parent communication
+- Avoid prop drilling - use Recoil for deeply nested state
+- Keep component interfaces clean and well-typed

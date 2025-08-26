@@ -1,0 +1,32 @@
+---
+alwaysApply: true
+---
+
+# Core Development Philosophy
+
+## Fundamental Principles
+
+- **Simplicity First**: Prioritize simple, clear, and maintainable solutions over complex ones
+- **Iterate Don't Rebuild**: Prefer iterating on existing working code rather than building from scratch
+- **Stay Focused**: Concentrate on the specific task at hand, avoid scope creep
+- **Quality Standards**: Use SOLID, KISS, and DRY principles consistently
+
+## Decision Framework
+
+When choosing between solutions:
+
+1. Does it solve the immediate problem simply?
+2. Can we build on existing code/patterns?
+3. Does it follow established project patterns?
+
+## User Preferences
+
+- Focus on practical, actionable results
+- Prefer simple calculations over statistical complexity
+- Favor straightforward implementations over advanced algorithms
+
+## Testing Workflow
+
+- **TypeScript (.ts)**: Use unit testing for business logic
+- **React Components (.tsx)**: Use Playwright for end-to-end testing
+- **Implementation Policy**: Always propose changes first, wait for approval before implementing tests

@@ -1,0 +1,33 @@
+---
+globs: *.ts,*.tsx,*.js,*.jsx
+---
+
+# TypeScript and React Standards
+
+## TypeScript Guidelines
+
+- Use strict typing - avoid `any` type
+- Document complex logic with JSDoc
+- Prefer interfaces over types for object shapes
+- Use proper type imports: `import type { ... }`
+
+## React Component Standards
+
+- Keep components under 300 lines - refactor proactively
+- Break large components into smaller, single-responsibility components
+- Use functional components with hooks
+- Proper prop typing with interfaces
+
+## File Organization
+
+- Keep files under 300 lines total
+- Use clear, descriptive names (avoid "temp", "refactored", "improved")
+- Group related functionality together
+- Export default for main component, named exports for utilities
+
+## Code Style
+
+- Use consistent formatting and linting
+- Prefer `const` over `let` when possible
+- Use meaningful variable and function names
+- Follow established patterns from the codebase
