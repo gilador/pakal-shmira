@@ -1,11 +1,11 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/elements/button";
+import { Card, CardContent } from "@/components/elements/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/elements/dialog";
 import { useMemo, useState } from "react";
 import { useRecoilState } from "recoil";
 import tumbleweedIcon from "../../assets/tumbleweed.svg";
@@ -14,8 +14,8 @@ import { AvailabilityTableView } from "./AvailabilityTableView";
 import { EditButton } from "./EditButton";
 import { PostListActions } from "./PostListActions";
 import { SplitScreen } from "./SplitScreen";
-import { SyncStatusIcon } from "./ui/SyncStatusIcon";
-import { VerticalActionGroup } from "./ui/VerticalActionGroup";
+import { SyncStatusIcon } from "./elements/SyncStatusIcon";
+import { VerticalActionGroup } from "./elements/VerticalActionGroup";
 import { WorkerList } from "./WorkerList";
 import { useShiftManagerInitialization } from "../hooks/useShiftManagerInitialization";
 import { useShiftOptimization } from "../hooks/useShiftOptimization";

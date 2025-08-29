@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/elements/button";
 import { Pencil } from "lucide-react";
 import React, { useRef } from "react";
 

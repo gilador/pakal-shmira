@@ -1,4 +1,4 @@
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/elements/input";
 import { cn } from "@/service/utils";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 

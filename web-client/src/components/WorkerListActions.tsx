@@ -10,8 +10,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from "@/components/elements/dialog";
+import { Button } from "@/components/elements/button";
 import { useEffect, useRef, useState } from "react";
 
 interface WorkerListActionsProps {
@@ -31,7 +31,7 @@ export function WorkerListActions({
 }: WorkerListActionsProps) {
   const [isDeleteManyDialogOpen, setIsDeleteManyDialogOpen] = useState(false);
   const [checkAllEnabled, setCheckAllEnabled] = useState(false);
-  
+
   const handleDelete = () => {
     if (checkedUserIds.length < 2) {
       onRemoveUsers(checkedUserIds);
