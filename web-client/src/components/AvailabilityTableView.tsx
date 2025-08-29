@@ -7,6 +7,7 @@ import { Constraint, User } from "../models";
 import { UniqueString } from "../models/index";
 import { EditButton } from "./EditButton";
 import { EditableText } from "./ui/EditableText";
+import { ShiftInfoView } from "./ShiftInfoView";
 
 export interface AvailabilityTableViewProps {
   user?: User;
@@ -31,6 +32,10 @@ export interface AvailabilityTableViewProps {
     newUserName: string
   ) => void;
   customCellDisplayNames?: { [slotKey: string]: string };
+  // Shift information for edit mode
+  restTime?: number;
+  startHour?: string;
+  endHour?: string;
 }
 
 const AssignmentCell = ({
@@ -221,6 +226,9 @@ export function AvailabilityTableView({
   onPostUncheck,
   onAssignmentEdit,
   customCellDisplayNames = {},
+  restTime = 6,
+  startHour = "08:00",
+  endHour = "18:00",
 }: AvailabilityTableViewProps) {
   const [optimisticLocalConstraints, setOptimisticLocalConstraints] = useState<
     Constraint[][] | null
@@ -338,109 +346,145 @@ export function AvailabilityTableView({
         </div>
       ) : (
         <div className={`flex-1 ${className}`}>
-          <div
-            className="grid grid-cols-[auto_repeat(var(--hours),1fr)] gap-1 w-full"
-            style={{ "--hours": hours.length } as React.CSSProperties}
-          >
-            <div className="font-semibold p-2 text-center">Post</div>
-            {hours.map((hour) => (
-              <div key={hour.id} className="font-semibold p-2 text-center">
-                {hour.value}
+          {/* Show edit mode view for assignments */}
+          {mode === "assignments" && isEditing ? (
+            <div className="flex gap-4 h-full">
+              {/* Posts column */}
+              <div className="flex flex-col gap-1 min-w-[200px]">
+                <div className="font-semibold p-2 text-center">Posts</div>
+                {posts.map((post) => (
+                  <div key={post.id} className="font-semibold p-2">
+                    <PostNameComp
+                      post={post}
+                      isEditing={isEditing}
+                      onUpdatePostName={handlePostNameChange}
+                      onPostRemove={onPostRemove}
+                      isChecked={checkedPostIds.includes(post.id)}
+                      onCheck={() => onPostCheck?.(post.id)}
+                      onUncheck={() => onPostUncheck?.(post.id)}
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
 
-            {posts.map((post, postIndex) => (
-              <React.Fragment key={post.id}>
-                <div className="font-semibold p-2">
-                  <PostNameComp
-                    post={post}
-                    isEditing={isEditing}
-                    onUpdatePostName={handlePostNameChange}
-                    onPostRemove={onPostRemove}
-                    isChecked={checkedPostIds.includes(post.id)}
-                    onCheck={() => onPostCheck?.(post.id)}
-                    onUncheck={() => onPostUncheck?.(post.id)}
-                  />
+              {/* Shift info view */}
+              <div className="flex-1">
+                <ShiftInfoView
+                  restTime={restTime}
+                  startHour={startHour}
+                  endHour={endHour}
+                  className="h-full"
+                />
+              </div>
+            </div>
+          ) : (
+            /* Normal table view */
+            <div
+              className="grid grid-cols-[auto_repeat(var(--hours),1fr)] gap-1 w-full"
+              style={{ "--hours": hours.length } as React.CSSProperties}
+            >
+              <div className="font-semibold p-2 text-center">Post</div>
+              {hours.map((hour) => (
+                <div key={hour.id} className="font-semibold p-2 text-center">
+                  {hour.value}
                 </div>
-                {hours.map((hour, hourIndex) => {
-                  if (mode === "assignments") {
-                    if (!assignments) return null;
-                    const slotKey = `${postIndex}-${hourIndex}`;
-                    const customDisplayName = customCellDisplayNames[slotKey];
-                    const officialAssignedUserId =
-                      assignments[postIndex]?.[hourIndex] || null;
-                    const assignedWorker = officialAssignedUserId
-                      ? users.find((u) => u.id === officialAssignedUserId)
-                      : null;
-                    let finalDisplayNameForCell = "-";
-                    if (customDisplayName !== undefined) {
-                      finalDisplayNameForCell = customDisplayName;
-                    } else if (assignedWorker) {
-                      finalDisplayNameForCell = assignedWorker.name;
-                    }
-                    const isCellSelected =
-                      selectedUserId === officialAssignedUserId &&
-                      officialAssignedUserId !== null;
-                    return (
-                      <div
-                        key={`${post.id}-${hour.id}`}
-                        className={`p-2 text-center rounded-md ${
-                          isCellSelected ? colors.selected.default : ""
-                        }`}
-                      >
-                        <div className="relative group">
-                          <AssignmentCell
-                            name={finalDisplayNameForCell}
-                            isAssigned={!!assignedWorker}
-                            assignedUserId={assignedWorker?.id}
-                            isShiftEditing={isEditing}
-                            onSaveName={(newUserNameFromEdit) => {
-                              if (onAssignmentEdit) {
-                                onAssignmentEdit(
-                                  postIndex,
-                                  hourIndex,
-                                  newUserNameFromEdit
-                                );
-                              }
-                            }}
-                            isSelected={isCellSelected}
-                            mode="assignments"
-                          />
+              ))}
+
+              {posts.map((post, postIndex) => (
+                <React.Fragment key={post.id}>
+                  <div className="font-semibold p-2">
+                    <PostNameComp
+                      post={post}
+                      isEditing={isEditing}
+                      onUpdatePostName={handlePostNameChange}
+                      onPostRemove={onPostRemove}
+                      isChecked={checkedPostIds.includes(post.id)}
+                      onCheck={() => onPostCheck?.(post.id)}
+                      onUncheck={() => onPostUncheck?.(post.id)}
+                    />
+                  </div>
+                  {hours.map((hour, hourIndex) => {
+                    if (mode === "assignments") {
+                      if (!assignments) return null;
+                      const slotKey = `${postIndex}-${hourIndex}`;
+                      const customDisplayName = customCellDisplayNames[slotKey];
+                      const officialAssignedUserId =
+                        assignments[postIndex]?.[hourIndex] || null;
+                      const assignedWorker = officialAssignedUserId
+                        ? users.find((u) => u.id === officialAssignedUserId)
+                        : null;
+                      let finalDisplayNameForCell = "-";
+                      if (customDisplayName !== undefined) {
+                        finalDisplayNameForCell = customDisplayName;
+                      } else if (assignedWorker) {
+                        finalDisplayNameForCell = assignedWorker.name;
+                      }
+                      const isCellSelected =
+                        selectedUserId === officialAssignedUserId &&
+                        officialAssignedUserId !== null;
+                      return (
+                        <div
+                          key={`${post.id}-${hour.id}`}
+                          className={`p-2 text-center rounded-md ${
+                            isCellSelected ? colors.selected.default : ""
+                          }`}
+                        >
+                          <div className="relative group">
+                            <AssignmentCell
+                              name={finalDisplayNameForCell}
+                              isAssigned={!!assignedWorker}
+                              assignedUserId={assignedWorker?.id}
+                              isShiftEditing={isEditing}
+                              onSaveName={(newUserNameFromEdit) => {
+                                if (onAssignmentEdit) {
+                                  onAssignmentEdit(
+                                    postIndex,
+                                    hourIndex,
+                                    newUserNameFromEdit
+                                  );
+                                }
+                              }}
+                              isSelected={isCellSelected}
+                              mode="assignments"
+                            />
+                          </div>
                         </div>
-                      </div>
-                    );
-                  } else {
-                    // Availability Mode
-                    // Use effectiveAvailabilityConstraints for rendering the grid if no specific constraints are loaded for a user
-                    // but we still want to show the table structure.
-                    if (!effectiveAvailabilityConstraints) return null;
-                    const currentCellConstraint =
-                      effectiveAvailabilityConstraints[postIndex]?.[hourIndex];
-                    const isAvailable =
-                      currentCellConstraint?.availability ?? true; // Default to available if somehow undefined
-                    return (
-                      <div
-                        key={`${post.id}-${hour.id}`}
-                        className={`p-2 cursor-pointer flex items-center justify-center ${
-                          isAvailable
-                            ? `${colors.available.default} ${colors.available.hover}`
-                            : `${colors.unavailable.default} ${colors.unavailable.hover}`
-                        }`}
-                        // Only allow toggle if actual availabilityConstraints are present (meaning a user is selected and their data is loaded)
-                        onClick={() =>
-                          availabilityConstraints &&
-                          onConstraintsChange &&
-                          toggleAvailability(postIndex, hourIndex)
-                        }
-                      >
-                        {isAvailable ? "✓" : "✗"}
-                      </div>
-                    );
-                  }
-                })}
-              </React.Fragment>
-            ))}
-          </div>
+                      );
+                    } else {
+                      // Availability Mode
+                      // Use effectiveAvailabilityConstraints for rendering the grid if no specific constraints are loaded for a user
+                      // but we still want to show the table structure.
+                      if (!effectiveAvailabilityConstraints) return null;
+                      const currentCellConstraint =
+                        effectiveAvailabilityConstraints[postIndex]?.[
+                          hourIndex
+                        ];
+                      const isAvailable =
+                        currentCellConstraint?.availability ?? true; // Default to available if somehow undefined
+                      return (
+                        <div
+                          key={`${post.id}-${hour.id}`}
+                          className={`p-2 cursor-pointer flex items-center justify-center ${
+                            isAvailable
+                              ? `${colors.available.default} ${colors.available.hover}`
+                              : `${colors.unavailable.default} ${colors.unavailable.hover}`
+                          }`}
+                          // Only allow toggle if actual availabilityConstraints are present (meaning a user is selected and their data is loaded)
+                          onClick={() =>
+                            availabilityConstraints &&
+                            onConstraintsChange &&
+                            toggleAvailability(postIndex, hourIndex)
+                          }
+                        >
+                          {isAvailable ? "✓" : "✗"}
+                        </div>
+                      );
+                    }
+                  })}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

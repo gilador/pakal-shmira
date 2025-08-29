@@ -25,6 +25,12 @@ When choosing between solutions:
 - Prefer simple calculations over statistical complexity
 - Favor straightforward implementations over advanced algorithms
 
+## Code Organization
+
+- **Public Before Private**: Place public functionality (exports, public methods, main functions) higher in files than private functionality (helper functions, internal utilities)
+- **Logical Flow**: Organize code so that the main interface is immediately visible, with implementation details below
+- **Readability First**: Structure files so that readers can understand the primary purpose without scrolling through private implementation
+
 ## Testing Workflow
 
 - **TypeScript (.ts)**: Use unit testing for business logic

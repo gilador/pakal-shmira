@@ -1,6 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { optimizeShift } from "@/service/shiftOptimizedService";
+import { calculateMinimumShifts } from "@/service/shiftHourHelperService";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRecoilState } from "recoil";
 import tumbleweedIcon from "../../assets/tumbleweed.svg";
@@ -19,6 +26,18 @@ import { SyncStatusIcon } from "./ui/SyncStatusIcon";
 import { VerticalActionGroup } from "./ui/VerticalActionGroup";
 import { WorkerList } from "./WorkerList";
 
+// Operation time configuration
+const OPERATION_START_TIME = "08:00";
+const OPERATION_END_TIME = "18:00";
+const MINIMUM_REST_TIME = 6; // hours
+
+const defaultPosts: UniqueString[] = [
+  { id: "post-1", value: "Post 1" },
+  { id: "post-2", value: "Post 2" },
+  { id: "post-3", value: "Post 3" },
+];
+
+// Fallback hours for when dynamic calculation is not available
 const defaultHours: UniqueString[] = [
   { id: "hour-1", value: "08:00" },
   { id: "hour-2", value: "09:00" },
@@ -27,26 +46,61 @@ const defaultHours: UniqueString[] = [
   { id: "hour-5", value: "12:00" },
 ];
 
-const defaultPosts: UniqueString[] = [
-  { id: "post-1", value: "Post 1" },
-  { id: "post-2", value: "Post 2" },
-  { id: "post-3", value: "Post 3" },
-];
+// Generate dynamic hours based on shift calculation
+function generateDynamicHours(
+  startTime: string,
+  endTime: string,
+  postCount: number,
+  staffCount: number,
+  minimumRestTime: number = 0
+): UniqueString[] {
+  const result = calculateMinimumShifts({
+    startTime,
+    endTime,
+    postCount,
+    staffCount,
+    minimumTotalRestTime: minimumRestTime,
+  });
+
+  if (!result.isFeasible || result.shiftStartTimes.length === 0) {
+    // Fallback to hardcoded hours if calculation fails
+    console.warn("Shift calculation failed, using fallback hours");
+    return defaultHours;
+  }
+  console.log("Shift calculation success. result: ", result);
+
+  // Convert calculated shift times to UniqueString format
+  return result.shiftStartTimes.map((time, index) => ({
+    id: `hour-${index + 1}`,
+    value: time,
+  }));
+}
 
 export function ShiftManager() {
-  const [shiftMap, setShiftMap] = useState<ShiftMap>(new ShiftMap()); //FIXME seems redundant due to recoil state
+  // const [shiftMap] = useState<ShiftMap>(new ShiftMap()); //FIXME seems redundant due to recoil state
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  // const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [recoilState, setRecoilState] = useRecoilState(shiftState);
   const [isEditing, setIsEditing] = useState(false);
-  const [completeShiftData, setCompleteShiftData] = useState<Constraint[][]>(
-    getDefaultConstraints(defaultPosts, defaultHours)
-  );
+  // const [completeShiftData] = useState<Constraint[][]>(
+  //   getDefaultConstraints(defaultPosts, defaultHours)
+  // );
   const [newPostName, setNewPostName] = useState("");
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editingPostName, setEditingPostName] = useState("");
   const [checkedPostIds, setCheckedPostIds] = useState<string[]>([]);
   const [isOptimizeDisabled, setIsOptimizeDisabled] = useState(true);
+  const [optimizationDialog, setOptimizationDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "success" | "error" | "warning";
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "success",
+  });
   const [optimizeButtonTitle, setOptimizeButtonTitle] = useState(
     "Optimize shift assignments"
   );
@@ -73,7 +127,7 @@ export function ShiftManager() {
           const initialAssignments =
             prev.assignments && prev.assignments.length > 0
               ? prev.assignments
-              : defaultPosts.map(() => defaultHours.map(() => null));
+              : defaultPosts.map(() => [].map(() => null));
           return {
             ...prev,
             syncStatus: "syncing",
@@ -99,6 +153,15 @@ export function ShiftManager() {
 
         if (!isMounted.current) return;
 
+        // Generate dynamic hours based on operation parameters
+        const dynamicHours = generateDynamicHours(
+          OPERATION_START_TIME,
+          OPERATION_END_TIME,
+          defaultPosts.length,
+          12, // staff count
+          MINIMUM_REST_TIME
+        );
+
         if (savedData && savedData.hasInitialized) {
           console.log(
             `[ShiftManager useEffect] setupInitialData: Found saved data. Setting state.`,
@@ -107,11 +170,11 @@ export function ShiftManager() {
           setRecoilState((prev) => ({
             ...prev,
             posts: savedData.posts || [],
-            hours: savedData.hours || defaultHours,
+            hours: savedData.hours || dynamicHours,
             userShiftData: savedData.userShiftData || [],
             assignments:
               savedData.assignments ||
-              savedData.posts.map(() => defaultHours.map(() => null)),
+              savedData.posts.map(() => dynamicHours.map(() => null)),
             hasInitialized: true,
             syncStatus: "syncing",
             manuallyEditedSlots: savedData.manuallyEditedSlots || {},
@@ -121,80 +184,82 @@ export function ShiftManager() {
           lastAppliedConstraintsSignature.current = JSON.stringify({
             userShiftData: savedData.userShiftData || [],
             posts: savedData.posts || [],
-            hours: savedData.hours || defaultHours,
+            hours: savedData.hours || dynamicHours,
           });
         } else {
           // 3. No saved data, so set default workers and initial assignments
           // console.log(
           //   "[ShiftManager useEffect] setupInitialData: No saved data. Setting default workers and assignments."
           // );
+
+          //FIXME remove after testing
           const defaultWorkers: UserShiftData[] = [
             {
               user: { id: "worker-1", name: "John Doe" },
-              constraints: getDefaultConstraints(defaultPosts, defaultHours),
+              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
               totalAssignments: 0,
             },
             {
               user: { id: "worker-2", name: "Jane Smith" },
-              constraints: getDefaultConstraints(defaultPosts, defaultHours),
+              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
               totalAssignments: 0,
             },
             {
               user: { id: "worker-3", name: "Bob Johnson" },
-              constraints: getDefaultConstraints(defaultPosts, defaultHours),
+              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
               totalAssignments: 0,
             },
             {
               user: { id: "worker-4", name: "Alice Brown" },
-              constraints: getDefaultConstraints(defaultPosts, defaultHours),
+              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
               totalAssignments: 0,
             },
             {
               user: { id: "worker-5", name: "Charlie Wilson" },
-              constraints: getDefaultConstraints(defaultPosts, defaultHours),
+              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
               totalAssignments: 0,
             },
             {
               user: { id: "worker-6", name: "David Miller" },
-              constraints: getDefaultConstraints(defaultPosts, defaultHours),
+              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
               totalAssignments: 0,
             },
             {
               user: { id: "worker-7", name: "Emma Davis" },
-              constraints: getDefaultConstraints(defaultPosts, defaultHours),
+              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
               totalAssignments: 0,
             },
             {
               user: { id: "worker-8", name: "Frank Wilson" },
-              constraints: getDefaultConstraints(defaultPosts, defaultHours),
+              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
               totalAssignments: 0,
             },
             {
               user: { id: "worker-9", name: "Grace Taylor" },
-              constraints: getDefaultConstraints(defaultPosts, defaultHours),
+              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
               totalAssignments: 0,
             },
             {
               user: { id: "worker-10", name: "Henry Anderson" },
-              constraints: getDefaultConstraints(defaultPosts, defaultHours),
+              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
               totalAssignments: 0,
             },
             {
               user: { id: "worker-11", name: "Isabella Martinez" },
-              constraints: getDefaultConstraints(defaultPosts, defaultHours),
+              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
               totalAssignments: 0,
             },
             {
               user: { id: "worker-12", name: "Jack Thompson" },
-              constraints: getDefaultConstraints(defaultPosts, defaultHours),
+              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
               totalAssignments: 0,
             },
           ];
           const initialAssignments = recoilState.posts.map(() =>
-            defaultHours.map(() => null)
+            dynamicHours.map(() => null)
           );
           setRecoilState({
-            hours: defaultHours,
+            hours: dynamicHours,
             posts: defaultPosts,
             userShiftData: defaultWorkers,
             hasInitialized: true,
@@ -207,7 +272,7 @@ export function ShiftManager() {
           lastAppliedConstraintsSignature.current = JSON.stringify({
             userShiftData: defaultWorkers,
             posts: defaultPosts,
-            hours: defaultHours,
+            hours: dynamicHours,
           });
           // console.log(
           //   "[ShiftManager useEffect] setupInitialData: Default workers and assignments set. State updated."
@@ -219,8 +284,16 @@ export function ShiftManager() {
           error
         );
         if (isMounted.current) {
+          // Generate fallback hours for error case
+          const fallbackHours = generateDynamicHours(
+            OPERATION_START_TIME,
+            OPERATION_END_TIME,
+            defaultPosts.length,
+            12,
+            MINIMUM_REST_TIME
+          );
           const errorAssignments = defaultPosts.map(() =>
-            defaultHours.map(() => null)
+            fallbackHours.map(() => null)
           );
           setRecoilState((prev) => ({
             ...prev,
@@ -324,7 +397,15 @@ export function ShiftManager() {
     const currentUserShiftData = recoilState.userShiftData;
     let newTitle = "Optimize shift assignments"; // Default title
 
-    // Condition 1: Sync status is problematic
+    // Condition 1: Edit mode is active
+    if (isEditing) {
+      setIsOptimizeDisabled(true);
+      newTitle = "Cannot optimize: Currently in edit mode.";
+      setOptimizeButtonTitle(newTitle);
+      return;
+    }
+
+    // Condition 2: Sync status is problematic
     if (
       currentSyncStatus === "syncing" ||
       currentSyncStatus === "out-of-sync"
@@ -338,7 +419,7 @@ export function ShiftManager() {
       return;
     }
 
-    // Condition 2: No actual assignments currently exist in the state.
+    // Condition 3: No actual assignments currently exist in the state.
     const hasAnyActualAssignments =
       currentAssignments &&
       currentAssignments.flat().some((userId) => userId !== null);
@@ -354,7 +435,7 @@ export function ShiftManager() {
       return;
     }
 
-    // Condition 3: Assignments exist. Button disabled if current constraints match those that produced these assignments.
+    // Condition 4: Assignments exist. Button disabled if current constraints match those that produced these assignments.
     if (lastAppliedConstraintsSignature.current === null) {
       console.warn(
         "[isOptimizeDisabled] lastAppliedConstraintsSignature.current is null, but assignments exist. Enabling button."
@@ -384,6 +465,7 @@ export function ShiftManager() {
     }
     setOptimizeButtonTitle(newTitle);
   }, [
+    isEditing,
     recoilState.syncStatus,
     recoilState.assignments,
     recoilState.userShiftData,
@@ -415,11 +497,11 @@ export function ShiftManager() {
     recoilState
   );
 
-  useEffect(() => {
-    setShiftMap((oldMap) =>
-      deriveUserDataMap(recoilState.userShiftData, defaultConstraints, oldMap)
-    );
-  }, [recoilState.userShiftData, defaultConstraints]);
+  // useEffect(() => {
+  //   setShiftMap((oldMap) =>
+  //     deriveUserDataMap(recoilState.userShiftData, defaultConstraints, oldMap)
+  //   );
+  // }, [recoilState.userShiftData, defaultConstraints]);
 
   const selectedUser = useMemo(() => {
     return selectedUserId
@@ -535,66 +617,9 @@ export function ShiftManager() {
     });
   };
 
-  const handleConstraintsChanged = (newConstraints: Constraint[][]) => {
-    if (!selectedUser) return;
-
-    console.log("===== HANDLE CONSTRAINTS CHANGED =====");
-    console.log(
-      `Processing constraints for user: ${selectedUser.user.name} (${selectedUser.user.id})`
-    );
-    console.log(
-      "New constraints structure:",
-      newConstraints.map((row) => row.length)
-    );
-
-    // Log detailed post/hour mapping
-    console.log("Posts and hours mapping:");
-    recoilState.posts?.forEach((post, postIndex) => {
-      console.log(`  Post ${postIndex}: ${post.value} (${post.id})`);
-    });
-    (recoilState.hours || defaultHours).forEach((hour, hourIndex) => {
-      console.log(`  Hour ${hourIndex}: ${hour.value} (${hour.id})`);
-    });
-
-    // Detailed constraints logging
-    console.log("Constraint details:");
-    newConstraints.forEach((postConstraints, postIndex) => {
-      const postName =
-        postIndex < (recoilState.posts?.length || 0)
-          ? recoilState.posts[postIndex].value
-          : `Unknown(${postIndex})`;
-      console.log(`  Post ${postIndex} (${postName}):`);
-      postConstraints.forEach((constraint, hourIndex) => {
-        const hourName =
-          hourIndex < (recoilState.hours?.length || defaultHours.length)
-            ? (recoilState.hours || defaultHours)[hourIndex].value
-            : `Unknown(${hourIndex})`;
-        console.log(
-          `    Hour ${hourIndex} (${hourName}): Availability=${constraint.availability}, PostID=${constraint.postID}, HourID=${constraint.hourID}`
-        );
-      });
-    });
-
-    setShiftMap((prev) => {
-      const newShiftMap = prev.copy();
-      console.log("BEFORE UPDATE - User constraints in ShiftMap:");
-      newShiftMap.debugUserConstraints(selectedUser.user.id);
-
-      const userShiftData = prev.getUser(selectedUser.user.id);
-      if (userShiftData) {
-        userShiftData.constraints = newConstraints;
-        newShiftMap.updateUser(userShiftData);
-        console.log("Updated shift map with new constraints");
-        console.log("AFTER UPDATE - User constraints in ShiftMap:");
-        newShiftMap.debugUserConstraints(selectedUser.user.id);
-      } else {
-        console.warn("User shift data not found in shift map");
-      }
-      return newShiftMap;
-    });
-
-    console.log("======================================");
-  };
+  // const handleConstraintsChanged = (newConstraints: Constraint[][]) => {
+  //   // Function body temporarily removed
+  // };
 
   const handleOptimize = async () => {
     console.log("Optimization process started.");
@@ -614,34 +639,61 @@ export function ShiftManager() {
       const optimizedResult = await optimizeShift(
         recoilState.userShiftData || []
       );
+
+      if (!optimizedResult.isOptim) {
+        // Handle infeasible optimization
+        console.warn(
+          "Optimization failed: Problem is infeasible - some shifts have no available users"
+        );
+        // Clear assignments since no valid solution exists
+        setRecoilState((prev) => ({
+          ...prev,
+          assignments: (recoilState.posts || []).map(() =>
+            (recoilState.hours || defaultHours).map(() => null)
+          ),
+          manuallyEditedSlots: prev.manuallyEditedSlots || {},
+          customCellDisplayNames: prev.customCellDisplayNames || {},
+        }));
+
+        // Show user-friendly feedback
+        setOptimizationDialog({
+          isOpen: true,
+          title: "Optimization Not Possible",
+          message:
+            "Some shifts have no available users. Please check that all shifts have at least one person available before trying to optimize.",
+          type: "warning",
+        });
+        return; // Early return for infeasible problems
+      }
+
+      // Handle successful optimization
       let newAssignments: (string | null)[][] = (recoilState.posts || []).map(
         () => (recoilState.hours || defaultHours).map(() => null)
       );
 
-      if (optimizedResult.isOptim) {
-        optimizedResult.result.forEach((postAssignments, postIndex) => {
-          // Ensure we don't try to access postAssignments out of bounds of newAssignments
-          if (postIndex < newAssignments.length) {
-            postAssignments.forEach((shiftAssignments, shiftIndex) => {
-              if (shiftIndex < newAssignments[postIndex].length) {
-                const assignedUserIndex = shiftAssignments.findIndex(
-                  (isAssigned) => isAssigned
-                );
-                if (
-                  assignedUserIndex >= 0 &&
-                  assignedUserIndex < (recoilState.userShiftData?.length || 0)
-                ) {
-                  newAssignments[postIndex][shiftIndex] =
-                    recoilState.userShiftData?.[assignedUserIndex]?.user.id ||
-                    null;
-                } else {
-                  newAssignments[postIndex][shiftIndex] = null;
-                }
+      optimizedResult.result.forEach((postAssignments, postIndex) => {
+        // Ensure we don't try to access postAssignments out of bounds of newAssignments
+        if (postIndex < newAssignments.length) {
+          postAssignments.forEach((shiftAssignments, shiftIndex) => {
+            if (shiftIndex < newAssignments[postIndex].length) {
+              const assignedUserIndex = shiftAssignments.findIndex(
+                (isAssigned) => isAssigned
+              );
+              if (
+                assignedUserIndex >= 0 &&
+                assignedUserIndex < (recoilState.userShiftData?.length || 0)
+              ) {
+                newAssignments[postIndex][shiftIndex] =
+                  recoilState.userShiftData?.[assignedUserIndex]?.user.id ||
+                  null;
+              } else {
+                newAssignments[postIndex][shiftIndex] = null;
               }
-            });
-          }
-        });
-      }
+            }
+          });
+        }
+      });
+
       setRecoilState((prev) => ({
         ...prev,
         assignments: newAssignments,
@@ -657,6 +709,14 @@ export function ShiftManager() {
       });
 
       console.log("Optimization successful, new assignments applied.");
+
+      // Show success feedback
+      setOptimizationDialog({
+        isOpen: true,
+        title: "Optimization Successful",
+        message: "Shift assignments have been optimized successfully.",
+        type: "success",
+      });
     } catch (error) {
       console.error("Error during optimization:", error);
       setRecoilState((prev) => ({
@@ -667,6 +727,15 @@ export function ShiftManager() {
         manuallyEditedSlots: prev.manuallyEditedSlots || {},
         customCellDisplayNames: prev.customCellDisplayNames || {},
       }));
+
+      // Show error feedback
+      setOptimizationDialog({
+        isOpen: true,
+        title: "Optimization Error",
+        message:
+          "An unexpected error occurred during optimization. Please try again.",
+        type: "error",
+      });
     }
   };
 
@@ -682,35 +751,14 @@ export function ShiftManager() {
     }));
   };
 
-  const handlePostRemove = (postIdToRemove: string) => {
-    const postIndexToRemove =
-      recoilState.posts?.findIndex((p) => p.id === postIdToRemove) || -1;
+  // const handlePostRemove = (postIdToRemove: string) => {
+  //   // Function body temporarily removed
+  // };
 
-    if (postIndexToRemove !== -1) {
-      setRecoilState((prev) => {
-        const updatedAssignments = prev.assignments
-          ? [...prev.assignments]
-          : [];
-        if (postIndexToRemove < updatedAssignments.length) {
-          updatedAssignments.splice(postIndexToRemove, 1); // Remove the row
-        }
-        return {
-          ...prev,
-          posts: (prev.posts || []).filter(
-            (post) => post.id !== postIdToRemove
-          ),
-          assignments: updatedAssignments,
-          manuallyEditedSlots: prev.manuallyEditedSlots || {},
-          customCellDisplayNames: prev.customCellDisplayNames || {},
-        };
-      });
-    }
-  };
-
-  const startEditingPost = (post: UniqueString) => {
-    setEditingPostId(post.id);
-    setEditingPostName(post.value);
-  };
+  // const startEditingPost = (post: UniqueString) => {
+  //   setEditingPostId(post.id);
+  //   setEditingPostName(post.value);
+  // };
 
   const savePostEdit = () => {
     if (!editingPostId || !editingPostName.trim()) return;
@@ -730,14 +778,9 @@ export function ShiftManager() {
     setEditingPostName("");
   };
 
-  const handlePostNameKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      savePostEdit();
-    } else if (e.key === "Escape") {
-      setEditingPostId(null);
-      setEditingPostName("");
-    }
-  };
+  // const handlePostNameKeyDown = (e: React.KeyboardEvent) => {
+  //   // Function body temporarily removed
+  // };
 
   const handleAssignmentChange = (
     postIndex: number,
@@ -1048,6 +1091,9 @@ export function ShiftManager() {
                 onPostUncheck={handlePostUncheck}
                 onPostRemove={(postIds) => handleRemovePosts([postIds])}
                 onAssignmentEdit={handleAssignmentNameUpdate}
+                restTime={MINIMUM_REST_TIME}
+                startHour={OPERATION_START_TIME}
+                endHour={OPERATION_END_TIME}
               />
               <Button
                 id="optimize-button"
@@ -1074,7 +1120,7 @@ export function ShiftManager() {
                   }
                   selectedUserId={selectedUserId}
                   onSelectUser={handleUserSelect}
-                  onEditUser={setEditingUserId}
+                  onEditUser={() => {}} // Temporarily disabled
                   onAddUser={addUser}
                   onUpdateUserName={updateUserName}
                   onRemoveUsers={removeUsers}
@@ -1126,6 +1172,31 @@ export function ShiftManager() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Optimization Feedback Dialog */}
+      <Dialog
+        open={optimizationDialog.isOpen}
+        onOpenChange={(open) =>
+          setOptimizationDialog((prev) => ({ ...prev, isOpen: open }))
+        }
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle
+              className={
+                optimizationDialog.type === "success"
+                  ? "text-green-600"
+                  : optimizationDialog.type === "warning"
+                  ? "text-yellow-600"
+                  : "text-red-600"
+              }
+            >
+              {optimizationDialog.title}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-700">{optimizationDialog.message}</p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

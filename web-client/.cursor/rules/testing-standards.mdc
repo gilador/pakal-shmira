@@ -20,6 +20,18 @@ globs: *.ts,*.tsx,*.spec.ts,*.test.ts,tests/**/*
 - Focus on user scenarios rather than implementation details
 - Test complete workflows from user perspective
 
+## Test Coverage Requirements
+
+**MANDATORY**: All new and modified functionality must include tests:
+
+- **New Functions/Methods**: Must have corresponding unit tests covering main functionality and edge cases
+- **Modified Functions/Methods**: Must update existing tests or add new tests for changed behavior
+- **New Components**: Must have end-to-end tests covering user interactions
+- **Modified Components**: Must update existing e2e tests or add new tests for changed behavior
+- **Bug Fixes**: Must include regression tests to prevent the same issue from recurring
+
+**NO EXCEPTIONS**: Code changes without appropriate test coverage should not be committed.
+
 ## Test Implementation Policy
 
 **IMPORTANT**: Do not implement tests immediately as part of change proposals. Always:
