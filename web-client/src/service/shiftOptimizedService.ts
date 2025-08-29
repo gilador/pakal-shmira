@@ -165,27 +165,26 @@ function convertToLPFormat(availabilityMatrix: boolean[][][]): string {
 // Parse the solution from HiGHS solve format to our format
 function parseLPSolution(
   solution: any,
-  num_users: number,
-  num_shifts: number,
-  num_time_slots: number
+  numUsers: number,
+  numPosts: number,
+  numTimeSlots: number
 ): boolean[][][] {
-
-  // Initialize result in the expected format [posts][shifts][users]
-  // Always ensure we return the exact expected structure (3 posts, 5 shifts, 12 users)
-  const result: boolean[][][] = Array(3)
+  // Initialize result in the expected format [posts][timeSlots][users]
+  // Use dynamic dimensions from the actual data
+  const result: boolean[][][] = Array(numPosts)
     .fill(false)
     .map(() =>
-      Array(5)
+      Array(numTimeSlots)
         .fill(false)
-        .map(() => Array(12).fill(false))
+        .map(() => Array(numUsers).fill(false))
     );
 
   try {
     // If solution is optimal and has columns
     if (solution && solution.Status === "Optimal" && solution.Columns) {
       // Track assignments per user to verify even distribution
-      const assignmentsPerUser: number[] = Array(num_users).fill(0);
-      const deviations: { above: number; below: number }[] = Array(num_users)
+      const assignmentsPerUser: number[] = Array(numUsers).fill(0);
+      const deviations: { above: number; below: number }[] = Array(numUsers)
         .fill(0)
         .map(() => ({ above: 0, below: 0 }));
 
@@ -206,7 +205,7 @@ function parseLPSolution(
             const timeSlot = parseInt(parts[3], 10);
 
             // Track assignment for stats
-            if (user >= 0 && user < num_users) {
+            if (user >= 0 && user < numUsers) {
               assignmentsPerUser[user]++;
             }
 
@@ -216,8 +215,13 @@ function parseLPSolution(
             const post = shift; // shift in optimizer = post in UI
             const hour = timeSlot; // timeSlot in optimizer = hour in UI
 
-            // Only store assignments for valid posts (0-2) and hours (0-4)
-            if (post >= 0 && post < 3 && hour >= 0 && hour < 5) {
+            // Only store assignments for valid posts and hours (dynamic bounds)
+            if (
+              post >= 0 &&
+              post < numPosts &&
+              hour >= 0 &&
+              hour < numTimeSlots
+            ) {
               assignments.push({ user, post, hour });
             } else {
               console.warn(`Skipping invalid assignment:`, {
@@ -232,14 +236,14 @@ function parseLPSolution(
         // Track deviations for analysis
         if (name.startsWith("above_avg_") && Math.abs(value) > 1e-6) {
           const user = parseInt(name.substring("above_avg_".length), 10);
-          if (user >= 0 && user < num_users) {
+          if (user >= 0 && user < numUsers) {
             deviations[user].above = value;
           }
         }
 
         if (name.startsWith("below_avg_") && Math.abs(value) > 1e-6) {
           const user = parseInt(name.substring("below_avg_".length), 10);
-          if (user >= 0 && user < num_users) {
+          if (user >= 0 && user < numUsers) {
             deviations[user].below = value;
           }
         }
@@ -272,42 +276,47 @@ function parseLPSolution(
   } catch (error) {
     console.error("Error parsing LP solution:", error);
     // Return empty solution on error
-    return createEmptySolution(5);
+    return createEmptySolution(numPosts, numTimeSlots, numUsers);
   }
 
   return result;
 }
 
-function createEmptySolution(numTimeSlots = 5): boolean[][][] {
-  // Create a solution with exactly 3 posts, 5 shifts, and 12 users
-  return Array(3) // posts
+function createEmptySolution(
+  numPosts: number,
+  numTimeSlots: number,
+  numUsers: number
+): boolean[][][] {
+  // Create a solution with dynamic dimensions
+  return Array(numPosts)
     .fill(false)
-    .map(
-      () =>
-        Array(numTimeSlots) // shifts (default to 5 for our 5 hours)
-          .fill(false)
-          .map(() => Array(12).fill(false)) // users
+    .map(() =>
+      Array(numTimeSlots)
+        .fill(false)
+        .map(() => Array(numUsers).fill(false))
     );
 }
 
 function validateSolution(
   solution: boolean[][][],
-  expectedNumTimeSlots = 5
+  numPosts: number,
+  numTimeSlots: number,
+  numUsers: number
 ): boolean[][][] {
   // Ensure the solution has exactly the right structure
   if (
     !solution ||
     !Array.isArray(solution) ||
-    solution.length !== 3 ||
+    solution.length !== numPosts ||
     !Array.isArray(solution[0]) ||
-    solution[0].length !== expectedNumTimeSlots ||
+    solution[0].length !== numTimeSlots ||
     !Array.isArray(solution[0][0]) ||
-    solution[0][0].length !== 12
+    solution[0][0].length !== numUsers
   ) {
     console.error(
-      `Invalid solution structure, returning empty solution with ${expectedNumTimeSlots} time slots`
+      `Invalid solution structure, returning empty solution with ${numTimeSlots} time slots`
     );
-    return createEmptySolution(expectedNumTimeSlots);
+    return createEmptySolution(numPosts, numTimeSlots, numUsers);
   }
   return solution;
 }
@@ -324,7 +333,7 @@ export async function optimizeShift(
     if (!userData || userData.length === 0) {
       console.error("No user data provided");
       return {
-        result: createEmptySolution(5),
+        result: createEmptySolution(3, 5, 12), // fallback dimensions
         isOptim: false,
       };
     }
@@ -332,15 +341,15 @@ export async function optimizeShift(
     // Convert user data to availability matrix
     const availabilityMatrix = userData.map((user) =>
       user.constraints.map((shift) => {
-        // Get all time slots without limiting to 3
-        const timeSlots = shift.map((slot) => slot.availability);
-        // Ensure we have exactly 5 time slots (but don't cut off at 3)
-        while (timeSlots.length < 5) {
-          timeSlots.push(false);
-        }
-        return timeSlots.slice(0, 5); // Allow up to 5 time slots
+        // Get all time slots dynamically - no hardcoded limit
+        return shift.map((slot) => slot.availability);
       })
     );
+
+    // Extract dimensions from the actual data
+    const numUsers = userData.length;
+    const numPosts = userData[0]?.constraints.length || 3;
+    const numTimeSlots = userData[0]?.constraints[0]?.length || 5;
 
     // Check if we have enough available users for each shift and time slot
     let isFeasible = true;
@@ -395,7 +404,7 @@ export async function optimizeShift(
         "Problem is infeasible: some shifts have no available users"
       );
       return {
-        result: createEmptySolution(5),
+        result: createEmptySolution(numPosts, numTimeSlots, numUsers),
         isOptim: false,
       };
     }
@@ -430,7 +439,12 @@ export async function optimizeShift(
       );
 
       // Validate and return the solution
-      const validatedSolution = validateSolution(solution);
+      const validatedSolution = validateSolution(
+        solution,
+        numPosts,
+        numTimeSlots,
+        numUsers
+      );
 
       // Check for missing assignments
       console.log("Checking for missing assignments in solution:");
@@ -487,14 +501,14 @@ export async function optimizeShift(
     } catch (solverError) {
       console.error("Error during HiGHS solver call:", solverError);
       return {
-        result: createEmptySolution(5),
+        result: createEmptySolution(numPosts, numTimeSlots, numUsers),
         isOptim: false,
       };
     }
   } catch (error) {
     console.error("Error in optimization:", error);
     return {
-      result: createEmptySolution(5),
+      result: createEmptySolution(numPosts, numTimeSlots, numUsers),
       isOptim: false,
     };
   }
