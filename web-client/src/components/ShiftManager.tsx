@@ -1,11 +1,11 @@
-import { Button } from "@/components/elements/button";
-import { Card, CardContent } from "@/components/elements/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/elements/dialog";
+} from "@/components/ui/dialog";
 import { useMemo, useState } from "react";
 import { useRecoilState } from "recoil";
 import tumbleweedIcon from "../../assets/tumbleweed.svg";

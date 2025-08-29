@@ -44,7 +44,7 @@ export const initialLoadState: ShiftState = {
 const persistenceEffect: AtomEffect<ShiftState> = ({
   setSelf,
   onSet,
-  trigger,
+  // trigger,
 }) => {
   // trigger === 'get' is no longer responsible for async loading here.
   // The atom will initialize with its `default` value synchronously.

@@ -501,14 +501,14 @@ export async function optimizeShift(
     } catch (solverError) {
       console.error("Error during HiGHS solver call:", solverError);
       return {
-        result: createEmptySolution(numPosts, numTimeSlots, numUsers),
+        result: createEmptySolution(3, 5, 12), // fallback dimensions
         isOptim: false,
       };
     }
   } catch (error) {
     console.error("Error in optimization:", error);
     return {
-      result: createEmptySolution(numPosts, numTimeSlots, numUsers),
+      result: createEmptySolution(3, 5, 12), // fallback dimensions
       isOptim: false,
     };
   }

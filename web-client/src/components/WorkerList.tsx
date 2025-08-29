@@ -2,7 +2,7 @@ import { colors } from "@/constants/colors";
 import { IconUser } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { User } from "../models";
-import { Checkbox } from "@/components/elements/checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
 import { EditButton } from "./EditButton";
 import { EditableText } from "./elements/EditableText";
 import { WorkerListActions } from "./WorkerListActions";
@@ -99,7 +99,7 @@ export function WorkerList({
   users,
   selectedUserId,
   onSelectUser,
-  onEditUser,
+  // onEditUser,
   onAddUser,
   onRemoveUsers: onRemoveUsers,
   isEditing,

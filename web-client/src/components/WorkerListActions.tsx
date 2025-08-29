@@ -10,9 +10,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/elements/dialog";
-import { Button } from "@/components/elements/button";
-import { useEffect, useRef, useState } from "react";
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 interface WorkerListActionsProps {
   isEditing: boolean;

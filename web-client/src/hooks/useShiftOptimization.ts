@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRecoilState } from "recoil";
 import { shiftState } from "../stores/shiftStore";
 import { optimizeShift } from "../service/shiftOptimizedService";

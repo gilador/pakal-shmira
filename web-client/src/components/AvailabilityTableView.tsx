@@ -1,4 +1,4 @@
-import { Checkbox } from "@/components/elements/checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
 import { colors } from "@/constants/colors";
 import React, { useEffect, useState, useRef } from "react";
 import { IconRotateClockwise2 } from "@tabler/icons-react";
