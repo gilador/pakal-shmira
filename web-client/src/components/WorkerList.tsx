@@ -2,9 +2,9 @@ import { colors } from "@/constants/colors";
 import { IconUser } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { User } from "../models";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@/components/elements/checkbox";
 import { EditButton } from "./EditButton";
-import { EditableText } from "./elements/EditableText";
+import { EditableText } from "./EditableText";
 import { WorkerListActions } from "./WorkerListActions";
 
 export interface WorkerListProps {

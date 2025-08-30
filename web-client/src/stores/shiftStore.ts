@@ -1,7 +1,7 @@
 import { atom, AtomEffect, DefaultValue } from "recoil";
 import { UniqueString } from "../models/index";
 import { UserShiftData } from "../models";
-import { SyncStatus } from "../components/elements/SyncStatusIcon";
+import { SyncStatus } from "../components/SyncStatusIcon";
 import {
   saveStateToLocalStorage,
   LOCAL_STORAGE_KEY,

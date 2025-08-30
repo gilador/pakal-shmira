@@ -10,8 +10,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from "@/components/elements/dialog";
+import { Button } from "@/components/elements/button";
 import { useState } from "react";
 
 interface WorkerListActionsProps {

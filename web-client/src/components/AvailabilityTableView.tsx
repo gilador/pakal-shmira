@@ -1,4 +1,4 @@
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@/components/elements/checkbox";
 import { colors } from "@/constants/colors";
 import React, { useEffect, useState, useRef } from "react";
 import { IconRotateClockwise2 } from "@tabler/icons-react";
@@ -6,7 +6,7 @@ import tumbleweedAnimation from "../../assets/tumbleweed-anim.gif";
 import { Constraint, User } from "../models";
 import { UniqueString } from "../models/index";
 import { EditButton } from "./EditButton";
-import { EditableText } from "./elements/EditableText";
+import { EditableText } from "./EditableText";
 import { ShiftInfoView } from "./ShiftInfoView";
 
 export interface AvailabilityTableViewProps {
