@@ -56,6 +56,17 @@ export function calculateMinimumShifts(
       };
     }
 
+    // Special case: if no posts, return 0 duration
+    if (input.postCount === 0) {
+      return {
+        shiftStartTimes: [],
+        minimumShiftsNeeded: 0,
+        shiftDuration: 0,
+        isFeasible: false,
+        message: "No posts to assign - duration is 0",
+      };
+    }
+
     const restCheck = validateRestFeasibility(
       operationTime,
       minimumTotalRestTime
@@ -87,14 +98,14 @@ export function calculateMinimumShifts(
     }
 
     // Find minimum shifts needed
-    const minimumShiftsNeeded = findMinimumShifts(
+    const shiftSolution = findMinimumShifts(
       operationTime,
       input.staffCount,
       input.postCount,
       minimumTotalRestTime
     );
 
-    if (minimumShiftsNeeded === 0) {
+    if (shiftSolution.shifts === 0) {
       return {
         shiftStartTimes: [],
         minimumShiftsNeeded: 0,
@@ -104,12 +115,13 @@ export function calculateMinimumShifts(
       };
     }
 
-    // Generate shift times
-    const shiftDuration = operationTime / minimumShiftsNeeded;
+    // Generate shift times using the actual duration from the solution
+    const minimumShiftsNeeded = shiftSolution.shifts;
+    const shiftDuration = shiftSolution.duration;
     const shiftStartTimes = generateShiftTimes(
       input.startTime,
       minimumShiftsNeeded,
-      operationTime
+      shiftDuration
     );
 
     return {
@@ -191,7 +203,7 @@ export function isShiftConfigurationFeasible(
       postCount,
       minimumTotalRestTime
     );
-    return minimumShifts > 0;
+    return minimumShifts.shifts > 0;
   } catch {
     return false;
   }
@@ -232,6 +244,17 @@ export function getOptimalShiftDuration(
   staffCount: number,
   minimumTotalRestTime: number = 0
 ): number {
+  console.log(
+    "🔧 [shiftHourHelperService] getOptimalShiftDuration called with:",
+    {
+      startTime,
+      endTime,
+      postCount,
+      staffCount,
+      minimumTotalRestTime,
+    }
+  );
+
   const result = calculateMinimumShifts({
     startTime,
     endTime,
@@ -239,7 +262,18 @@ export function getOptimalShiftDuration(
     staffCount,
     minimumTotalRestTime,
   });
-  return result.isFeasible ? result.shiftDuration : 0;
+
+  console.log("📋 [shiftHourHelperService] calculateMinimumShifts result:", {
+    isFeasible: result.isFeasible,
+    shiftDuration: result.shiftDuration,
+    minimumShiftsNeeded: result.minimumShiftsNeeded,
+    message: result.message,
+  });
+
+  const finalDuration = result.isFeasible ? result.shiftDuration : 0;
+  console.log("📤 [shiftHourHelperService] Returning duration:", finalDuration);
+
+  return finalDuration;
 }
 
 // ==================== PRIVATE IMPLEMENTATION ====================
@@ -313,16 +347,45 @@ function validateWorkCapacity(
   postCount: number,
   minimumTotalRestTime: number
 ): FeasibilityResult {
-  const maxWorkTimePerPerson = operationTime - minimumTotalRestTime;
+  console.log("🔍 [validateWorkCapacity] Input:", {
+    staffCount,
+    operationTime,
+    postCount,
+    minimumTotalRestTime,
+  });
+
+  // The logic here was wrong! minimumTotalRestTime is the minimum rest time per worker,
+  // not the total rest across all workers. Each worker should be able to work most of
+  // the operation time, with some reasonable breaks.
+
+  // A more reasonable approach: assume workers can work up to (operationTime - minimumRestPerWorker)
+  // where minimumRestPerWorker is a reasonable fraction of minimumTotalRestTime
+  const reasonableRestPerWorker = Math.min(
+    minimumTotalRestTime,
+    operationTime * 0.8
+  ); // Cap at 80% of operation time
+  const maxWorkTimePerPerson = operationTime - reasonableRestPerWorker;
   const totalWorkCapacity = staffCount * maxWorkTimePerPerson;
   const totalWorkNeeded = operationTime * postCount;
 
+  console.log("📊 [validateWorkCapacity] Calculations:", {
+    reasonableRestPerWorker,
+    maxWorkTimePerPerson,
+    totalWorkCapacity,
+    totalWorkNeeded,
+    isFeasible: totalWorkCapacity >= totalWorkNeeded,
+  });
+
   if (totalWorkCapacity < totalWorkNeeded) {
+    const message = `Need ${totalWorkNeeded} work-hours but only have ${totalWorkCapacity} available (${maxWorkTimePerPerson}h per person * ${staffCount} staff)`;
+    console.warn("❌ [validateWorkCapacity] Failed:", message);
     return {
       isFeasible: false,
-      message: `Need ${totalWorkNeeded} work-hours but only have ${totalWorkCapacity} available`,
+      message,
     };
   }
+
+  console.log("✅ [validateWorkCapacity] Passed");
   return { isFeasible: true };
 }
 
@@ -332,33 +395,122 @@ function findMinimumShifts(
   staffCount: number,
   postCount: number,
   minimumTotalRestTime: number
-): number {
-  const maxWorkTimePerPerson = operationTime - minimumTotalRestTime;
+): { shifts: number; duration: number } {
+  console.log("findMinimumShifts: Input:", {
+    operationTime,
+    staffCount,
+    postCount,
+    minimumTotalRestTime,
+  });
 
-  for (let N = 1; N <= operationTime; N++) {
-    const shiftDuration = operationTime / N;
+  // Apply the same reasonable rest logic here
+  const reasonableRestPerWorker = Math.min(
+    minimumTotalRestTime,
+    operationTime * 0.8
+  );
+  const maxWorkTimePerPerson = operationTime - reasonableRestPerWorker;
+
+  console.log("findMinimumShifts: Work capacity:", {
+    reasonableRestPerWorker,
+    maxWorkTimePerPerson,
+  });
+
+  // Define allowed shift durations (in hours): multiples of 0.25 up to operation time
+  const allowedDurations: number[] = [];
+  const baseIncrement = 0.25;
+
+  // Generate allowed durations: 0.25, 0.5, 0.75, 1, 1.25, 1.5, ..., up to operation time
+  for (
+    let duration = baseIncrement;
+    duration <= operationTime;
+    duration += baseIncrement
+  ) {
+    // Round to avoid floating point precision issues
+    const roundedDuration = Math.round(duration * 4) / 4;
+    allowedDurations.push(roundedDuration);
+  }
+
+  console.log(
+    `findMinimumShifts: Allowed durations for ${operationTime}h operation:`,
+    allowedDurations
+  );
+
+  // Find the best duration that divides the operation time evenly or with minimal remainder
+  let bestSolution: { shifts: number; duration: number; score: number } | null =
+    null;
+
+  for (const shiftDuration of allowedDurations) {
+    // Calculate how many shifts we need for this duration
+    const exactShifts = operationTime / shiftDuration;
+    const shiftsNeeded = Math.ceil(exactShifts);
+
+    // Check if this configuration is feasible
     const maxShiftsPerPerson = Math.floor(maxWorkTimePerPerson / shiftDuration);
     const availableAssignments = staffCount * maxShiftsPerPerson;
-    const requiredAssignments = N * postCount;
+    const requiredAssignments = shiftsNeeded * postCount;
+
+    console.log(`findMinimumShifts: Try duration=${shiftDuration}h:`, {
+      shiftsNeeded,
+      exactShifts,
+      shiftDuration,
+      maxShiftsPerPerson,
+      availableAssignments,
+      requiredAssignments,
+      feasible: availableAssignments >= requiredAssignments,
+    });
 
     if (availableAssignments >= requiredAssignments) {
-      return N;
+      // Calculate a score that prioritizes:
+      // 1. Exact division (no remainder)
+      // 2. Fewer shifts
+      // 3. Longer durations (more efficient)
+      const remainder = exactShifts - Math.floor(exactShifts);
+      const isExactDivision = remainder < 0.001; // Account for floating point precision
+
+      // Score: exact divisions get priority, then fewer shifts, then longer durations
+      let score = 0;
+      if (isExactDivision) {
+        score += 1000; // High priority for exact divisions
+      }
+      score += 100 - shiftsNeeded; // Prefer fewer shifts
+      score += shiftDuration; // Prefer longer durations as tiebreaker
+
+      console.log(
+        `findMinimumShifts: Duration ${shiftDuration}h score: ${score} (exact: ${isExactDivision}, remainder: ${remainder.toFixed(
+          3
+        )})`
+      );
+
+      if (!bestSolution || score > bestSolution.score) {
+        bestSolution = { shifts: shiftsNeeded, duration: shiftDuration, score };
+        console.log(
+          `findMinimumShifts: New best solution: ${shiftsNeeded} shifts of ${shiftDuration}h (score: ${score})`
+        );
+      }
     }
   }
-  return 0;
+
+  if (bestSolution) {
+    console.log(
+      `findMinimumShifts: Final solution: ${bestSolution.shifts} shifts of ${bestSolution.duration}h`
+    );
+    return { shifts: bestSolution.shifts, duration: bestSolution.duration };
+  }
+
+  console.warn("findMinimumShifts: No solution found with allowed durations");
+  return { shifts: 0, duration: 0 };
 }
 
 function generateShiftTimes(
   startTime: string,
   shiftsCount: number,
-  operationTime: number
+  shiftDuration: number
 ): string[] {
   const shiftStartTimes: string[] = [];
   const startHour = parseTime(startTime);
-  const shiftInterval = operationTime / shiftsCount;
 
   for (let i = 0; i < shiftsCount; i++) {
-    const shiftTime = startHour + i * shiftInterval;
+    const shiftTime = startHour + i * shiftDuration;
     shiftStartTimes.push(formatTime(shiftTime));
   }
 

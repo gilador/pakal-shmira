@@ -79,6 +79,21 @@ export function useUserHandlers() {
     setSelectedUserId(userId);
   };
 
+  const resetAllAvailability = () => {
+    setRecoilState((prev) => ({
+      ...prev,
+      userShiftData: (prev.userShiftData || []).map((userData) => ({
+        ...userData,
+        constraints: getDefaultConstraints(
+          prev.posts || [],
+          prev.hours || defaultHours
+        ),
+      })),
+      manuallyEditedSlots: prev.manuallyEditedSlots || {},
+      customCellDisplayNames: prev.customCellDisplayNames || {},
+    }));
+  };
+
   return {
     selectedUserId,
     addUser,
@@ -86,5 +101,6 @@ export function useUserHandlers() {
     updateUserName,
     removeUsers,
     handleUserSelect,
+    resetAllAvailability,
   };
 }

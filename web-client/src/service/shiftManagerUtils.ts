@@ -21,16 +21,25 @@ export function generateDynamicHours(
 
   if (!result.isFeasible || result.shiftStartTimes.length === 0) {
     // Fallback to hardcoded hours if calculation fails
-    console.warn("Shift calculation failed, using fallback hours");
+    console.warn(
+      "generateDynamicHours: Shift calculation failed, using fallback hours"
+    );
+    console.warn("generateDynamicHours: Fallback hours:", defaultHours);
     return defaultHours;
   }
-  console.log("Shift calculation success. result: ", result);
+  console.log(
+    "generateDynamicHours: Shift calculation success. result:",
+    result
+  );
 
   // Convert calculated shift times to UniqueString format
-  return result.shiftStartTimes.map((time, index) => ({
+  const dynamicHours = result.shiftStartTimes.map((time, index) => ({
     id: `hour-${index + 1}`,
     value: time,
   }));
+
+  console.log("generateDynamicHours: Generated dynamic hours:", dynamicHours);
+  return dynamicHours;
 }
 
 export function getDefaultConstraints(

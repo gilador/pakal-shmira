@@ -63,6 +63,17 @@ export function useShiftManagerInitialization() {
         if (!isMounted.current) return;
 
         // Generate dynamic hours based on operation parameters
+        console.log(
+          "useShiftManagerInitialization: Generating dynamic hours with parameters:",
+          {
+            startTime: OPERATION_START_TIME,
+            endTime: OPERATION_END_TIME,
+            postCount: defaultPosts.length,
+            staffCount: DEFAULT_STAFF_COUNT,
+            minimumRestTime: MINIMUM_REST_TIME,
+          }
+        );
+
         const dynamicHours = generateDynamicHours(
           OPERATION_START_TIME,
           OPERATION_END_TIME,
@@ -71,29 +82,85 @@ export function useShiftManagerInitialization() {
           MINIMUM_REST_TIME
         );
 
+        console.log(
+          "useShiftManagerInitialization: Generated dynamic hours:",
+          dynamicHours
+        );
+
         if (savedData && savedData.hasInitialized) {
           console.log(
             `[ShiftManager useEffect] setupInitialData: Found saved data. Setting state.`,
             savedData
           );
+
+          console.log(
+            "useShiftManagerInitialization: Saved hours vs dynamic hours comparison:",
+            {
+              savedHours: savedData.hours,
+              dynamicHours: dynamicHours,
+              usingSavedHours: !!savedData.hours,
+            }
+          );
+
+          // CRITICAL FIX: Use saved hours and fix constraint inconsistencies
+          const savedHours = savedData.hours || [];
+          const hoursToUse = savedHours.length > 0 ? savedHours : dynamicHours;
+
+          // Fix user constraints to have consistent hourIDs matching saved hours
+          const adjustedUserShiftData = (savedData.userShiftData || []).map(
+            (userData) => {
+              // Fix constraint hourIDs to match saved hours structure
+              const updatedConstraints = (savedData.posts || []).map(
+                (post, postIndex) => {
+                  return hoursToUse.map((hour, hourIndex) => {
+                    // Try to preserve existing constraint availability, but fix the hourID
+                    const existingConstraint =
+                      userData.constraints?.[postIndex]?.[hourIndex];
+                    return {
+                      postID: post.id,
+                      hourID: hour.id, // Use correct hourID from saved hours
+                      availability: existingConstraint?.availability ?? true, // Preserve availability
+                    };
+                  });
+                }
+              );
+
+              return {
+                ...userData,
+                constraints: updatedConstraints,
+              };
+            }
+          );
+
+          console.log(
+            "🔄 [useShiftManagerInitialization] Loading saved state and fixing constraint IDs:",
+            {
+              savedHoursCount: savedHours.length,
+              dynamicHoursCount: dynamicHours.length,
+              usingSavedHours: savedHours.length > 0,
+              usersUpdated: adjustedUserShiftData.length,
+              preservingAssignments: true,
+            }
+          );
+
           setRecoilState((prev) => ({
             ...prev,
             posts: savedData.posts || [],
-            hours: savedData.hours || dynamicHours,
-            userShiftData: savedData.userShiftData || [],
+            hours: hoursToUse, // Use saved hours if available, otherwise dynamic
+            userShiftData: adjustedUserShiftData,
             assignments:
               savedData.assignments ||
-              savedData.posts.map(() => dynamicHours.map(() => null)),
+              (savedData.posts || []).map(() => hoursToUse.map(() => null)),
             hasInitialized: true,
             syncStatus: "syncing",
             manuallyEditedSlots: savedData.manuallyEditedSlots || {},
             customCellDisplayNames: savedData.customCellDisplayNames || {},
           }));
-          // Set initial signature based on loaded data
+          // Set initial signature based on loaded data (preserve optimization state)
           lastAppliedConstraintsSignature.current = JSON.stringify({
-            userShiftData: savedData.userShiftData || [],
+            userShiftData: adjustedUserShiftData,
             posts: savedData.posts || [],
-            hours: savedData.hours || dynamicHours,
+            hours: hoursToUse,
           });
         } else {
           // 3. No saved data, so set default workers and initial assignments
@@ -171,6 +238,10 @@ export function useShiftManagerInitialization() {
             assignments: initialAssignments,
             manuallyEditedSlots: {},
             customCellDisplayNames: {},
+            // Default shift settings
+            startTime: "08:00",
+            endTime: "18:00",
+            restTime: 2,
           });
           // Set initial signature for default state
           lastAppliedConstraintsSignature.current = JSON.stringify({

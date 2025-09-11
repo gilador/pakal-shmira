@@ -22,12 +22,7 @@ import { useShiftOptimization } from "../hooks/useShiftOptimization";
 import { useUserHandlers } from "../hooks/useUserHandlers";
 import { usePostHandlers } from "../hooks/usePostHandlers";
 import { useAssignmentHandlers } from "../hooks/useAssignmentHandlers";
-import {
-  defaultHours,
-  MINIMUM_REST_TIME,
-  OPERATION_START_TIME,
-  OPERATION_END_TIME,
-} from "../constants/shiftManagerConstants";
+import { defaultHours } from "../constants/shiftManagerConstants";
 
 export function ShiftManager() {
   const [recoilState] = useRecoilState(shiftState);
@@ -53,6 +48,7 @@ export function ShiftManager() {
     updateUserName,
     removeUsers,
     handleUserSelect,
+    resetAllAvailability,
   } = useUserHandlers();
 
   // Use post handlers
@@ -82,6 +78,16 @@ export function ShiftManager() {
     "Full recoilState:",
     recoilState
   );
+
+  // Debug shift settings sync
+  console.log("🚀 [ShiftManager] Shift Settings Debug:", {
+    "recoilState.startTime": recoilState.startTime,
+    "recoilState.endTime": recoilState.endTime,
+    "recoilState.restTime": recoilState.restTime,
+    "recoilState.hours.length": recoilState.hours?.length || 0,
+    "recoilState.hours": recoilState.hours?.map((h) => h.value) || [],
+    "using defaultHours": !recoilState.hours || recoilState.hours.length === 0,
+  });
 
   const selectedUser = useMemo(() => {
     return selectedUserId
@@ -145,6 +151,7 @@ export function ShiftManager() {
                   recoilState.userShiftData?.map((userData) => userData.user) ||
                   []
                 }
+                userShiftData={recoilState.userShiftData || []}
                 mode="assignments"
                 assignments={assignments}
                 customCellDisplayNames={recoilState.customCellDisplayNames}
@@ -159,9 +166,9 @@ export function ShiftManager() {
                 onPostUncheck={handlePostUncheck}
                 onPostRemove={(postIds) => handleRemovePosts([postIds])}
                 onAssignmentEdit={handleAssignmentNameUpdate}
-                restTime={MINIMUM_REST_TIME}
-                startHour={OPERATION_START_TIME}
-                endHour={OPERATION_END_TIME}
+                restTime={recoilState.restTime}
+                startHour={recoilState.startTime}
+                endHour={recoilState.endTime}
               />
               <Button
                 id="optimize-button"
@@ -193,6 +200,7 @@ export function ShiftManager() {
                   onUpdateUserName={updateUserName}
                   onRemoveUsers={removeUsers}
                   isEditing={isEditing}
+                  onResetAllAvailability={resetAllAvailability}
                 />
               }
               rightPanel={
@@ -213,6 +221,7 @@ export function ShiftManager() {
                   availabilityConstraints={selectedUser?.constraints}
                   posts={recoilState.posts}
                   hours={recoilState.hours || defaultHours}
+                  userShiftData={recoilState.userShiftData || []}
                   mode="availability"
                   onConstraintsChange={(newConstraints) => {
                     if (selectedUser) {

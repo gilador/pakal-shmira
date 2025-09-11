@@ -21,6 +21,10 @@ export interface PersistedShiftData {
     };
   };
   customCellDisplayNames: { [slotKey: string]: string };
+  // Shift settings
+  startTime: string;
+  endTime: string;
+  restTime: number;
 }
 
 // Full state including syncStatus
@@ -38,6 +42,10 @@ export const initialLoadState: ShiftState = {
   assignments: [],
   manuallyEditedSlots: {}, // Initialize as empty object
   customCellDisplayNames: {}, // Initialize as empty object
+  // Default shift settings
+  startTime: "08:00",
+  endTime: "18:00",
+  restTime: 2,
 };
 
 // Define the persistence effect

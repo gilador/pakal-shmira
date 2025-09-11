@@ -126,7 +126,29 @@ export function useShiftOptimization(
       userShiftData: recoilState.userShiftData,
     });
 
+    console.log("useShiftOptimization: Detailed hours analysis:", {
+      hoursCount: recoilState.hours?.length || 0,
+      hoursValues: recoilState.hours?.map((h) => h.value) || [],
+      postsCount: recoilState.posts?.length || 0,
+      usersCount: recoilState.userShiftData?.length || 0,
+    });
+
     try {
+      // Debug the exact data being sent to optimization
+      console.log(
+        "🔍 [useShiftOptimization] Data being sent to optimization:",
+        {
+          userCount: recoilState.userShiftData?.length || 0,
+          postsCount: recoilState.posts?.length || 0,
+          hoursCount: recoilState.hours?.length || 0,
+          sampleUserConstraints:
+            recoilState.userShiftData?.[0]?.constraints?.length || 0,
+          samplePostConstraints:
+            recoilState.userShiftData?.[0]?.constraints?.[0]?.length || 0,
+          currentHours: recoilState.hours?.map((h) => h.value) || [],
+        }
+      );
+
       const optimizedResult = await optimizeShift(
         recoilState.userShiftData || []
       );
@@ -146,18 +168,49 @@ export function useShiftOptimization(
           customCellDisplayNames: prev.customCellDisplayNames || {},
         }));
 
+        // Log detailed infeasible positions if available
+        if (optimizedResult.infeasiblePositions) {
+          console.warn(
+            "Problematic time slots:",
+            optimizedResult.infeasiblePositions
+          );
+        }
+
+        // Create detailed error message
+        let detailedMessage =
+          optimizedResult.error ||
+          "Some shifts have no available users. Please check that all shifts have at least one person available before trying to optimize.";
+
+        if (
+          optimizedResult.infeasiblePositions &&
+          optimizedResult.infeasiblePositions.length > 0
+        ) {
+          const problematicSlots = optimizedResult.infeasiblePositions
+            .map((pos) => pos.description)
+            .join(", ");
+          detailedMessage += `\n\nProblematic time slots where no users are available:\n${problematicSlots}`;
+          detailedMessage += `\n\nTo fix this, please ensure at least one user is available for each of these time slots in the Availability tab.`;
+        }
+
         // Show user-friendly feedback
         setOptimizationDialog({
           isOpen: true,
           title: "Optimization Not Possible",
-          message:
-            "Some shifts have no available users. Please check that all shifts have at least one person available before trying to optimize.",
+          message: detailedMessage,
           type: "warning",
         });
         return; // Early return for infeasible problems
       }
 
       // Handle successful optimization
+      console.log("Optimization result dimensions:", {
+        resultPosts: optimizedResult.result.length,
+        resultTimeSlots: optimizedResult.result[0]?.length || 0,
+        recoilPosts: recoilState.posts?.length || 0,
+        recoilHours: recoilState.hours?.length || 0,
+      });
+
+      // Use recoilState dimensions for UI consistency
       let newAssignments: (string | null)[][] = (recoilState.posts || []).map(
         () => (recoilState.hours || defaultHours).map(() => null)
       );

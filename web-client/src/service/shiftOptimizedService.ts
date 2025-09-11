@@ -3,6 +3,14 @@ import { UserShiftData } from "@/models";
 export interface OptimizedShiftResult {
   result: boolean[][][];
   isOptim: boolean;
+  infeasiblePositions?: Array<{
+    shift: number;
+    time_slot: number;
+    postID: string;
+    hourID: string;
+    description: string;
+  }>;
+  error?: string;
 }
 
 // Load HiGHS once
@@ -251,19 +259,20 @@ function parseLPSolution(
 
       // Fill in the result array using the collected assignments
       for (const { user, post, hour } of assignments) {
-        // Double-check bounds before setting
+        // Double-check bounds before setting (use dynamic dimensions)
         if (
           post < 0 ||
-          post >= 3 ||
+          post >= numPosts ||
           hour < 0 ||
-          hour >= 5 ||
+          hour >= numTimeSlots ||
           user < 0 ||
-          user >= 12
+          user >= numUsers
         ) {
           console.warn(`Skipping out-of-bounds assignment:`, {
             post,
             hour,
             user,
+            bounds: { numPosts, numTimeSlots, numUsers },
           });
           continue;
         }
@@ -328,6 +337,14 @@ export async function optimizeShift(
     console.log("Starting optimization with userData:", {
       numUsers: userData.length,
       sampleUser: userData[0],
+    });
+
+    console.log("optimizeShift: Detailed user data analysis:", {
+      totalUsers: userData.length,
+      firstUserConstraints: userData[0]?.constraints?.length || 0,
+      firstUserFirstPostConstraints: userData[0]?.constraints?.[0]?.length || 0,
+      sampleConstraintStructure:
+        userData[0]?.constraints?.[0]?.slice(0, 3) || [],
     });
 
     if (!userData || userData.length === 0) {
@@ -398,14 +415,40 @@ export async function optimizeShift(
       ),
     });
 
-    // If the problem is infeasible, return early
+    // If the problem is infeasible, return early with detailed information
     if (!isFeasible) {
+      // Get post and hour information for better error messages
+      const posts = userData[0]?.constraints || [];
+      const hours = posts[0] || [];
+
+      const detailedInfeasiblePositions = infeasiblePositions.map(
+        ({ shift, time_slot }) => {
+          const postID = posts[shift]?.[time_slot]?.postID || `post-${shift}`;
+          const hourID = hours[time_slot]?.hourID || `hour-${time_slot}`;
+          return {
+            shift,
+            time_slot,
+            postID,
+            hourID,
+            description: `Post ${shift + 1} at time slot ${time_slot + 1}`,
+          };
+        }
+      );
+
       console.error(
         "Problem is infeasible: some shifts have no available users"
       );
+      console.error(
+        "Infeasible positions details:",
+        detailedInfeasiblePositions
+      );
+
       return {
         result: createEmptySolution(numPosts, numTimeSlots, numUsers),
         isOptim: false,
+        infeasiblePositions: detailedInfeasiblePositions,
+        error:
+          "Some shifts have no available users. Please check user availability for the highlighted time slots.",
       };
     }
 

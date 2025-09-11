@@ -3,11 +3,11 @@ import { colors } from "@/constants/colors";
 import React, { useEffect, useState, useRef } from "react";
 import { IconRotateClockwise2 } from "@tabler/icons-react";
 import tumbleweedAnimation from "../../assets/tumbleweed-anim.gif";
-import { Constraint, User } from "../models";
+import { Constraint, User, UserShiftData } from "../models";
 import { UniqueString } from "../models/index";
 import { EditButton } from "./EditButton";
 import { EditableText } from "./EditableText";
-import { ShiftInfoView } from "./ShiftInfoView";
+import { ShiftInfoSettingsView } from "./ShiftInfoSettingsView";
 
 export interface AvailabilityTableViewProps {
   user?: User;
@@ -20,6 +20,7 @@ export interface AvailabilityTableViewProps {
   onPostEdit?: (postId: string, newName: string) => void;
   onPostRemove?: (postId: string) => void;
   users?: User[];
+  userShiftData?: UserShiftData[];
   mode?: "availability" | "assignments";
   selectedUserId?: string | null;
   className?: string;
@@ -36,6 +37,9 @@ export interface AvailabilityTableViewProps {
   restTime?: number;
   startHour?: string;
   endHour?: string;
+  onStartTimeChange?: (startTime: string) => void;
+  onEndTimeChange?: (endTime: string) => void;
+  onIntensityChange?: (intensity: number) => void;
 }
 
 const AssignmentCell = ({
@@ -218,6 +222,7 @@ export function AvailabilityTableView({
   onPostEdit,
   onPostRemove,
   users = [],
+  userShiftData = [],
   mode = "availability",
   selectedUserId = null,
   className = "",
@@ -229,6 +234,9 @@ export function AvailabilityTableView({
   restTime = 6,
   startHour = "08:00",
   endHour = "18:00",
+  onStartTimeChange,
+  onEndTimeChange,
+  onIntensityChange,
 }: AvailabilityTableViewProps) {
   const [optimisticLocalConstraints, setOptimisticLocalConstraints] = useState<
     Constraint[][] | null
@@ -254,6 +262,36 @@ export function AvailabilityTableView({
     );
   }, [users]);
 
+  // Helper function to check if toggling would create an infeasible situation
+  const wouldCreateInfeasibleSlot = (
+    postIndex: number,
+    hourIndex: number
+  ): boolean => {
+    if (!userShiftData || !availabilityConstraints) return false;
+
+    // Check if this user is currently available for this slot
+    const currentConstraint = availabilityConstraints[postIndex]?.[hourIndex];
+    const isCurrentlyAvailable = currentConstraint?.availability ?? true;
+
+    // If user is currently available and we're about to make them unavailable,
+    // check if they're the last available user for this slot
+    if (isCurrentlyAvailable) {
+      let availableUsersCount = 0;
+
+      for (const userData of userShiftData) {
+        const userConstraint = userData.constraints?.[postIndex]?.[hourIndex];
+        if (userConstraint?.availability) {
+          availableUsersCount++;
+        }
+      }
+
+      // If this is the last available user, don't allow the toggle
+      return availableUsersCount <= 1;
+    }
+
+    return false;
+  };
+
   const toggleAvailability = (postIndex: number, hourIndex: number) => {
     if (
       mode !== "availability" ||
@@ -261,6 +299,14 @@ export function AvailabilityTableView({
       !availabilityConstraints
     )
       return;
+
+    // Check if this would create an infeasible situation
+    if (wouldCreateInfeasibleSlot(postIndex, hourIndex)) {
+      alert(
+        "Cannot make this user unavailable - at least one user must be available for each time slot to allow optimization."
+      );
+      return;
+    }
 
     // Base the toggle on the most current view (optimistic or prop)
     // Ensure that we only proceed if actual availabilityConstraints prop is present (meaning data is loaded for a user)
@@ -369,10 +415,15 @@ export function AvailabilityTableView({
 
               {/* Shift info view */}
               <div className="flex-1">
-                <ShiftInfoView
+                <ShiftInfoSettingsView
                   restTime={restTime}
                   startHour={startHour}
                   endHour={endHour}
+                  onStartTimeChange={onStartTimeChange}
+                  onEndTimeChange={onEndTimeChange}
+                  onIntensityChange={onIntensityChange}
+                  posts={posts}
+                  staffCount={users.length || 0}
                   className="h-full"
                 />
               </div>

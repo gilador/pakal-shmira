@@ -3,7 +3,7 @@ import { UniqueString } from "../models/index";
 // Operation time configuration
 export const OPERATION_START_TIME = "08:00";
 export const OPERATION_END_TIME = "18:00";
-export const MINIMUM_REST_TIME = 6; // hours
+export const MINIMUM_REST_TIME = 4; // hours - default middle option
 
 export const defaultPosts: UniqueString[] = [
   { id: "post-1", value: "Post 1" },

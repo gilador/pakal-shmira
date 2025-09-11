@@ -3,6 +3,7 @@ import {
   IconUserMinus,
   IconSelectAll,
   IconDeselect,
+  IconRefresh,
 } from "@tabler/icons-react";
 import { colors } from "@/constants/colors";
 import {
@@ -20,6 +21,7 @@ interface WorkerListActionsProps {
   onRemoveUsers: (userIds: string[]) => void;
   checkedUserIds: string[];
   onCheckAll: (allWasClicked: boolean) => void;
+  onResetAllAvailability?: () => void;
 }
 
 export function WorkerListActions({
@@ -28,8 +30,11 @@ export function WorkerListActions({
   onRemoveUsers,
   checkedUserIds,
   onCheckAll,
+  onResetAllAvailability,
 }: WorkerListActionsProps) {
   const [isDeleteManyDialogOpen, setIsDeleteManyDialogOpen] = useState(false);
+  const [isResetAvailabilityDialogOpen, setIsResetAvailabilityDialogOpen] =
+    useState(false);
   const [checkAllEnabled, setCheckAllEnabled] = useState(false);
 
   const handleDelete = () => {
@@ -52,6 +57,13 @@ export function WorkerListActions({
       onCheckAll(newValue);
       return newValue;
     });
+  };
+
+  const handleResetAvailability = () => {
+    if (onResetAllAvailability) {
+      onResetAllAvailability();
+      setIsResetAvailabilityDialogOpen(false);
+    }
   };
 
   return (
@@ -88,6 +100,16 @@ export function WorkerListActions({
           <IconSelectAll size={15} strokeWidth={2} />
         )}
       </button>
+      {onResetAllAvailability && (
+        <button
+          onClick={() => setIsResetAvailabilityDialogOpen(true)}
+          aria-label="Reset all user availability"
+          title="Reset all user availability to available"
+          className={`p-2 rounded-md ${colors.button.default} ${colors.button.hover}`}
+        >
+          <IconRefresh size={15} />
+        </button>
+      )}
       <Dialog
         open={isDeleteManyDialogOpen}
         onOpenChange={setIsDeleteManyDialogOpen}
@@ -109,6 +131,34 @@ export function WorkerListActions({
               </Button>
               <Button variant="destructive" onClick={handleDelete}>
                 Delete anyway
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={isResetAvailabilityDialogOpen}
+        onOpenChange={setIsResetAvailabilityDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset All Availability</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <p>
+              Are you sure you want to reset all users' availability to
+              "available" for all time slots? This will clear any custom
+              availability settings you may have configured.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsResetAvailabilityDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button variant="default" onClick={handleResetAvailability}>
+                Reset All Availability
               </Button>
             </div>
           </div>

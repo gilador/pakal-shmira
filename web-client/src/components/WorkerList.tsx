@@ -16,6 +16,7 @@ export interface WorkerListProps {
   onRemoveUsers: (userIds: string[]) => void;
   isEditing: boolean;
   onUpdateUserName: (userId: string, newName: string) => void;
+  onResetAllAvailability?: () => void;
 }
 
 const UserNameComp = ({
@@ -104,6 +105,7 @@ export function WorkerList({
   onRemoveUsers: onRemoveUsers,
   isEditing,
   onUpdateUserName,
+  onResetAllAvailability,
 }: WorkerListProps) {
   const [checkedUserIds, setCheckedUserIds] = useState<string[]>([]);
 
@@ -146,6 +148,7 @@ export function WorkerList({
             );
           }}
           checkedUserIds={checkedUserIds}
+          onResetAllAvailability={onResetAllAvailability}
         />
       </div>
       <div className="flex-1 overflow-y-scroll border-primary-rounded-lg">
