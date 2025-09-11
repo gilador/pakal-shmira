@@ -144,7 +144,7 @@ export function ShiftManager() {
                 }-${
                   recoilState.posts?.map((p) => p.id).join("-") || "no-posts"
                 }`}
-                className="border-primary-rounded-lg flex-1"
+                className="flex-1 border-primary-rounded-lg"
                 posts={recoilState.posts}
                 hours={recoilState.hours || defaultHours}
                 users={
@@ -210,7 +210,6 @@ export function ShiftManager() {
                       ?.map((u) => u.user.name)
                       .join("-") || "no-users"
                   }`}
-                  className="border-primary-rounded-lg"
                   user={
                     selectedUserId
                       ? recoilState.userShiftData?.find(
