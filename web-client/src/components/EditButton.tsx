@@ -1,12 +1,11 @@
 import { Button } from "@/components/elements/button";
 import { Pencil } from "lucide-react";
-import React, { useRef } from "react";
+import React from "react";
 
 interface EditButtonProps {
   isEditing: boolean;
   onToggle: () => void;
   className?: string;
-  debounceMs?: number;
   onClick?: (e: React.MouseEvent) => void;
 }
 
@@ -14,22 +13,11 @@ export function EditButton({
   isEditing,
   onToggle,
   className = "",
-  debounceMs = 300,
   onClick,
 }: EditButtonProps) {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   const handleClick = (e: React.MouseEvent) => {
-    if (timeoutRef.current) {
-      return;
-    }
-
     onClick?.(e);
     onToggle();
-
-    timeoutRef.current = setTimeout(() => {
-      timeoutRef.current = null;
-    }, debounceMs);
   };
 
   return (

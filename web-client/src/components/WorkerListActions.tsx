@@ -32,22 +32,21 @@ export function WorkerListActions({
   onCheckAll,
   onResetAllAvailability,
 }: WorkerListActionsProps) {
-  const [isDeleteManyDialogOpen, setIsDeleteManyDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isResetAvailabilityDialogOpen, setIsResetAvailabilityDialogOpen] =
     useState(false);
   const [checkAllEnabled, setCheckAllEnabled] = useState(false);
 
   const handleDelete = () => {
-    if (checkedUserIds.length < 2) {
-      onRemoveUsers(checkedUserIds);
-    } else {
-      if (!isDeleteManyDialogOpen) {
-        setIsDeleteManyDialogOpen(true);
-      } else {
-        onRemoveUsers(checkedUserIds);
-        setIsDeleteManyDialogOpen(false);
-      }
+    if (checkedUserIds.length === 0) {
+      return; // No users selected
     }
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    onRemoveUsers(checkedUserIds);
+    setIsDeleteDialogOpen(false);
     setCheckAllEnabled(false);
   };
 
@@ -68,6 +67,7 @@ export function WorkerListActions({
 
   return (
     <div
+      id="worker-list-actions"
       className={`flex rounded-md transition-all duration-100 ease-in-out flex-initial gap-2 mx-1 ${
         isEditing ? "translate-y-0" : "-translate-y-12"
       }`}
@@ -110,27 +110,27 @@ export function WorkerListActions({
           <IconRefresh size={15} />
         </button>
       )}
-      <Dialog
-        open={isDeleteManyDialogOpen}
-        onOpenChange={setIsDeleteManyDialogOpen}
-      >
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete All Users</DialogTitle>
+            <DialogTitle>
+              Are you sure you want to delete {checkedUserIds.length}{" "}
+              {checkedUserIds.length === 1 ? "staff member" : "staff members"}?
+            </DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4">
-            <p>
-              Are you sure you want to delete {checkedUserIds.length} users?
+            <p className="text-muted-foreground">
+              Once deleted, it can't be undone.
             </p>
             <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
-                onClick={() => setIsDeleteManyDialogOpen(false)}
+                onClick={() => setIsDeleteDialogOpen(false)}
               >
-                Cancel
+                No
               </Button>
-              <Button variant="destructive" onClick={handleDelete}>
-                Delete anyway
+              <Button variant="destructive" onClick={handleConfirmDelete}>
+                Yes, please!
               </Button>
             </div>
           </div>

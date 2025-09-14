@@ -32,7 +32,6 @@ When choosing between solutions:
 - **Readability First**: Structure files so that readers can understand the primary purpose without scrolling through private implementation
 
 ## Testing Workflow
-
 - **TypeScript (.ts)**: Use unit testing for business logic
-- **React Components (.tsx)**: Use Playwright for end-to-end testing
+- **React Components (.tsx)**: after making changes, test it at http://localhost:5273/ using browsermcp MCP,  make sure you take a snapshot ans you read the DOM to verify the reflected change as the user asked. once the user approve, continue in writing test with Playwright using playwright MCP for end-to-end testing
 - **Implementation Policy**: Always propose changes first, wait for approval before implementing tests

@@ -17,6 +17,7 @@ import { SplitScreen } from "./SplitScreen";
 import { SyncStatusIcon } from "./SyncStatusIcon";
 import { VerticalActionGroup } from "./VerticalActionGroup";
 import { WorkerList } from "./WorkerList";
+import { WorkerListActions } from "./WorkerListActions";
 import { useShiftManagerInitialization } from "../hooks/useShiftManagerInitialization";
 import { useShiftOptimization } from "../hooks/useShiftOptimization";
 import { useUserHandlers } from "../hooks/useUserHandlers";
@@ -27,6 +28,7 @@ import { defaultHours } from "../constants/shiftManagerConstants";
 export function ShiftManager() {
   const [recoilState] = useRecoilState(shiftState);
   const [isEditing, setIsEditing] = useState(false);
+  const [checkedUserIds, setCheckedUserIds] = useState<string[]>([]);
 
   // Initialize the component and get the constraints signature ref
   const { lastAppliedConstraintsSignature } = useShiftManagerInitialization();
@@ -98,10 +100,10 @@ export function ShiftManager() {
   }, [selectedUserId, recoilState.userShiftData]);
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col h-full">
       <div
         id="header"
-        className="grid grid-cols-[auto_1fr] gap-x-4 items-start mb-4"
+        className="grid grid-cols-[auto_1fr] gap-x-4 items-start mb-4 flex-none"
       >
         <img
           src={tumbleweedIcon}
@@ -113,9 +115,9 @@ export function ShiftManager() {
           <h2 className="text-md text-gray-400">Shift Manager</h2>
         </div>
       </div>
-      <div id="content" className="flex-1 overflow-auto">
-        <Card className="h-full flex flex-row">
-          <Card className="h-full flex flex-col gap-2 p-2">
+      <div id="content" className="flex-1 min-h-0">
+        <Card className="flex flex-row h-full overflow-hidden">
+          <div className="flex flex-col p-2">
             <VerticalActionGroup className="flex-none gap-3">
               <SyncStatusIcon status={syncStatus} size={18} />
               <EditButton
@@ -123,10 +125,15 @@ export function ShiftManager() {
                 onToggle={() => setIsEditing(!isEditing)}
               />
             </VerticalActionGroup>
-          </Card>
-          <CardContent className="p-4 flex flex-1 flex-col gap-2">
-            <div className="flex-none flex flex-col" id="assignments-table">
-              <div className="flex items-center gap-2 mb-2">
+          </div>
+          <CardContent className="p-4 flex flex-col flex-1 min-h-0 overflow-hidden">
+            {/* Shift Assignments - 50% */}
+            <div
+              className="flex flex-col min-h-0 overflow-hidden mb-2"
+              style={{ height: "50%" }}
+              id="assignments-table"
+            >
+              <div className="flex items-center gap-2 mb-2 flex-none">
                 <h3 className="text-lg font-semibold">Shift Assignments</h3>
                 <PostListActions
                   isEditing={isEditing}
@@ -136,45 +143,55 @@ export function ShiftManager() {
                   onCheckAll={handlePostCheckAll}
                 />
               </div>
-              <AvailabilityTableView
-                key={`assignments-${
-                  recoilState.userShiftData
-                    ?.map((u) => u.user.name)
-                    .join("-") || "no-users"
-                }-${
-                  recoilState.posts?.map((p) => p.id).join("-") || "no-posts"
-                }`}
-                className="flex-1 border-primary-rounded-lg"
-                posts={recoilState.posts}
-                hours={recoilState.hours || defaultHours}
-                users={
-                  recoilState.userShiftData?.map((userData) => userData.user) ||
-                  []
-                }
-                userShiftData={recoilState.userShiftData || []}
-                mode="assignments"
-                assignments={assignments}
-                customCellDisplayNames={recoilState.customCellDisplayNames}
-                selectedUserId={selectedUserId}
-                onConstraintsChange={() => {
-                  // Assignment changes handled by table component directly
-                }}
-                isEditing={isEditing}
-                onPostEdit={handlePostEdit}
-                checkedPostIds={checkedPostIds}
-                onPostCheck={handlePostCheck}
-                onPostUncheck={handlePostUncheck}
-                onPostRemove={(postIds) => handleRemovePosts([postIds])}
-                onAssignmentEdit={handleAssignmentNameUpdate}
-                restTime={recoilState.restTime}
-                startHour={recoilState.startTime}
-                endHour={recoilState.endTime}
-              />
+              <div className="flex-1 border-primary-rounded-lg overflow-hidden">
+                <AvailabilityTableView
+                  key={`assignments-${
+                    recoilState.userShiftData
+                      ?.map((u) => u.user.name)
+                      .join("-") || "no-users"
+                  }-${
+                    recoilState.posts?.map((p) => p.id).join("-") || "no-posts"
+                  }`}
+                  className="h-full"
+                  posts={recoilState.posts}
+                  hours={recoilState.hours || defaultHours}
+                  users={
+                    recoilState.userShiftData?.map(
+                      (userData) => userData.user
+                    ) || []
+                  }
+                  userShiftData={recoilState.userShiftData || []}
+                  mode="assignments"
+                  assignments={assignments}
+                  customCellDisplayNames={recoilState.customCellDisplayNames}
+                  selectedUserId={selectedUserId}
+                  onConstraintsChange={() => {
+                    // Assignment changes handled by table component directly
+                  }}
+                  isEditing={isEditing}
+                  onPostEdit={handlePostEdit}
+                  checkedPostIds={checkedPostIds}
+                  onPostCheck={handlePostCheck}
+                  onPostUncheck={handlePostUncheck}
+                  onPostRemove={(postIds) => handleRemovePosts([postIds])}
+                  onAssignmentEdit={handleAssignmentNameUpdate}
+                  restTime={recoilState.restTime}
+                  startHour={recoilState.startTime}
+                  endHour={recoilState.endTime}
+                />
+              </div>
+            </div>
+
+            {/* Optimize Button - 10% */}
+            <div
+              className="flex items-center justify-center mb-2 flex-none"
+              style={{ height: "10%" }}
+            >
               <Button
                 id="optimize-button"
                 onClick={handleOptimize}
                 variant="default"
-                className="w-full mt-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={isOptimizeDisabled}
                 title={optimizeButtonTitle}
               >
@@ -182,69 +199,103 @@ export function ShiftManager() {
               </Button>
             </div>
 
-            <SplitScreen
-              id="worker-info"
-              leftWidth="30%"
-              rightWidth="70%"
-              leftPanel={
-                <WorkerList
-                  users={
-                    recoilState.userShiftData?.map(
-                      (userData) => userData.user
-                    ) || []
-                  }
-                  selectedUserId={selectedUserId}
-                  onSelectUser={handleUserSelect}
-                  onEditUser={() => {}} // Temporarily disabled
-                  onAddUser={addUser}
-                  onUpdateUserName={updateUserName}
-                  onRemoveUsers={removeUsers}
+            {/* Staff Section - 40% */}
+            <div
+              className="flex flex-col min-h-0 overflow-hidden"
+              style={{ height: "40%" }}
+            >
+              <div className="flex items-center gap-2 mb-2 flex-none">
+                <h3 className="text-lg font-semibold">Staff</h3>
+                <WorkerListActions
                   isEditing={isEditing}
+                  onAddUser={addUser}
+                  onRemoveUsers={removeUsers}
+                  onCheckAll={(allWasClicked) => {
+                    setCheckedUserIds(
+                      allWasClicked
+                        ? recoilState.userShiftData?.map(
+                            (userData) => userData.user.id
+                          ) || []
+                        : []
+                    );
+                  }}
+                  checkedUserIds={checkedUserIds}
                   onResetAllAvailability={resetAllAvailability}
                 />
-              }
-              rightPanel={
-                <AvailabilityTableView
-                  key={`availability-${selectedUserId}-${
-                    recoilState.userShiftData
-                      ?.map((u) => u.user.name)
-                      .join("-") || "no-users"
-                  }`}
-                  user={
-                    selectedUserId
-                      ? recoilState.userShiftData?.find(
-                          (u) => u.user.id === selectedUserId
-                        )?.user
-                      : undefined
+              </div>
+              <div className="flex-1 min-h-0">
+                <SplitScreen
+                  id="worker-info"
+                  leftWidth="40%"
+                  rightWidth="60%"
+                  className="h-full overflow-hidden"
+                  leftPanel={
+                    <WorkerList
+                      users={
+                        recoilState.userShiftData?.map(
+                          (userData) => userData.user
+                        ) || []
+                      }
+                      selectedUserId={selectedUserId}
+                      onSelectUser={handleUserSelect}
+                      onEditUser={() => {}} // Temporarily disabled
+                      onUpdateUserName={updateUserName}
+                      isEditing={isEditing}
+                      checkedUserIds={checkedUserIds}
+                      onCheckUser={(userId) =>
+                        setCheckedUserIds([...checkedUserIds, userId])
+                      }
+                      onUncheckUser={(userId) =>
+                        setCheckedUserIds(
+                          checkedUserIds.filter((id) => id !== userId)
+                        )
+                      }
+                    />
                   }
-                  availabilityConstraints={selectedUser?.constraints}
-                  posts={recoilState.posts}
-                  hours={recoilState.hours || defaultHours}
-                  userShiftData={recoilState.userShiftData || []}
-                  mode="availability"
-                  onConstraintsChange={(newConstraints) => {
-                    if (selectedUser) {
-                      updateUserConstraints(
-                        selectedUser.user.id,
-                        newConstraints
-                      );
-                    }
-                  }}
-                  isEditing={isEditing}
-                  onPostEdit={handlePostEdit}
-                  selectedUserId={selectedUserId}
-                  users={
-                    recoilState.userShiftData?.map(
-                      (userData) => userData.user
-                    ) || []
+                  rightPanel={
+                    <AvailabilityTableView
+                      key={`availability-${selectedUserId}-${
+                        recoilState.userShiftData
+                          ?.map((u) => u.user.name)
+                          .join("-") || "no-users"
+                      }`}
+                      user={
+                        selectedUserId
+                          ? recoilState.userShiftData?.find(
+                              (u) => u.user.id === selectedUserId
+                            )?.user
+                          : undefined
+                      }
+                      availabilityConstraints={selectedUser?.constraints}
+                      posts={recoilState.posts}
+                      hours={recoilState.hours || defaultHours}
+                      userShiftData={recoilState.userShiftData || []}
+                      mode="availability"
+                      onConstraintsChange={(newConstraints) => {
+                        if (selectedUser) {
+                          updateUserConstraints(
+                            selectedUser.user.id,
+                            newConstraints
+                          );
+                        }
+                      }}
+                      isEditing={isEditing}
+                      onPostEdit={handlePostEdit}
+                      selectedUserId={selectedUserId}
+                      users={
+                        recoilState.userShiftData?.map(
+                          (userData) => userData.user
+                        ) || []
+                      }
+                      checkedPostIds={checkedPostIds}
+                      onPostCheck={handlePostCheck}
+                      onPostUncheck={handlePostUncheck}
+                      onPostRemove={(postIds) => handleRemovePosts([postIds])}
+                    />
                   }
-                  checkedPostIds={checkedPostIds}
-                  onPostCheck={handlePostCheck}
-                  onPostUncheck={handlePostUncheck}
-                  onPostRemove={(postIds) => handleRemovePosts([postIds])}
                 />
-              }
-            />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

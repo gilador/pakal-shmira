@@ -8,13 +8,13 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [["list"], ...(process.env.CI ? [["github"]] : [])],
   use: {
-    baseURL: "http://localhost:5173",
+    baseURL: "http://localhost:5273",
     trace: "on-first-retry",
     headless: true,
   },
   webServer: {
     command: "npm run dev",
-    url: "http://localhost:5173",
+    url: "http://localhost:5273",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

@@ -187,6 +187,310 @@ test.describe("Staff Management", () => {
     // Exit edit mode
     await editToggleButton.click();
   });
+
+  test("can delete staff members using select all then delete", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    // Wait for app to load
+    await expect(page.getByRole("main")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Staff" })).toBeVisible();
+
+    // Get initial staff count (should be > 0)
+    const initialStaffCount = await page
+      .locator('[data-testid="staff-member"]')
+      .count();
+    expect(initialStaffCount).toBeGreaterThan(0);
+
+    // Enter edit mode
+    const editToggleButton = page
+      .getByRole("button", { name: "Enter edit mode" })
+      .first();
+    await editToggleButton.click();
+
+    // Wait for edit mode controls
+    await expect(page.getByRole("button", { name: "Add user" })).toBeVisible();
+
+    // Click "Select all users" button
+    const selectAllButton = page.getByRole("button", {
+      name: "Select all users",
+    });
+    await expect(selectAllButton).toBeVisible();
+    await selectAllButton.click();
+
+    // Click the delete button
+    const deleteButton = page.getByRole("button", {
+      name: "Delete selected users",
+    });
+    await expect(deleteButton).toBeVisible();
+    await deleteButton.click();
+
+    // Confirmation dialog should appear for multiple users
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(
+      page.getByText(
+        `Are you sure you want to delete ${initialStaffCount} users?`
+      )
+    ).toBeVisible();
+
+    // Click "Delete anyway" button
+    const confirmDeleteButton = page.getByRole("button", {
+      name: "Delete anyway",
+    });
+    await confirmDeleteButton.click();
+
+    // Verify all staff members are deleted
+    await expect(page.locator('[data-testid="staff-member"]')).toHaveCount(0);
+
+    // Exit edit mode
+    await editToggleButton.click();
+  });
+
+  test("can add users then delete them with confirmation dialog", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    // Wait for app to load
+    await expect(page.getByRole("main")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Staff" })).toBeVisible();
+
+    // Get initial staff count
+    const initialStaffCount = await page
+      .locator('[data-testid="staff-member"]')
+      .count();
+
+    // Enter edit mode
+    const editToggleButton = page
+      .getByRole("button", { name: "Enter edit mode" })
+      .first();
+    await editToggleButton.click();
+
+    // Wait for edit mode controls
+    const addUserButton = page.getByRole("button", { name: "Add user" });
+    await expect(addUserButton).toBeVisible();
+
+    // Add 2 new users
+    await addUserButton.click();
+    await addUserButton.click();
+
+    // Verify we have 2 more users
+    await expect(page.locator('[data-testid="staff-member"]')).toHaveCount(
+      initialStaffCount + 2
+    );
+
+    // Select all users
+    const selectAllButton = page.getByRole("button", {
+      name: "Select all users",
+    });
+    await expect(selectAllButton).toBeVisible();
+    await selectAllButton.click();
+
+    // Click the delete button
+    const deleteButton = page.getByRole("button", {
+      name: "Delete selected users",
+    });
+    await deleteButton.click();
+
+    // Confirmation dialog should appear for multiple users
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(page.getByText("Delete All Users")).toBeVisible();
+    await expect(
+      page.getByText(
+        `Are you sure you want to delete ${initialStaffCount + 2} users?`
+      )
+    ).toBeVisible();
+
+    // Click "Delete anyway" button in the dialog
+    const confirmDeleteButton = page.getByRole("button", {
+      name: "Delete anyway",
+    });
+    await expect(confirmDeleteButton).toBeVisible();
+    await confirmDeleteButton.click();
+
+    // Verify all staff members are deleted
+    await expect(page.locator('[data-testid="staff-member"]')).toHaveCount(0);
+
+    // Exit edit mode
+    await editToggleButton.click();
+  });
+
+  test("can cancel delete operation in confirmation dialog", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    // Wait for app to load
+    await expect(page.getByRole("main")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Staff" })).toBeVisible();
+
+    // Get initial staff count
+    const initialStaffCount = await page
+      .locator('[data-testid="staff-member"]')
+      .count();
+    expect(initialStaffCount).toBeGreaterThan(1); // Need multiple users for dialog
+
+    // Enter edit mode
+    const editToggleButton = page
+      .getByRole("button", { name: "Enter edit mode" })
+      .first();
+    await editToggleButton.click();
+
+    // Wait for edit mode controls
+    await expect(page.getByRole("button", { name: "Add user" })).toBeVisible();
+
+    // Select all users
+    const selectAllButton = page.getByRole("button", {
+      name: "Select all users",
+    });
+    await expect(selectAllButton).toBeVisible();
+    await selectAllButton.click();
+
+    // Click the delete button
+    const deleteButton = page.getByRole("button", {
+      name: "Delete selected users",
+    });
+    await deleteButton.click();
+
+    // Confirmation dialog should appear
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(
+      page.getByText(
+        `Are you sure you want to delete ${initialStaffCount} users?`
+      )
+    ).toBeVisible();
+
+    // Click "Cancel" button in the dialog
+    const cancelButton = page.getByRole("button", { name: "Cancel" });
+    await expect(cancelButton).toBeVisible();
+    await cancelButton.click();
+
+    // Dialog should close and staff count should remain unchanged
+    await expect(dialog).not.toBeVisible();
+    await expect(page.locator('[data-testid="staff-member"]')).toHaveCount(
+      initialStaffCount
+    );
+
+    // Exit edit mode
+    await editToggleButton.click();
+  });
+
+  test("can select all staff and delete them", async ({ page }) => {
+    await page.goto("/");
+
+    // Wait for app to load
+    await expect(page.getByRole("main")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Staff" })).toBeVisible();
+
+    // Get initial staff count
+    const initialStaffCount = await page
+      .locator('[data-testid="staff-member"]')
+      .count();
+
+    // Enter edit mode
+    const editToggleButton = page
+      .getByRole("button", { name: "Enter edit mode" })
+      .first();
+    await editToggleButton.click();
+
+    // Wait for edit mode controls
+    await expect(page.getByRole("button", { name: "Add user" })).toBeVisible();
+
+    // Click "Select all users" button
+    const selectAllButton = page.getByRole("button", {
+      name: "Select all users",
+    });
+    await expect(selectAllButton).toBeVisible();
+    await selectAllButton.click();
+
+    // Verify all checkboxes are checked
+    const allCheckboxes = page.locator(
+      '[data-testid="staff-member"] input[type="checkbox"]'
+    );
+    const checkboxCount = await allCheckboxes.count();
+    for (let i = 0; i < checkboxCount; i++) {
+      await expect(allCheckboxes.nth(i)).toBeChecked();
+    }
+
+    // Click the delete button
+    const deleteButton = page.getByRole("button", {
+      name: "Delete selected users",
+    });
+    await deleteButton.click();
+
+    // Confirmation dialog should appear
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(
+      page.getByText(
+        `Are you sure you want to delete ${initialStaffCount} users?`
+      )
+    ).toBeVisible();
+
+    // Click "Delete anyway" button
+    const confirmDeleteButton = page.getByRole("button", {
+      name: "Delete anyway",
+    });
+    await confirmDeleteButton.click();
+
+    // Verify all staff members are deleted
+    await expect(page.locator('[data-testid="staff-member"]')).toHaveCount(0);
+
+    // Exit edit mode
+    await editToggleButton.click();
+  });
+
+  test("delete button behavior when no users are selected", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    // Wait for app to load
+    await expect(page.getByRole("main")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Staff" })).toBeVisible();
+
+    // Get initial staff count
+    const initialStaffCount = await page
+      .locator('[data-testid="staff-member"]')
+      .count();
+
+    // Enter edit mode
+    const editToggleButton = page
+      .getByRole("button", { name: "Enter edit mode" })
+      .first();
+    await editToggleButton.click();
+
+    // Wait for edit mode controls
+    await expect(page.getByRole("button", { name: "Add user" })).toBeVisible();
+
+    // Ensure no checkboxes are selected
+    const allCheckboxes = page.locator(
+      '[data-testid="staff-member"] input[type="checkbox"]'
+    );
+    const checkboxCount = await allCheckboxes.count();
+    for (let i = 0; i < checkboxCount; i++) {
+      await expect(allCheckboxes.nth(i)).not.toBeChecked();
+    }
+
+    // Click the delete button with no users selected
+    const deleteButton = page.getByRole("button", {
+      name: "Delete selected users",
+    });
+    await deleteButton.click();
+
+    // No dialog should appear and no users should be deleted
+    await expect(page.getByRole("dialog")).not.toBeVisible();
+    await expect(page.locator('[data-testid="staff-member"]')).toHaveCount(
+      initialStaffCount
+    );
+
+    // Exit edit mode
+    await editToggleButton.click();
+  });
 });
 
 test.describe("Post Management", () => {

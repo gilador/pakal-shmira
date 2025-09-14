@@ -20,24 +20,22 @@ export const SplitScreen: React.FC<SplitScreenProps> = ({
 }) => {
   return (
     <div
-      className={`flex gap-4 w-full h-full ${className} overflow-scroll`}
+      className={`flex flex-col md:flex-row gap-2 md:gap-4 w-full h-full ${className}`}
       style={style}
     >
       <div
+        className="w-full md:w-auto h-full flex flex-col min-h-0"
         style={{ width: leftWidth }}
-        className="h-full flex flex-col"
         id="left-panel"
       >
         {leftPanel}
       </div>
       <div
+        className="w-full md:w-auto h-full flex flex-col min-h-0"
         style={{ width: rightWidth }}
-        className="h-full flex flex-col"
         id="right-panel"
       >
-        <div className="h-full flex flex-col ">
-          <div className="h-full flex flex-col">{rightPanel}</div>
-        </div>
+        {rightPanel}
       </div>
     </div>
   );

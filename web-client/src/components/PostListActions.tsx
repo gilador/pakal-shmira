@@ -29,20 +29,19 @@ export function PostListActions({
   checkedPostIds,
   onCheckAll,
 }: PostListActionsProps) {
-  const [isDeleteManyDialogOpen, setIsDeleteManyDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [checkAllEnabled, setCheckAllEnabled] = useState(false);
 
   const handleDelete = () => {
-    if (checkedPostIds.length < 2) {
-      onRemovePosts(checkedPostIds);
-    } else {
-      if (!isDeleteManyDialogOpen) {
-        setIsDeleteManyDialogOpen(true);
-      } else {
-        onRemovePosts(checkedPostIds);
-        setIsDeleteManyDialogOpen(false);
-      }
+    if (checkedPostIds.length === 0) {
+      return; // No posts selected
     }
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    onRemovePosts(checkedPostIds);
+    setIsDeleteDialogOpen(false);
     setCheckAllEnabled(false);
   };
 
@@ -88,27 +87,27 @@ export function PostListActions({
           <IconSelectAll size={15} strokeWidth={2} />
         )}
       </button>
-      <Dialog
-        open={isDeleteManyDialogOpen}
-        onOpenChange={setIsDeleteManyDialogOpen}
-      >
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete All Posts</DialogTitle>
+            <DialogTitle>
+              Are you sure you want to delete {checkedPostIds.length}{" "}
+              {checkedPostIds.length === 1 ? "post" : "posts"}?
+            </DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4">
-            <p>
-              Are you sure you want to delete {checkedPostIds.length} posts?
+            <p className="text-muted-foreground">
+              Once deleted, it can't be undone.
             </p>
             <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
-                onClick={() => setIsDeleteManyDialogOpen(false)}
+                onClick={() => setIsDeleteDialogOpen(false)}
               >
-                Cancel
+                No
               </Button>
-              <Button variant="destructive" onClick={handleDelete}>
-                Delete anyway
+              <Button variant="destructive" onClick={handleConfirmDelete}>
+                Yes, please!
               </Button>
             </div>
           </div>
