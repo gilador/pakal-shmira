@@ -310,7 +310,12 @@ export function AvailabilityTableView({
             <div className="flex gap-4 p-2">
               {/* Posts column */}
               <div className="flex flex-col gap-1 min-w-[200px]">
-                <div className="font-semibold p-2 text-center">Posts</div>
+                <div className="relative">
+                  <div className="font-semibold p-2 text-center absolute inset-0 flex items-center justify-center">
+                    Posts
+                  </div>
+                  <div className="h-12 w-full"></div>
+                </div>
                 {posts.map((post) => (
                   <div key={post.id} className="py-2 pr-2">
                     <ActionableText

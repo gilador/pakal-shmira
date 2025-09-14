@@ -554,7 +554,9 @@ export function ShiftInfoSettingsView({
   }, [intensityOptions]);
 
   return (
-    <div className={`flex flex-col gap-4 p-4 ${className}`}>
+    <div
+      className={`flex flex-col gap-4 p-4 border-2 border-dashed border-primary rounded-lg max-w-[500px] mx-auto ${className}`}
+    >
       <h4 className="text-lg font-semibold text-center">Shift Settings</h4>
 
       <div className="flex flex-col gap-4">
@@ -580,32 +582,34 @@ export function ShiftInfoSettingsView({
                     h
                   </span>
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max={intensityOptions.length - 1}
-                  step="1"
-                  value={getSliderIndex(intensity)}
-                  onChange={(e) => {
-                    const newIntensity = getIntensityFromIndex(
-                      parseInt(e.target.value)
-                    );
-                    handleIntensityChange(newIntensity);
-                  }}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider
-                    [&::-webkit-slider-thumb]:appearance-none
-                    [&::-webkit-slider-thumb]:h-4 
-                    [&::-webkit-slider-thumb]:w-4 
-                    [&::-webkit-slider-thumb]:rounded-full 
-                    [&::-webkit-slider-thumb]:bg-primary
-                    [&::-webkit-slider-thumb]:cursor-pointer
-                    [&::-moz-range-thumb]:h-4
-                    [&::-moz-range-thumb]:w-4
-                    [&::-moz-range-thumb]:rounded-full
-                    [&::-moz-range-thumb]:bg-primary
-                    [&::-moz-range-thumb]:cursor-pointer
-                                      [&::-moz-range-thumb]:border-none"
-                />
+                <div className="flex items-center h-9 w-full rounded-md bg-transparent px-3 py-1">
+                  <input
+                    type="range"
+                    min="0"
+                    max={intensityOptions.length - 1}
+                    step="1"
+                    value={getSliderIndex(intensity)}
+                    onChange={(e) => {
+                      const newIntensity = getIntensityFromIndex(
+                        parseInt(e.target.value)
+                      );
+                      handleIntensityChange(newIntensity);
+                    }}
+                    className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider
+                      [&::-webkit-slider-thumb]:appearance-none
+                      [&::-webkit-slider-thumb]:h-4 
+                      [&::-webkit-slider-thumb]:w-4 
+                      [&::-webkit-slider-thumb]:rounded-full 
+                      [&::-webkit-slider-thumb]:bg-primary
+                      [&::-webkit-slider-thumb]:cursor-pointer
+                      [&::-moz-range-thumb]:h-4
+                      [&::-moz-range-thumb]:w-4
+                      [&::-moz-range-thumb]:rounded-full
+                      [&::-moz-range-thumb]:bg-primary
+                      [&::-moz-range-thumb]:cursor-pointer
+                      [&::-moz-range-thumb]:border-none"
+                  />
+                </div>
                 <div className="flex flex-col items-center">
                   <span className="text-sm text-gray-500">Intense</span>
                   <span className="text-xs text-gray-400">

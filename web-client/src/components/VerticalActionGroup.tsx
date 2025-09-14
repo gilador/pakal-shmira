@@ -77,47 +77,47 @@ export function ActionableText({
       }
     >
       {/* Editing controls */}
-      {isEditing && (
-        <div
-          className="flex items-center gap-2 w-16"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Checkbox
-            className="flex-shrink-0 w-4 h-4"
-            checked={isChecked}
-            onCheckedChange={(checked) => {
-              if (checked) {
-                onCheck();
-              } else {
-                onUncheck();
-              }
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-          />
+      <div
+        className={`flex items-center gap-2 w-16 transition-all duration-100 ease-in-out ${
+          isEditing ? "translate-x-0 opacity-100" : "-translate-x-8 opacity-0"
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Checkbox
+          className="flex-shrink-0 w-4 h-4"
+          checked={isChecked}
+          onCheckedChange={(checked) => {
+            if (checked) {
+              onCheck();
+            } else {
+              onUncheck();
+            }
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        />
 
-          <EditButton
-            isEditing={isEditMode}
-            onToggle={() => {
-              if (isEditMode) {
-                // Exiting edit mode - save the value
-                onUpdate(id, tempValue.trim());
-                setIsEditMode(false);
-              } else {
-                // Entering edit mode - reset temp value
-                setTempValue(value);
-                setIsEditMode(true);
-              }
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-            }}
-            className="flex-shrink-0"
-          />
-        </div>
-      )}
+        <EditButton
+          isEditing={isEditMode}
+          onToggle={() => {
+            if (isEditMode) {
+              // Exiting edit mode - save the value
+              onUpdate(id, tempValue.trim());
+              setIsEditMode(false);
+            } else {
+              // Entering edit mode - reset temp value
+              setTempValue(value);
+              setIsEditMode(true);
+            }
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+          }}
+          className="flex-shrink-0"
+        />
+      </div>
 
       {/* Text content */}
       <div

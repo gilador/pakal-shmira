@@ -34,7 +34,7 @@ export function EditButton({
       } ${className}`}
     >
       <Pencil
-        className={`h-4 w-4 transition-transform duration-100 ${
+        className={`h-4 w-4 transition-transform duration-100 animate-in slide-in-from-left-2 duration-200 ${
           isEditing
             ? "-rotate-90 text-primary-foreground"
             : "hover:text-foreground/80"
