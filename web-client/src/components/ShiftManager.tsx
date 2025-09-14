@@ -134,7 +134,10 @@ export function ShiftManager() {
               id="assignments-table"
             >
               <div className="flex items-center gap-2 mb-2 flex-none">
-                <h3 className="text-lg font-semibold">Shift Assignments</h3>
+                <h3 className="text-lg font-semibold">
+                  Shift Assignments ({recoilState.posts?.length || 0}
+                  {checkedPostIds.length > 0 && ` / ${checkedPostIds.length}`})
+                </h3>
                 <PostListActions
                   isEditing={isEditing}
                   onAddPost={addPost}
@@ -173,7 +176,6 @@ export function ShiftManager() {
                   checkedPostIds={checkedPostIds}
                   onPostCheck={handlePostCheck}
                   onPostUncheck={handlePostUncheck}
-                  onPostRemove={(postIds) => handleRemovePosts([postIds])}
                   onAssignmentEdit={handleAssignmentNameUpdate}
                   restTime={recoilState.restTime}
                   startHour={recoilState.startTime}
@@ -205,7 +207,12 @@ export function ShiftManager() {
               style={{ height: "40%" }}
             >
               <div className="flex items-center gap-2 mb-2 flex-none">
-                <h3 className="text-lg font-semibold">Staff</h3>
+                <h3 className="text-lg font-semibold">
+                  Staff ({recoilState.userShiftData?.length || 0}
+                  {checkedUserIds.length > 0 &&
+                    `, ${checkedUserIds.length} selected`}
+                  )
+                </h3>
                 <WorkerListActions
                   isEditing={isEditing}
                   onAddUser={addUser}
@@ -290,7 +297,6 @@ export function ShiftManager() {
                       checkedPostIds={checkedPostIds}
                       onPostCheck={handlePostCheck}
                       onPostUncheck={handlePostUncheck}
-                      onPostRemove={(postIds) => handleRemovePosts([postIds])}
                     />
                   }
                 />
