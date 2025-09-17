@@ -1,37 +1,11 @@
----
 alwaysApply: true
 ---
 
-# Core Development Philosophy
+# Development Rule
 
-## Fundamental Principles
-
-- **Simplicity First**: Prioritize simple, clear, and maintainable solutions over complex ones
-- **Iterate Don't Rebuild**: Prefer iterating on existing working code rather than building from scratch
-- **Stay Focused**: Concentrate on the specific task at hand, avoid scope creep
-- **Quality Standards**: Use SOLID, KISS, and DRY principles consistently
-
-## Decision Framework
-
-When choosing between solutions:
-
-1. Does it solve the immediate problem simply?
-2. Can we build on existing code/patterns?
-3. Does it follow established project patterns?
-
-## User Preferences
-
-- Focus on practical, actionable results
-- Prefer simple calculations over statistical complexity
-- Favor straightforward implementations over advanced algorithms
-
-## Code Organization
-
-- **Public Before Private**: Place public functionality (exports, public methods, main functions) higher in files than private functionality (helper functions, internal utilities)
-- **Logical Flow**: Organize code so that the main interface is immediately visible, with implementation details below
-- **Readability First**: Structure files so that readers can understand the primary purpose without scrolling through private implementation
-
-## Testing Workflow
-- **TypeScript (.ts)**: Use unit testing for business logic
-- **React Components (.tsx)**: after making changes, test it at http://localhost:5273/ using browsermcp MCP,  make sure you take a snapshot ans you read the DOM to verify the reflected change as the user asked. once the user approve, continue in writing test with Playwright using playwright MCP for end-to-end testing
-- **Implementation Policy**: Always propose changes first, wait for approval before implementing tests
+- **Core Principle**: Think, Evaluate, Apply (TEA). Always evaluate UI fixes using MCP Browser one http://localhost:5273/.  
+- **Approach**: Prefer simple, clear, maintainable solutions. Iterate on existing code, avoid scope creep.  
+- **Standards**: Follow SOLID, KISS, DRY. Keep public before private, logical flow, readability first.  
+- **Workflow**:  
+  - TS: unit tests for logic.  
+  - TSX: after UI changes, test in MCP Browser → snapshot + DOM check. Once user approves, add Playwright E2E via MCP once user agree yo your changes.  

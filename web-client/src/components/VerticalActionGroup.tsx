@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Checkbox } from "@/components/elements/checkbox";
 import { EditButton } from "./EditButton";
 import { Input } from "@/components/elements/input";
@@ -76,47 +76,51 @@ export function ActionableText({
           : undefined
       }
     >
-      {/* Editing controls */}
+      {/* Editing controls - always reserve space but hide when not editing */}
       <div
-        className={`flex items-center gap-2 w-16 transition-all duration-100 ease-in-out ${
-          isEditing ? "translate-x-0 opacity-100" : "-translate-x-8 opacity-0"
-        }`}
+        className="flex items-center gap-2 w-16 flex-shrink-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <Checkbox
-          className="flex-shrink-0 w-4 h-4"
-          checked={isChecked}
-          onCheckedChange={(checked) => {
-            if (checked) {
-              onCheck();
-            } else {
-              onUncheck();
-            }
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        />
+        <div
+          className={`flex items-center gap-2 transition-opacity duration-100 ease-in-out ${
+            isEditing ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <Checkbox
+            className="flex-shrink-0 w-4 h-4"
+            checked={isChecked}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                onCheck();
+              } else {
+                onUncheck();
+              }
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          />
 
-        <EditButton
-          isEditing={isEditMode}
-          onToggle={() => {
-            if (isEditMode) {
-              // Exiting edit mode - save the value
-              onUpdate(id, tempValue.trim());
-              setIsEditMode(false);
-            } else {
-              // Entering edit mode - reset temp value
-              setTempValue(value);
-              setIsEditMode(true);
-            }
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-          }}
-          className="flex-shrink-0"
-        />
+          <EditButton
+            isEditing={isEditMode}
+            onToggle={() => {
+              if (isEditMode) {
+                // Exiting edit mode - save the value
+                onUpdate(id, tempValue.trim());
+                setIsEditMode(false);
+              } else {
+                // Entering edit mode - reset temp value
+                setTempValue(value);
+                setIsEditMode(true);
+              }
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            className="flex-shrink-0"
+          />
+        </div>
       </div>
 
       {/* Text content */}
@@ -155,7 +159,6 @@ export function ActionableText({
 }
 
 // Original VerticalActionGroup component
-import React from "react";
 
 interface VerticalActionGroupProps {
   children: React.ReactNode;

@@ -309,12 +309,24 @@ export function AvailabilityTableView({
           {mode === "assignments" && isEditing ? (
             <div className="flex gap-4 p-2">
               {/* Posts column */}
-              <div className="flex flex-col gap-1 min-w-[200px]">
-                <div className="relative">
-                  <div className="font-semibold p-2 text-center absolute inset-0 flex items-center justify-center">
-                    Posts
+              <div className="flex flex-col gap-1 w-[320px] flex-shrink-0">
+                <div className="py-2 pr-2">
+                  <div className="flex items-center gap-2 w-full min-h-[32px]">
+                    {/* Editing controls - always reserve space but hide when not editing */}
+                    <div className="flex items-center gap-2 w-16 flex-shrink-0">
+                      <div className="flex items-center gap-2 transition-opacity duration-100 ease-in-out opacity-0">
+                        {/* Invisible placeholder for checkbox and edit button to match ActionableText exactly */}
+                        <div className="flex-shrink-0 w-4 h-4"></div>
+                        <div className="flex-shrink-0 h-8 w-8"></div>
+                      </div>
+                    </div>
+                    {/* Text content */}
+                    <div className="flex-1 min-w-0">
+                      <span className="truncate text-gray-900 font-semibold">
+                        Post
+                      </span>
+                    </div>
                   </div>
-                  <div className="h-12 w-full"></div>
                 </div>
                 {posts.map((post) => (
                   <div key={post.id} className="py-2 pr-2">
@@ -354,7 +366,11 @@ export function AvailabilityTableView({
                 style={{ "--hours": hours.length } as React.CSSProperties}
               >
                 {mode === "assignments" && (
-                  <div className="font-semibold p-2 text-center">Post</div>
+                  <div className="font-semibold p-2 text-center flex items-center">
+                    {/* Reserve space for editing controls to match ActionableText layout */}
+                    <div className="w-16 flex-shrink-0"></div>
+                    <div className="flex-1 text-center">Post</div>
+                  </div>
                 )}
                 {hours.map((hour) => (
                   <div key={hour.id} className="font-semibold p-2 text-center">
