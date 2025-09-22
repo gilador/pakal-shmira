@@ -53,7 +53,7 @@ export function WorkerList({
                 <div
                   key={user.id}
                   data-testid="staff-member"
-                  className={`px-2 pb-2 pt-1 rounded-md ${
+                  className={`px-2 pb-1 pt-1 gap-1 rounded-md ${
                     selectedUserId === user.id
                       ? "bg-gray-300"
                       : "hover:bg-gray-50"

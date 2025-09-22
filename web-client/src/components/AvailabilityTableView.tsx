@@ -6,7 +6,6 @@ import { Constraint, User, UserShiftData } from "../models";
 import { UniqueString } from "../models/index";
 import { EditButton } from "./EditButton";
 import { EditableText } from "./EditableText";
-import { ShiftInfoSettingsView } from "./ShiftInfoSettingsView";
 import { ActionableText } from "./VerticalActionGroup";
 
 export interface AvailabilityTableViewProps {
@@ -32,13 +31,6 @@ export interface AvailabilityTableViewProps {
     newUserName: string
   ) => void;
   customCellDisplayNames?: { [slotKey: string]: string };
-  // Shift information for edit mode
-  restTime?: number;
-  startHour?: string;
-  endHour?: string;
-  onStartTimeChange?: (startTime: string) => void;
-  onEndTimeChange?: (endTime: string) => void;
-  onIntensityChange?: (intensity: number) => void;
 }
 
 const AssignmentCell = ({
@@ -155,9 +147,6 @@ export function AvailabilityTableView({
   onPostUncheck,
   onAssignmentEdit,
   customCellDisplayNames = {},
-  restTime,
-  startHour,
-  endHour,
 }: AvailabilityTableViewProps) {
   const [optimisticLocalConstraints, setOptimisticLocalConstraints] = useState<
     Constraint[][] | null
@@ -305,226 +294,197 @@ export function AvailabilityTableView({
         </div>
       ) : (
         <div className="flex-1 overflow-auto">
-          {/* Show edit mode view for assignments */}
-          {mode === "assignments" && isEditing ? (
-            <div className="flex gap-4 p-2">
-              {/* Posts column */}
-              <div className="flex flex-col gap-1 w-[320px] flex-shrink-0">
-                <div className="py-2 pr-2">
-                  <div className="flex items-center gap-2 w-full min-h-[32px]">
-                    {/* Editing controls - always reserve space but hide when not editing */}
-                    <div className="flex items-center gap-2 w-16 flex-shrink-0">
-                      <div className="flex items-center gap-2 transition-opacity duration-100 ease-in-out opacity-0">
-                        {/* Invisible placeholder for checkbox and edit button to match ActionableText exactly */}
-                        <div className="flex-shrink-0 w-4 h-4"></div>
-                        <div className="flex-shrink-0 h-8 w-8"></div>
-                      </div>
-                    </div>
-                    {/* Text content */}
-                    <div className="flex-1 min-w-0">
-                      <span className="truncate text-gray-900 font-semibold">
-                        Post
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                {posts.map((post) => (
-                  <div key={post.id} className="py-2 pr-2">
-                    <ActionableText
-                      id={post.id}
-                      value={post.value}
-                      isEditing={isEditing}
-                      isChecked={checkedPostIds.includes(post.id)}
-                      onCheck={() => onPostCheck?.(post.id)}
-                      onUncheck={() => onPostUncheck?.(post.id)}
-                      onUpdate={(id, newValue) =>
-                        handlePostNameChange(id, newValue)
-                      }
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* Shift settings */}
-              <div className="flex-1">
-                <ShiftInfoSettingsView
-                  restTime={restTime ?? 2}
-                  startHour={startHour ?? "08:00"}
-                  endHour={endHour ?? "16:00"}
-                />
-              </div>
-            </div>
-          ) : (
-            /* Normal table view */
-            <div className="p-2">
+          {/* Normal availability table - modify with CSS for edit mode */}
+          {mode === "availability" && (
+            <div className="p-2 relative">
               <div
-                className={`grid gap-1 w-full ${
-                  mode === "assignments"
-                    ? "grid-cols-[auto_repeat(var(--hours),1fr)]"
-                    : "grid-cols-[repeat(var(--hours),1fr)]"
-                }`}
+                className={`grid gap-1 w-full grid-cols-[repeat(var(--hours),1fr)]`}
                 style={{ "--hours": hours.length } as React.CSSProperties}
               >
-                {mode === "assignments" && (
-                  <div className="font-semibold p-2 text-center flex items-center">
-                    {/* Reserve space for editing controls to match ActionableText layout */}
-                    <div className="w-16 flex-shrink-0"></div>
-                    <div className="flex-1 text-center">Post</div>
-                  </div>
-                )}
                 {hours.map((hour) => (
                   <div key={hour.id} className="font-semibold p-2 text-center">
                     {hour.value}
                   </div>
                 ))}
 
-                {mode === "assignments"
-                  ? posts.map((post, postIndex) => (
-                      <React.Fragment key={post.id}>
-                        <div className="py-2 pr-2">
-                          <ActionableText
-                            id={post.id}
-                            value={post.value}
-                            isEditing={isEditing}
-                            isChecked={checkedPostIds.includes(post.id)}
-                            onCheck={() => onPostCheck?.(post.id)}
-                            onUncheck={() => onPostUncheck?.(post.id)}
-                            onUpdate={(id, newValue) =>
-                              handlePostNameChange(id, newValue)
+                {posts.map((post, postIndex) => (
+                  <React.Fragment key={post.id}>
+                    {hours.map((hour, hourIndex) => {
+                      if (!effectiveAvailabilityConstraints) return null;
+                      const currentCellConstraint =
+                        effectiveAvailabilityConstraints[postIndex]?.[
+                          hourIndex
+                        ];
+                      const isAvailable =
+                        currentCellConstraint?.availability ?? true;
+                      return (
+                        <div
+                          key={`${post.id}-${hour.id}`}
+                          className={`p-2 cursor-pointer flex items-center justify-center ${
+                            isAvailable
+                              ? `${colors.available.default} ${colors.available.hover}`
+                              : `${colors.unavailable.default} ${colors.unavailable.hover}`
+                          } rounded-md transition-opacity duration-200`}
+                          style={{
+                            opacity: isEditing ? 0.2 : 1,
+                            pointerEvents: isEditing ? "none" : "auto",
+                          }}
+                          onClick={() =>
+                            toggleAvailability(postIndex, hourIndex)
+                          }
+                        >
+                          <div className="w-4 h-4 flex items-center justify-center">
+                            {isAvailable ? (
+                              <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                            ) : (
+                              <IconRotateClockwise2 className="w-3 h-3 text-red-600" />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* Show assignment table - always present in DOM */}
+          {mode === "assignments" && (
+            <div className="p-2 relative">
+              {/* Hours headers */}
+              <div
+                className="grid gap-1 w-full grid-cols-[auto_repeat(var(--hours),1fr)] mb-0"
+                style={{ "--hours": hours.length } as React.CSSProperties}
+              >
+                <div className="font-semibold p-2 text-center flex items-center">
+                  {/* Reserve space for editing controls to match ActionableText layout */}
+                  <div className="w-10 flex-shrink-0"></div>
+                  <div className="flex-1 text-center">Post</div>
+                </div>
+                {hours.map((hour) => (
+                  <div key={hour.id} className="font-semibold p-2 text-center">
+                    {hour.value}
+                  </div>
+                ))}
+              </div>
+
+              {/* Assignment table content */}
+              <div
+                className="grid gap-1 w-full grid-cols-[auto_repeat(var(--hours),1fr)]"
+                style={{ "--hours": hours.length } as React.CSSProperties}
+              >
+                {posts.map((post, postIndex) => (
+                  <React.Fragment key={post.id}>
+                    <div className="py-2 pr-2">
+                      <ActionableText
+                        id={post.id}
+                        value={post.value}
+                        isEditing={isEditing}
+                        isChecked={checkedPostIds.includes(post.id)}
+                        onCheck={() => onPostCheck?.(post.id)}
+                        onUncheck={() => onPostUncheck?.(post.id)}
+                        onUpdate={(id, newValue) =>
+                          handlePostNameChange(id, newValue)
+                        }
+                      />
+                    </div>
+                    {hours.map((hour, hourIndex) => {
+                      if (!assignments) return null;
+                      const slotKey = `${postIndex}-${hourIndex}`;
+                      const customDisplayName = customCellDisplayNames[slotKey];
+                      const officialAssignedUserId =
+                        assignments[postIndex]?.[hourIndex] || null;
+                      const assignedWorker = officialAssignedUserId
+                        ? users.find((u) => u.id === officialAssignedUserId)
+                        : null;
+                      let finalDisplayNameForCell = "-";
+                      if (customDisplayName !== undefined) {
+                        finalDisplayNameForCell = customDisplayName;
+                      } else if (assignedWorker) {
+                        finalDisplayNameForCell = assignedWorker.name;
+                      }
+                      const isCellSelected =
+                        selectedUserId === officialAssignedUserId &&
+                        officialAssignedUserId !== null;
+                      return (
+                        <div
+                          key={`${post.id}-${hour.id}`}
+                          className={`p-2 text-center rounded-md ${
+                            isCellSelected ? colors.selected.default : ""
+                          }`}
+                        >
+                          <AssignmentCell
+                            name={finalDisplayNameForCell}
+                            isAssigned={officialAssignedUserId !== null}
+                            isShiftEditing={isEditing}
+                            onSaveName={(newName) =>
+                              handleAssignmentNameChange(
+                                postIndex,
+                                hourIndex,
+                                newName
+                              )
                             }
                           />
                         </div>
-                        {hours.map((hour, hourIndex) => {
-                          if (mode === "assignments") {
-                            if (!assignments) return null;
-                            const slotKey = `${postIndex}-${hourIndex}`;
-                            const customDisplayName =
-                              customCellDisplayNames[slotKey];
-                            const officialAssignedUserId =
-                              assignments[postIndex]?.[hourIndex] || null;
-                            const assignedWorker = officialAssignedUserId
-                              ? users.find(
-                                  (u) => u.id === officialAssignedUserId
-                                )
-                              : null;
-                            let finalDisplayNameForCell = "-";
-                            if (customDisplayName !== undefined) {
-                              finalDisplayNameForCell = customDisplayName;
-                            } else if (assignedWorker) {
-                              finalDisplayNameForCell = assignedWorker.name;
-                            }
-                            const isCellSelected =
-                              selectedUserId === officialAssignedUserId &&
-                              officialAssignedUserId !== null;
-                            return (
-                              <div
-                                key={`${post.id}-${hour.id}`}
-                                className={`p-2 text-center rounded-md ${
-                                  isCellSelected ? colors.selected.default : ""
-                                }`}
-                              >
-                                <AssignmentCell
-                                  name={finalDisplayNameForCell}
-                                  isAssigned={officialAssignedUserId !== null}
-                                  isShiftEditing={isEditing}
-                                  onSaveName={(newName) =>
-                                    handleAssignmentNameChange(
-                                      postIndex,
-                                      hourIndex,
-                                      newName
-                                    )
-                                  }
-                                />
-                              </div>
-                            );
-                          } else {
-                            // Availability mode
-                            if (!effectiveAvailabilityConstraints) return null;
-                            const currentCellConstraint =
-                              effectiveAvailabilityConstraints[postIndex]?.[
-                                hourIndex
-                              ];
-                            const isAvailable =
-                              currentCellConstraint?.availability ?? true;
-                            return (
-                              <div
-                                key={`${post.id}-${hour.id}`}
-                                className={`p-2 cursor-pointer flex items-center justify-center ${
-                                  isAvailable
-                                    ? `${colors.available.default} ${colors.available.hover}`
-                                    : `${colors.unavailable.default} ${colors.unavailable.hover}`
-                                } rounded-md`}
-                                onClick={() =>
-                                  toggleAvailability(postIndex, hourIndex)
-                                }
-                              >
-                                <div className="w-4 h-4 flex items-center justify-center">
-                                  {isAvailable ? (
-                                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                                  ) : (
-                                    <IconRotateClockwise2 className="w-3 h-3 text-red-600" />
-                                  )}
-                                </div>
-                              </div>
-                            );
+                      );
+                    })}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* Normal table view for availability mode */}
+          {mode === "availability" && (
+            <div className="p-2">
+              <div
+                className="grid gap-1 w-full grid-cols-[repeat(var(--hours),1fr)]"
+                style={{ "--hours": hours.length } as React.CSSProperties}
+              >
+                {hours.map((hour) => (
+                  <div key={hour.id} className="font-semibold p-2 text-center">
+                    {hour.value}
+                  </div>
+                ))}
+
+                {/* Availability mode cells */}
+                {posts.map((post, postIndex) => (
+                  <React.Fragment key={post.id}>
+                    {hours.map((hour, hourIndex) => {
+                      if (!effectiveAvailabilityConstraints) return null;
+                      const currentCellConstraint =
+                        effectiveAvailabilityConstraints[postIndex]?.[
+                          hourIndex
+                        ];
+                      const isAvailable =
+                        currentCellConstraint?.availability ?? true;
+                      return (
+                        <div
+                          key={`${post.id}-${hour.id}`}
+                          className={`p-2 cursor-pointer flex items-center justify-center ${
+                            isAvailable
+                              ? `${colors.available.default} ${colors.available.hover}`
+                              : `${colors.unavailable.default} ${colors.unavailable.hover}`
+                          } rounded-md transition-opacity duration-200`}
+                          style={{
+                            opacity: isEditing ? 0.2 : 1,
+                            pointerEvents: isEditing ? "none" : "auto",
+                          }}
+                          onClick={() =>
+                            toggleAvailability(postIndex, hourIndex)
                           }
-                        })}
-                      </React.Fragment>
-                    ))
-                  : // Availability mode - show only hours for the selected user
-                    posts.map((post, postIndex) => (
-                      <React.Fragment key={post.id}>
-                        {hours.map((hour, hourIndex) => {
-                          if (!effectiveAvailabilityConstraints) return null;
-                          const currentCellConstraint =
-                            effectiveAvailabilityConstraints[postIndex]?.[
-                              hourIndex
-                            ];
-                          const isAvailable =
-                            currentCellConstraint?.availability ?? true;
-                          const toggleAvailability = (
-                            postIdx: number,
-                            hourIdx: number
-                          ) => {
-                            if (!effectiveAvailabilityConstraints) return;
-                            const newConstraints = [
-                              ...effectiveAvailabilityConstraints,
-                            ];
-                            newConstraints[postIdx] = [
-                              ...newConstraints[postIdx],
-                            ];
-                            newConstraints[postIdx][hourIdx] = {
-                              ...newConstraints[postIdx][hourIdx],
-                              availability:
-                                !newConstraints[postIdx][hourIdx]?.availability,
-                            };
-                            setOptimisticLocalConstraints(newConstraints);
-                            onConstraintsChange?.(newConstraints);
-                          };
-                          return (
-                            <div
-                              key={`${post.id}-${hour.id}`}
-                              className={`p-2 cursor-pointer flex items-center justify-center ${
-                                isAvailable
-                                  ? `${colors.available.default} ${colors.available.hover}`
-                                  : `${colors.unavailable.default} ${colors.unavailable.hover}`
-                              } rounded-md`}
-                              onClick={() =>
-                                toggleAvailability(postIndex, hourIndex)
-                              }
-                            >
-                              <div className="w-4 h-4 flex items-center justify-center">
-                                {isAvailable ? (
-                                  <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                                ) : (
-                                  <IconRotateClockwise2 className="w-3 h-3 text-red-600" />
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </React.Fragment>
-                    ))}
+                        >
+                          <div className="w-4 h-4 flex items-center justify-center">
+                            {isAvailable ? (
+                              <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                            ) : (
+                              <IconRotateClockwise2 className="w-3 h-3 text-red-600" />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </React.Fragment>
+                ))}
               </div>
             </div>
           )}

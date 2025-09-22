@@ -1,4 +1,3 @@
-import { Card, CardContent } from "@/components/elements/card";
 import { useState, useEffect } from "react";
 import { useRecoilState } from "recoil";
 import { getOptimalShiftDuration } from "../service/shiftHourHelperService";
@@ -6,9 +5,6 @@ import { DEFAULT_STAFF_COUNT } from "../constants/shiftManagerConstants";
 import { UniqueString } from "../models/index";
 import { calculateFeasibleIntensityRange } from "../service/intensityRangeHelper";
 import { shiftState } from "../stores/shiftStore";
-import { ShiftsRange } from "./ShiftsRange";
-import { ShiftInformation } from "./ShiftInformation";
-import { ShiftHours } from "./ShiftHours";
 
 export interface ShiftInfoSettingsViewProps {
   restTime: number;
@@ -555,84 +551,128 @@ export function ShiftInfoSettingsView({
 
   return (
     <div
-      className={`flex flex-col gap-4 p-4 border-2 border-dashed border-primary rounded-lg max-w-[500px] mx-auto ${className}`}
+      className={`w-full h-full pt-2 p-1 rounded-lg flex flex-col bg-white/90 backdrop-blur-md shadow-xl min-h-0 max-w-full overflow-hidden ${className}`}
     >
-      <h4 className="text-lg font-semibold text-center">Shift Settings</h4>
+      <h4 className="text-base font-semibold text-left mb-1">Shift Settings</h4>
 
-      <div className="flex flex-col gap-4">
-        {/* Unified Shifts Range */}
-        <ShiftsRange
-          startTime={localStartTime}
-          endTime={localEndTime}
-          onStartTimeChange={handleStartTimeChange}
-          onEndTimeChange={handleEndTimeChange}
-        />
+      {/* Top row - Range and Information */}
+      <div className="flex flex-col sm:flex-row flex-wrap gap-4 items-start mb-2 flex-shrink-0 min-w-0">
+        {/* Shifts Range Section */}
+        <div className="flex-1 min-w-[280px] w-full sm:w-auto">
+          <div className="border border-gray-300 rounded-lg p-3">
+            <div className="flex justify-between items-center mb-2">
+              <div className="text-xs font-medium text-gray-700 text-left">
+                Shifts Range
+              </div>
+              <div className="text-xs font-medium text-primary">
+                {(() => {
+                  const [startHours, startMinutes] = localStartTime
+                    .split(":")
+                    .map(Number);
+                  const [endHours, endMinutes] = localEndTime
+                    .split(":")
+                    .map(Number);
+                  const startTotalMinutes = startHours * 60 + startMinutes;
+                  const endTotalMinutes = endHours * 60 + endMinutes;
+                  let durationMinutes = endTotalMinutes - startTotalMinutes;
+                  if (durationMinutes <= 0) durationMinutes += 24 * 60; // Handle overnight
+                  const hours = Math.round(durationMinutes / 60);
+                  return `${hours}hr`;
+                })()}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex flex-col items-center flex-1 min-w-[90px] max-w-[160px]">
+                <label className="text-xs text-gray-600 mb-2">Start</label>
+                <input
+                  type="time"
+                  value={localStartTime}
+                  onChange={(e) => handleStartTimeChange(e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-center text-sm"
+                />
+              </div>
+              <div className="flex items-center px-1">
+                <span className="text-gray-400 font-medium">→</span>
+              </div>
+              <div className="flex flex-col items-center flex-1 min-w-[90px] max-w-[160px]">
+                <label className="text-xs text-gray-600 mb-2">End</label>
+                <input
+                  type="time"
+                  value={localEndTime}
+                  onChange={(e) => handleEndTimeChange(e.target.value)}
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-center text-sm"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
 
-        {/* Intensity Selector */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex flex-col gap-3">
-              <span className="font-medium text-gray-700 mb-2">Intensity:</span>
-              <div className="flex items-center gap-3">
-                <div className="flex flex-col items-center">
-                  <span className="text-sm text-gray-500">Relaxed</span>
-                  <span className="text-xs text-gray-400">
-                    {intensityDurationMap[intensityOptions[0]]?.toFixed(1) ||
-                      "—"}
-                    h
-                  </span>
+        {/* Shift Information Section */}
+        <div className="flex-1 min-w-[280px] w-full sm:w-auto">
+          <div className="border border-gray-300 rounded-lg p-3">
+            <div className="text-xs font-medium text-gray-700 mb-2 text-left">
+              Shift Information
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex flex-col items-center flex-1 min-w-[100px] max-w-[140px]">
+                <label className="text-xs text-gray-600 mb-2">Rest</label>
+                <div className="w-full px-2 py-1 border border-gray-300 rounded text-center text-sm bg-gray-50">
+                  {intensity.toFixed(1)}h
                 </div>
-                <div className="flex items-center h-9 w-full rounded-md bg-transparent px-3 py-1">
-                  <input
-                    type="range"
-                    min="0"
-                    max={intensityOptions.length - 1}
-                    step="1"
-                    value={getSliderIndex(intensity)}
-                    onChange={(e) => {
-                      const newIntensity = getIntensityFromIndex(
-                        parseInt(e.target.value)
-                      );
-                      handleIntensityChange(newIntensity);
-                    }}
-                    className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider
-                      [&::-webkit-slider-thumb]:appearance-none
-                      [&::-webkit-slider-thumb]:h-4 
-                      [&::-webkit-slider-thumb]:w-4 
-                      [&::-webkit-slider-thumb]:rounded-full 
-                      [&::-webkit-slider-thumb]:bg-primary
-                      [&::-webkit-slider-thumb]:cursor-pointer
-                      [&::-moz-range-thumb]:h-4
-                      [&::-moz-range-thumb]:w-4
-                      [&::-moz-range-thumb]:rounded-full
-                      [&::-moz-range-thumb]:bg-primary
-                      [&::-moz-range-thumb]:cursor-pointer
-                      [&::-moz-range-thumb]:border-none"
-                  />
-                </div>
-                <div className="flex flex-col items-center">
-                  <span className="text-sm text-gray-500">Intense</span>
-                  <span className="text-xs text-gray-400">
-                    {intensityDurationMap[
-                      intensityOptions[intensityOptions.length - 1]
-                    ]?.toFixed(1) || "—"}
-                    h
-                  </span>
+              </div>
+              <div className="flex items-center px-1">
+                <span className="text-gray-400 font-medium">→</span>
+              </div>
+              <div className="flex flex-col items-center flex-1 min-w-[100px] max-w-[140px]">
+                <label className="text-xs text-gray-600 mb-2">Duration</label>
+                <div className="w-full px-2 py-1 border border-gray-300 rounded text-center text-sm bg-gray-50 text-primary font-medium">
+                  {shiftDuration.toFixed(2)}h
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      </div>
 
-        {/* Shift Information Display */}
-        <ShiftInformation
-          shiftDuration={shiftDuration}
-          restTime={intensity}
-          className="mb-4"
-        />
+      {/* Spacer to push intensity to bottom */}
+      <div className="flex-1"></div>
 
-        {/* Shift Hours Display */}
-        <ShiftHours shiftStartTimes={shiftStartTimes} />
+      {/* Intensity Section - Below the top row */}
+      <div className="flex-shrink-0">
+        <div className="border border-gray-300 rounded-lg p-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500">Relaxed</span>
+            <div className="flex-1">
+              <input
+                type="range"
+                min="0"
+                max={intensityOptions.length - 1}
+                step="1"
+                value={getSliderIndex(intensity)}
+                onChange={(e) => {
+                  const newIntensity = getIntensityFromIndex(
+                    parseInt(e.target.value)
+                  );
+                  handleIntensityChange(newIntensity);
+                }}
+                className="w-full h-1 bg-black rounded-lg appearance-none cursor-pointer slider
+                  [&::-webkit-slider-thumb]:appearance-none
+                  [&::-webkit-slider-thumb]:h-3 
+                  [&::-webkit-slider-thumb]:w-3 
+                  [&::-webkit-slider-thumb]:rounded-full 
+                  [&::-webkit-slider-thumb]:bg-primary
+                  [&::-webkit-slider-thumb]:cursor-pointer
+                  [&::-moz-range-thumb]:h-3
+                  [&::-moz-range-thumb]:w-3
+                  [&::-moz-range-thumb]:rounded-full
+                  [&::-moz-range-thumb]:bg-primary
+                  [&::-moz-range-thumb]:cursor-pointer
+                  [&::-moz-range-thumb]:border-none"
+              />
+            </div>
+            <span className="text-xs text-gray-500">Intense</span>
+          </div>
+        </div>
       </div>
     </div>
   );

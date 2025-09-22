@@ -14,10 +14,12 @@ export function ShiftHours({
 
   return (
     <Card className={className}>
-      <CardContent className="p-4">
-        <div className="flex flex-col gap-3">
+      <CardContent className="p-2">
+        <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-gray-700">Shift Hours:</span>
+            <span className="font-medium text-gray-700 text-sm">
+              Shift Hours:
+            </span>
             <span
               className={`text-sm font-medium ${
                 hasValidShifts ? "text-primary" : "text-red-500"
@@ -29,11 +31,11 @@ export function ShiftHours({
 
           {/* Main display */}
           {hasValidShifts ? (
-            <div className="flex flex-wrap gap-2 justify-center">
+            <div className="flex flex-wrap gap-1 justify-center">
               {shiftStartTimes.map((time, index) => (
                 <div
                   key={index}
-                  className="px-4 py-2 border border-gray-300 bg-white text-primary rounded-md font-medium text-lg"
+                  className="px-2 py-1 border border-gray-300 bg-white text-primary rounded-md font-medium text-sm"
                 >
                   {time}
                 </div>
@@ -41,7 +43,7 @@ export function ShiftHours({
             </div>
           ) : (
             <div className="flex justify-center">
-              <div className="px-6 py-4 border border-red-300 bg-red-50 text-red-500 rounded-md text-center font-medium">
+              <div className="px-3 py-2 border border-red-300 bg-red-50 text-red-500 rounded-md text-center font-medium text-sm">
                 No valid shifts
               </div>
             </div>
@@ -49,7 +51,7 @@ export function ShiftHours({
 
           {/* Error message for invalid configuration */}
           {!hasValidShifts && (
-            <p className="text-sm text-red-500 text-center">
+            <p className="text-xs text-red-500 text-center">
               Unable to calculate valid shift times with current parameters.
             </p>
           )}

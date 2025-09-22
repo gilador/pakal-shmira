@@ -52,10 +52,12 @@ export function ShiftsRange({
 
   return (
     <Card className={className}>
-      <CardContent className="p-4">
-        <div className="flex flex-col gap-3">
+      <CardContent className="p-2">
+        <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-gray-700">Shifts Range:</span>
+            <span className="font-medium text-gray-700 text-sm">
+              Shifts Range:
+            </span>
             <span
               className={`text-sm font-medium ${
                 isValidRange ? "text-primary" : "text-red-500"
@@ -66,10 +68,10 @@ export function ShiftsRange({
           </div>
 
           {/* Responsive time inputs - horizontal first, vertical on smaller screens */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-2">
             {/* Start Time */}
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-600 mb-1">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
                 Start
               </label>
               <Input
@@ -83,13 +85,13 @@ export function ShiftsRange({
             </div>
 
             {/* Visual separator */}
-            <div className="hidden sm:flex items-end pb-2">
+            <div className="hidden sm:flex items-end pb-1">
               <span className="text-gray-400 font-medium">→</span>
             </div>
 
             {/* End Time */}
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-600 mb-1">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
                 End
               </label>
               <Input
@@ -105,7 +107,7 @@ export function ShiftsRange({
 
           {/* Error message for invalid ranges */}
           {!isValidRange && (
-            <p className="text-sm text-red-500 text-center">
+            <p className="text-xs text-red-500 text-center">
               End time must be after start time (overnight shifts not supported)
             </p>
           )}

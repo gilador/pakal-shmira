@@ -65,7 +65,7 @@ export function ActionableText({
   return (
     <div
       ref={containerRef}
-      className={`flex items-center gap-2 w-full min-h-[32px] ${
+      className={`flex items-center gap-0 w-full min-h-[32px] ${
         (isEditing && !isEditMode) || allowClickWhenNotEditing
           ? "cursor-pointer"
           : "cursor-default"
@@ -78,7 +78,7 @@ export function ActionableText({
     >
       {/* Editing controls - always reserve space but hide when not editing */}
       <div
-        className="flex items-center gap-2 w-16 flex-shrink-0"
+        className="flex items-center gap-1  flex-shrink-0"
         onClick={(e) => e.stopPropagation()}
       >
         <div

@@ -68,7 +68,7 @@ export function WorkerListActions({
   return (
     <div
       id="worker-list-actions"
-      className={`flex rounded-md transition-all duration-100 ease-in-out flex-initial gap-2 mx-1 ${
+      className={`flex rounded-md transition-all duration-100 ease-in-out flex-initial gap- mx-1 ${
         isEditing ? "translate-y-0" : "-translate-y-12"
       }`}
     >

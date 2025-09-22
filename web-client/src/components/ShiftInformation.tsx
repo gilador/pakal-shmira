@@ -20,10 +20,10 @@ export function ShiftInformation({
 
   return (
     <Card className={className}>
-      <CardContent className="p-4">
-        <div className="flex flex-col gap-3">
+      <CardContent className="p-2">
+        <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
-            <span className="font-medium text-gray-700">
+            <span className="font-medium text-gray-700 text-sm">
               Shift Information:
             </span>
             <span
@@ -36,30 +36,30 @@ export function ShiftInformation({
           </div>
 
           {/* Responsive display - horizontal first, vertical on smaller screens */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-2">
             {/* Rest Time */}
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-600 mb-1">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
                 Rest Time
               </label>
-              <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-center font-medium text-gray-700">
+              <div className="w-full px-2 py-1 border border-gray-300 rounded-md bg-white text-center font-medium text-gray-700 text-sm">
                 {formatTime(restTime)}
               </div>
             </div>
 
             {/* Visual separator pointing from rest time to duration */}
-            <div className="hidden sm:flex items-end pb-2">
+            <div className="hidden sm:flex items-end pb-1">
               <span className="text-gray-400 font-medium">→</span>
             </div>
 
             {/* Duration */}
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-600 mb-1">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
                 Duration
               </label>
               <div className="relative">
                 <div
-                  className={`w-full px-3 py-2 border rounded-md text-center font-medium ${
+                  className={`w-full px-2 py-1 border rounded-md text-center font-medium text-sm ${
                     isValidDuration
                       ? "border-gray-300 bg-white text-primary"
                       : "border-red-300 bg-red-50 text-red-500"
@@ -73,7 +73,7 @@ export function ShiftInformation({
 
           {/* Error message for invalid configuration */}
           {!isValidDuration && (
-            <p className="text-sm text-red-500 text-center">
+            <p className="text-xs text-red-500 text-center">
               Unable to calculate valid shift duration with current parameters.
             </p>
           )}

@@ -8,4 +8,4 @@ alwaysApply: true
 - **Standards**: Follow SOLID, KISS, DRY. Keep public before private, logical flow, readability first.  
 - **Workflow**:  
   - TS: unit tests for logic.  
-  - TSX: after UI changes, test in MCP Browser → snapshot + DOM check. Once user approves, add Playwright E2E via MCP once user agree yo your changes.  
+  - TSX: after UI changes, test in MCP Browser → snapshot + DOM check.

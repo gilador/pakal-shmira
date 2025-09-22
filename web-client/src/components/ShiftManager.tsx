@@ -13,6 +13,7 @@ import { shiftState } from "../stores/shiftStore";
 import { AvailabilityTableView } from "./AvailabilityTableView";
 import { EditButton } from "./EditButton";
 import { PostListActions } from "./PostListActions";
+import { ShiftInfoSettingsView } from "./ShiftInfoSettingsView";
 import { SplitScreen } from "./SplitScreen";
 import { SyncStatusIcon } from "./SyncStatusIcon";
 import { VerticalActionGroup } from "./VerticalActionGroup";
@@ -146,41 +147,73 @@ export function ShiftManager() {
                   onCheckAll={handlePostCheckAll}
                 />
               </div>
-              <div className="flex-1 border-primary-rounded-lg overflow-hidden">
-                <AvailabilityTableView
-                  key={`assignments-${
-                    recoilState.userShiftData
-                      ?.map((u) => u.user.name)
-                      .join("-") || "no-users"
-                  }-${
-                    recoilState.posts?.map((p) => p.id).join("-") || "no-posts"
+              <div className="flex-1 border-primary-rounded-lg overflow-hidden relative">
+                {/* AvailabilityTableView - positioned at top left */}
+                <div className="absolute top-0 left-0 w-full h-full">
+                  <AvailabilityTableView
+                    key={`assignments-${
+                      recoilState.userShiftData
+                        ?.map((u) => u.user.name)
+                        .join("-") || "no-users"
+                    }-${
+                      recoilState.posts?.map((p) => p.id).join("-") ||
+                      "no-posts"
+                    }`}
+                    className="h-full"
+                    posts={recoilState.posts}
+                    hours={recoilState.hours || defaultHours}
+                    users={
+                      recoilState.userShiftData?.map(
+                        (userData) => userData.user
+                      ) || []
+                    }
+                    userShiftData={recoilState.userShiftData || []}
+                    mode="assignments"
+                    assignments={assignments}
+                    customCellDisplayNames={recoilState.customCellDisplayNames}
+                    selectedUserId={selectedUserId}
+                    onConstraintsChange={() => {
+                      // Assignment changes handled by table component directly
+                    }}
+                    isEditing={isEditing}
+                    onPostEdit={handlePostEdit}
+                    checkedPostIds={checkedPostIds}
+                    onPostCheck={handlePostCheck}
+                    onPostUncheck={handlePostUncheck}
+                    onAssignmentEdit={handleAssignmentNameUpdate}
+                  />
+                </div>
+
+                {/* Glass overlay for Post column header and content */}
+                <div
+                  className={`absolute top-0 left-0 w-[200px] bottom-0 backdrop-blur-sm bg-white/20 transition-all duration-300 ${
+                    isEditing ? "visible opacity-100" : "invisible opacity-0"
                   }`}
-                  className="h-full"
-                  posts={recoilState.posts}
-                  hours={recoilState.hours || defaultHours}
-                  users={
-                    recoilState.userShiftData?.map(
-                      (userData) => userData.user
-                    ) || []
-                  }
-                  userShiftData={recoilState.userShiftData || []}
-                  mode="assignments"
-                  assignments={assignments}
-                  customCellDisplayNames={recoilState.customCellDisplayNames}
-                  selectedUserId={selectedUserId}
-                  onConstraintsChange={() => {
-                    // Assignment changes handled by table component directly
-                  }}
-                  isEditing={isEditing}
-                  onPostEdit={handlePostEdit}
-                  checkedPostIds={checkedPostIds}
-                  onPostCheck={handlePostCheck}
-                  onPostUncheck={handlePostUncheck}
-                  onAssignmentEdit={handleAssignmentNameUpdate}
-                  restTime={recoilState.restTime}
-                  startHour={recoilState.startTime}
-                  endHour={recoilState.endTime}
-                />
+                ></div>
+
+                {/* Glass overlay for assignment content area */}
+                <div
+                  className={`absolute top-[3rem] left-[200px] right-0 bottom-0 backdrop-blur-sm bg-white/20 transition-all duration-300 ${
+                    isEditing ? "visible opacity-100" : "invisible opacity-0"
+                  }`}
+                ></div>
+
+                {/* Shift Settings - positioned below hours headers */}
+                <div
+                  className={`flex justify-center items-start w-full h-full transition-all duration-300 relative z-10 ${
+                    isEditing ? "visible opacity-100" : "invisible opacity-0"
+                  }`}
+                  style={{ paddingTop: "2rem" }}
+                >
+                  <div className="w-[40rem] max-w-[calc(100%-4rem)]">
+                    <ShiftInfoSettingsView
+                      restTime={recoilState.restTime ?? 2}
+                      startHour={recoilState.startTime ?? "08:00"}
+                      endHour={recoilState.endTime ?? "16:00"}
+                      posts={recoilState.posts || []}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -233,8 +266,8 @@ export function ShiftManager() {
               <div className="flex-1 min-h-0">
                 <SplitScreen
                   id="worker-info"
-                  leftWidth="40%"
-                  rightWidth="60%"
+                  leftWidth="25%"
+                  rightWidth="75%"
                   className="h-full overflow-hidden"
                   leftPanel={
                     <WorkerList
