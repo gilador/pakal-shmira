@@ -305,7 +305,10 @@ export function AvailabilityTableView({
                 style={{ "--hours": hours.length } as React.CSSProperties}
               >
                 {hours.map((hour) => (
-                  <div key={hour.id} className="font-semibold p-2 text-center">
+                  <div
+                    key={hour.id}
+                    className={`font-semibold p-2 text-center ${colors.text.default}`}
+                  >
                     {hour.value}
                   </div>
                 ))}
@@ -360,7 +363,7 @@ export function AvailabilityTableView({
               >
                 {/* Header Row */}
                 <div className="py-2 pr-2 pl-2 overflow-x-auto min-w-[11rem] flex justify-center items-center">
-                  <div className="text-center">Post</div>
+                  <div className={colors.text.default}>Post</div>
                 </div>
                 {hours.map((hour, hourIndex) => {
                   const hourEndTime = hourIndex < hours.length - 1
@@ -369,7 +372,7 @@ export function AvailabilityTableView({
                   return (
                     <div
                       key={hour.id}
-                      className="font-semibold py-2 px-3 text-center min-w-[11rem] flex justify-center items-center"
+                      className={`font-semibold py-2 px-3 text-center min-w-[11rem] flex justify-center items-center ${colors.text.default}`}
                     >
                       <ShiftDuration
                         startTime={hour.value}
@@ -417,7 +420,7 @@ export function AvailabilityTableView({
                         <div
                           key={`${post.id}-${hour.id}`}
                           className={`p-2 text-center rounded-md flex items-center justify-center ${
-                            isCellSelected ? colors.selected.default : ""
+                            isCellSelected ? colors.cell.selected : colors.cell.dim
                           }`}
                         >
                           <AssignmentCell
@@ -448,7 +451,10 @@ export function AvailabilityTableView({
                 style={{ "--hours": hours.length } as React.CSSProperties}
               >
                 {hours.map((hour) => (
-                  <div key={hour.id} className="font-semibold p-2 text-center">
+                  <div
+                    key={hour.id}
+                    className={`font-semibold p-2 text-center ${colors.text.default}`}
+                  >
                     {hour.value}
                   </div>
                 ))}

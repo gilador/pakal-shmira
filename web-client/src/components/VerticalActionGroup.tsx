@@ -152,7 +152,7 @@ export function ActionableText({
           />
         ) : (
           <span
-            className={`truncate text-gray-900 select-none ${
+            className={`truncate select-none ${
               isSelected ? "font-semibold" : ""
             } ${className}`}
           >

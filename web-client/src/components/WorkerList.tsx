@@ -1,6 +1,7 @@
 import { IconUser } from "@tabler/icons-react";
 import { User } from "../models";
 import { ActionableText } from "./VerticalActionGroup";
+import { colors } from "@/constants/colors";
 
 export interface WorkerListProps {
   users: User[];
@@ -55,7 +56,7 @@ export function WorkerList({
                   data-testid="staff-member"
                   className={`px-2 pb-1 pt-1 gap-1 rounded-md ${
                     selectedUserId === user.id
-                      ? "bg-gray-300"
+                      ? colors.cell.selected
                       : "hover:bg-gray-50"
                   }`}
                 >

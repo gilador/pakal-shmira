@@ -263,6 +263,7 @@ export function ShiftManager() {
                 variant="default"
                 className="flex-1 disabled:cursor-not-allowed disabled:opacity-80 rounded-lg"
                 title={optimizeButtonTitle}
+                disabled={isOptimizeDisabled}
               >
                 Optimize
               </Button>

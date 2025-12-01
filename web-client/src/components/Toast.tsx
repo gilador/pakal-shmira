@@ -12,7 +12,6 @@ export interface ToastProps {
 
 export function Toast({
   message,
-  type = "success",
   duration = 3000,
   onClose,
   highlightText,
@@ -61,16 +60,7 @@ export function Toast({
   };
 
   const getTypeStyles = () => {
-    switch (type) {
-      case "success":
-        return "bg-primary text-primary-foreground";
-      case "error":
-        return "bg-red-500 text-white";
-      case "info":
-        return "bg-blue-500 text-white";
-      default:
-        return "bg-gray-500 text-white";
-    }
+    return "bg-black text-white";
   };
 
   return (
