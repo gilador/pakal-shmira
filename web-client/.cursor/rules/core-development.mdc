@@ -3,9 +3,9 @@ alwaysApply: true
 
 # Development Rule
 
-- **Core Principle**: Think, Evaluate, Apply (TEA). Always evaluate UI fixes using MCP Browser one http://localhost:5273/.  
+- **Core Principle**: Think, Evaluate, Apply (TEA). Always evaluate UI fixes using browsermcp one http://localhost:5273/.  
 - **Approach**: Prefer simple, clear, maintainable solutions. Iterate on existing code, avoid scope creep.  
 - **Standards**: Follow SOLID, KISS, DRY. Keep public before private, logical flow, readability first.  
 - **Workflow**:  
   - TS: unit tests for logic.  
-  - TSX: after UI changes, test in MCP Browser → snapshot + DOM check.
+  - TSX: after UI changes, test in browsermcp → snapshot + DOM check.

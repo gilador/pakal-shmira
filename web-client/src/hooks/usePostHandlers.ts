@@ -43,13 +43,15 @@ export function usePostHandlers() {
 
       return {
         ...prev,
-        posts: [...(prev.posts || []), newPostData],
+        posts: [newPostData, ...(prev.posts || [])],
         assignments: newAssignments,
         userShiftData: updatedUserShiftData,
         manuallyEditedSlots: prev.manuallyEditedSlots || {},
         customCellDisplayNames: prev.customCellDisplayNames || {},
       };
     });
+
+    return postName; // Return the post name for toast notification
   };
 
   const handlePostEdit = (postId: string, newName: string) => {

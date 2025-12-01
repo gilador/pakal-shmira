@@ -99,7 +99,7 @@ export function EditableText({
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className={cn("h-8", inputClassName)}
+        className={cn("text-center", inputClassName)}
         disabled={disabled}
       />
     );
@@ -108,7 +108,11 @@ export function EditableText({
   if (children) {
     return (
       <div
-        className={cn("cursor-pointer", displayClassName, className)}
+        className={cn(
+          "cursor-pointer text-center",
+          displayClassName,
+          className
+        )}
         onDoubleClick={handleDoubleClick}
       >
         {children(value, isEditing)}
@@ -119,7 +123,7 @@ export function EditableText({
   return (
     <span
       className={cn(
-        "cursor-pointer hover:underline",
+        "cursor-pointer hover:underline text-center",
         disabled && "cursor-default hover:no-underline",
         displayClassName,
         className

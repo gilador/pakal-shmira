@@ -1,8 +1,10 @@
 import {
-  IconArmchair,
-  IconArmchairOff,
+  IconCirclePlus,
+  IconCircleMinus,
   IconSelectAll,
   IconDeselect,
+  IconAdjustments,
+  IconAdjustmentsFilled,
 } from "@tabler/icons-react";
 import { colors } from "@/constants/colors";
 import {
@@ -20,6 +22,8 @@ interface PostListActionsProps {
   onRemovePosts: (postIds: string[]) => void;
   checkedPostIds: string[];
   onCheckAll: (allWasClicked: boolean) => void;
+  onToggleShiftSettings?: () => void;
+  showShiftSettings?: boolean;
 }
 
 export function PostListActions({
@@ -28,6 +32,8 @@ export function PostListActions({
   onRemovePosts,
   checkedPostIds,
   onCheckAll,
+  onToggleShiftSettings,
+  showShiftSettings = false,
 }: PostListActionsProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [checkAllEnabled, setCheckAllEnabled] = useState(false);
@@ -59,13 +65,35 @@ export function PostListActions({
         isEditing ? "translate-y-0" : "-translate-y-12"
       }`}
     >
+      {onToggleShiftSettings && (
+        <button
+          onClick={onToggleShiftSettings}
+          aria-label={
+            showShiftSettings
+              ? "Hide shift adjustment"
+              : "Show shift adjustment"
+          }
+          title={
+            showShiftSettings
+              ? "Hide shift adjustment"
+              : "Show shift adjustment"
+          }
+          className={`p-2 rounded-md ${colors.button.default} ${colors.button.hover}`}
+        >
+          {showShiftSettings ? (
+            <IconAdjustmentsFilled size={15} strokeWidth={2} />
+          ) : (
+            <IconAdjustments size={15} strokeWidth={2} />
+          )}
+        </button>
+      )}
       <button
         onClick={onAddPost}
         aria-label="Add post"
         title="Add post"
         className={`p-2 rounded-md ${colors.button.default} ${colors.button.hover}`}
       >
-        <IconArmchair size={15} />
+        <IconCirclePlus size={15} />
       </button>
       <button
         onClick={handleDelete}
@@ -73,7 +101,7 @@ export function PostListActions({
         title="Delete selected posts"
         className={`p-2 rounded-md ${colors.button.default} ${colors.button.hover_negative}`}
       >
-        <IconArmchairOff size={15} />
+        <IconCircleMinus size={15} />
       </button>
       <button
         onClick={handleCheckAll}
@@ -102,11 +130,16 @@ export function PostListActions({
             <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setIsDeleteDialogOpen(false)}
               >
                 No
               </Button>
-              <Button variant="destructive" onClick={handleConfirmDelete}>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleConfirmDelete}
+              >
                 Yes, please!
               </Button>
             </div>

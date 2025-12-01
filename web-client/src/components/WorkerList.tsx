@@ -36,7 +36,7 @@ export function WorkerList({
   return (
     <div className="flex flex-col h-full border-primary-rounded-lg overflow-hidden bg-white">
       <div className="flex-1 overflow-y-auto bg-white">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col">
           {users.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center p-4 h-full">
               <IconUser className="w-12 h-12 text-gray-400 mb-2" />

@@ -7,6 +7,7 @@ import { UniqueString } from "../models/index";
 import { EditButton } from "./EditButton";
 import { EditableText } from "./EditableText";
 import { ActionableText } from "./VerticalActionGroup";
+import { ShiftDuration } from "./ShiftDuration";
 
 export interface AvailabilityTableViewProps {
   user?: User;
@@ -14,6 +15,7 @@ export interface AvailabilityTableViewProps {
   assignments?: (string | null)[][];
   posts: UniqueString[];
   hours: UniqueString[];
+  endTime?: string;
   onConstraintsChange?: (newConstraints: Constraint[][]) => void;
   isEditing?: boolean;
   onPostEdit?: (postId: string, newName: string) => void;
@@ -134,6 +136,7 @@ export function AvailabilityTableView({
   assignments,
   posts,
   hours,
+  endTime,
   onConstraintsChange,
   isEditing = false,
   onPostEdit,
@@ -351,31 +354,35 @@ export function AvailabilityTableView({
           {/* Show assignment table - always present in DOM */}
           {mode === "assignments" && (
             <div className="p-2 relative">
-              {/* Hours headers */}
-              <div
-                className="grid gap-1 w-full grid-cols-[auto_repeat(var(--hours),1fr)] mb-0"
-                style={{ "--hours": hours.length } as React.CSSProperties}
-              >
-                <div className="font-semibold p-2 text-center flex items-center">
-                  {/* Reserve space for editing controls to match ActionableText layout */}
-                  <div className="w-10 flex-shrink-0"></div>
-                  <div className="flex-1 text-center">Post</div>
-                </div>
-                {hours.map((hour) => (
-                  <div key={hour.id} className="font-semibold p-2 text-center">
-                    {hour.value}
-                  </div>
-                ))}
-              </div>
-
-              {/* Assignment table content */}
               <div
                 className="grid gap-1 w-full grid-cols-[auto_repeat(var(--hours),1fr)]"
                 style={{ "--hours": hours.length } as React.CSSProperties}
               >
+                {/* Header Row */}
+                <div className="py-2 pr-2 pl-2 overflow-x-auto min-w-[11rem] flex justify-center items-center">
+                  <div className="text-center">Post</div>
+                </div>
+                {hours.map((hour, hourIndex) => {
+                  const hourEndTime = hourIndex < hours.length - 1
+                    ? hours[hourIndex + 1].value
+                    : (endTime || "??:??");
+                  return (
+                    <div
+                      key={hour.id}
+                      className="font-semibold py-2 px-3 text-center min-w-[11rem] flex justify-center items-center"
+                    >
+                      <ShiftDuration
+                        startTime={hour.value}
+                        endTime={hourEndTime}
+                      />
+                    </div>
+                  );
+                })}
+
+                {/* Data Rows */}
                 {posts.map((post, postIndex) => (
                   <React.Fragment key={post.id}>
-                    <div className="py-2 pr-2">
+                    <div className="py-2 pr-2 flex items-center">
                       <ActionableText
                         id={post.id}
                         value={post.value}
@@ -409,7 +416,7 @@ export function AvailabilityTableView({
                       return (
                         <div
                           key={`${post.id}-${hour.id}`}
-                          className={`p-2 text-center rounded-md ${
+                          className={`p-2 text-center rounded-md flex items-center justify-center ${
                             isCellSelected ? colors.selected.default : ""
                           }`}
                         >

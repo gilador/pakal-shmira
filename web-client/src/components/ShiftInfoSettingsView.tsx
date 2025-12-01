@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRecoilState } from "recoil";
+import { IconX } from "@tabler/icons-react";
 import { getOptimalShiftDuration } from "../service/shiftHourHelperService";
 import { DEFAULT_STAFF_COUNT } from "../constants/shiftManagerConstants";
 import { UniqueString } from "../models/index";
@@ -16,6 +17,7 @@ export interface ShiftInfoSettingsViewProps {
   onIntensityChange?: (intensity: number) => void;
   posts?: UniqueString[];
   staffCount?: number;
+  onClose?: () => void;
 }
 
 export function ShiftInfoSettingsView({
@@ -28,6 +30,7 @@ export function ShiftInfoSettingsView({
   onIntensityChange,
   posts = [],
   staffCount = DEFAULT_STAFF_COUNT,
+  onClose,
 }: ShiftInfoSettingsViewProps) {
   const [shiftData, setShiftData] = useRecoilState(shiftState);
 
@@ -94,6 +97,7 @@ export function ShiftInfoSettingsView({
   }, [localStartTime, localEndTime, posts.length, staffCount, intensity]);
 
   // Map intensity value to slider index and vice versa
+  // Inverted mapping: left (index 0) = highest intensity, right (max index) = lowest intensity
   const getSliderIndex = (intensity: number) => {
     const index = intensityOptions.indexOf(intensity);
     if (index === -1) {
@@ -111,12 +115,18 @@ export function ShiftInfoSettingsView({
           intensityOptions[closestIndex]
         })`
       );
-      return closestIndex;
+      // Invert the index: if we found index 0, return max index, etc.
+      return intensityOptions.length - 1 - closestIndex;
     }
-    return index;
+    // Invert the index: if intensity is at index 0, return max index, etc.
+    return intensityOptions.length - 1 - index;
   };
 
-  const getIntensityFromIndex = (index: number) => intensityOptions[index];
+  const getIntensityFromIndex = (index: number) => {
+    // Invert the index: if slider is at index 0, get the last (highest) intensity
+    const invertedIndex = intensityOptions.length - 1 - index;
+    return intensityOptions[invertedIndex];
+  };
 
   // Calculate shift starting times for logging
   const calculateShiftStartingTimes = (
@@ -295,131 +305,24 @@ export function ShiftInfoSettingsView({
     "🎯 [ShiftInfoSettingsView] ====================================="
   );
 
-  const handleStartTimeChange = (time: string) => {
-    console.log(
-      `🕐 [ShiftInfoSettingsView] Start time changed: ${localStartTime} → ${time}`
-    );
-
-    // Update start time in global state
-    setShiftData((prev) => ({
-      ...prev,
-      startTime: time,
-    }));
-
+  // Helper to update shift state with new parameters
+  const updateShiftStateWithNewHours = (
+    newStartTime: string,
+    newEndTime: string,
+    newIntensity: number
+  ) => {
     // Calculate new shift duration and hours
     const newDuration = calculateOptimalShiftDuration(
-      time,
-      localEndTime,
-      intensity,
-      posts.length,
-      staffCount
-    );
-
-    const newShiftStartTimes = calculateShiftStartingTimes(
-      time,
-      localEndTime,
-      newDuration
-    );
-
-    // Update hours in global state
-    const newHours: UniqueString[] = newShiftStartTimes.map((time, index) => ({
-      id: `shift-${index}-${time}`,
-      value: time,
-    }));
-
-    setShiftData((prev) => ({
-      ...prev,
-      hours: newHours,
-    }));
-
-    onStartTimeChange?.(time);
-
-    console.log(
-      `⏰ [ShiftInfoSettingsView] Duration after start time change: ${newDuration.toFixed(
-        2
-      )}h`
-    );
-    console.log(
-      `📅 [ShiftInfoSettingsView] New shift start times: [${newShiftStartTimes.join(
-        ", "
-      )}]`
-    );
-  };
-
-  const handleEndTimeChange = (time: string) => {
-    console.log(
-      `🕕 [ShiftInfoSettingsView] End time changed: ${localEndTime} → ${time}`
-    );
-
-    // Update end time in global state
-    setShiftData((prev) => ({
-      ...prev,
-      endTime: time,
-    }));
-
-    // Calculate new shift duration and hours
-    const newDuration = calculateOptimalShiftDuration(
-      localStartTime,
-      time,
-      intensity,
-      posts.length,
-      staffCount
-    );
-
-    const newShiftStartTimes = calculateShiftStartingTimes(
-      localStartTime,
-      time,
-      newDuration
-    );
-
-    // Update hours in global state
-    const newHours: UniqueString[] = newShiftStartTimes.map((time, index) => ({
-      id: `shift-${index}-${time}`,
-      value: time,
-    }));
-
-    setShiftData((prev) => ({
-      ...prev,
-      hours: newHours,
-    }));
-
-    onEndTimeChange?.(time);
-
-    console.log(
-      `⏰ [ShiftInfoSettingsView] Duration after end time change: ${newDuration.toFixed(
-        2
-      )}h`
-    );
-    console.log(
-      `📅 [ShiftInfoSettingsView] New shift start times: [${newShiftStartTimes.join(
-        ", "
-      )}]`
-    );
-  };
-
-  const handleIntensityChange = (newIntensity: number) => {
-    console.log(
-      `🔄 [ShiftInfoSettingsView] Intensity changed: ${intensity} → ${newIntensity}`
-    );
-
-    // Update rest time in global state
-    setShiftData((prev) => ({
-      ...prev,
-      restTime: newIntensity,
-    }));
-
-    // Calculate new shift duration and hours
-    const newDuration = calculateOptimalShiftDuration(
-      localStartTime,
-      localEndTime,
+      newStartTime,
+      newEndTime,
       newIntensity,
       posts.length,
       staffCount
     );
 
     const newShiftStartTimes = calculateShiftStartingTimes(
-      localStartTime,
-      localEndTime,
+      newStartTime,
+      newEndTime,
       newDuration
     );
 
@@ -491,11 +394,78 @@ export function ShiftInfoSettingsView({
 
       return {
         ...prev,
+        startTime: newStartTime,
+        endTime: newEndTime,
+        restTime: newIntensity,
         hours: newHours,
         userShiftData: updatedUserShiftData,
         assignments: clearedAssignments,
       };
     });
+
+    return { newDuration, newShiftStartTimes };
+  };
+
+  const handleStartTimeChange = (time: string) => {
+    console.log(
+      `🕐 [ShiftInfoSettingsView] Start time changed: ${localStartTime} → ${time}`
+    );
+
+    const { newDuration, newShiftStartTimes } = updateShiftStateWithNewHours(
+      time,
+      localEndTime,
+      intensity
+    );
+
+    onStartTimeChange?.(time);
+
+    console.log(
+      `⏰ [ShiftInfoSettingsView] Duration after start time change: ${newDuration.toFixed(
+        2
+      )}h`
+    );
+    console.log(
+      `📅 [ShiftInfoSettingsView] New shift start times: [${newShiftStartTimes.join(
+        ", "
+      )}]`
+    );
+  };
+
+  const handleEndTimeChange = (time: string) => {
+    console.log(
+      `🕕 [ShiftInfoSettingsView] End time changed: ${localEndTime} → ${time}`
+    );
+
+    const { newDuration, newShiftStartTimes } = updateShiftStateWithNewHours(
+      localStartTime,
+      time,
+      intensity
+    );
+
+    onEndTimeChange?.(time);
+
+    console.log(
+      `⏰ [ShiftInfoSettingsView] Duration after end time change: ${newDuration.toFixed(
+        2
+      )}h`
+    );
+    console.log(
+      `📅 [ShiftInfoSettingsView] New shift start times: [${newShiftStartTimes.join(
+        ", "
+      )}]`
+    );
+  };
+
+  const handleIntensityChange = (newIntensity: number) => {
+    console.log(
+      `🔄 [ShiftInfoSettingsView] Intensity changed: ${intensity} → ${newIntensity}`
+    );
+
+    const { newDuration, newShiftStartTimes } = updateShiftStateWithNewHours(
+      localStartTime,
+      localEndTime,
+      newIntensity
+    );
 
     onIntensityChange?.(newIntensity);
 
@@ -553,7 +523,19 @@ export function ShiftInfoSettingsView({
     <div
       className={`w-full h-full pt-2 p-1 rounded-lg flex flex-col bg-white/90 backdrop-blur-md shadow-xl min-h-0 max-w-full overflow-hidden ${className}`}
     >
-      <h4 className="text-base font-semibold text-left mb-1">Shift Settings</h4>
+      <div className="flex justify-between items-center mb-1">
+        <h4 className="text-base font-semibold text-left">Shift Adjustment</h4>
+        {onClose && (
+          <button
+            onClick={onClose}
+            aria-label="Close shift adjustment"
+            title="Close shift adjustment"
+            className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+          >
+            <IconX size={16} />
+          </button>
+        )}
+      </div>
 
       {/* Top row - Range and Information */}
       <div className="flex flex-col sm:flex-row flex-wrap gap-4 items-start mb-2 flex-shrink-0 min-w-0">
@@ -562,7 +544,7 @@ export function ShiftInfoSettingsView({
           <div className="border border-gray-300 rounded-lg p-3">
             <div className="flex justify-between items-center mb-2">
               <div className="text-xs font-medium text-gray-700 text-left">
-                Shifts Range
+                Shift Input
               </div>
               <div className="text-xs font-medium text-primary">
                 {(() => {
@@ -641,7 +623,7 @@ export function ShiftInfoSettingsView({
       <div className="flex-shrink-0">
         <div className="border border-gray-300 rounded-lg p-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500">Relaxed</span>
+            <span className="text-xs text-gray-500">Intense</span>
             <div className="flex-1">
               <input
                 type="range"
@@ -670,7 +652,7 @@ export function ShiftInfoSettingsView({
                   [&::-moz-range-thumb]:border-none"
               />
             </div>
-            <span className="text-xs text-gray-500">Intense</span>
+            <span className="text-xs text-gray-500">Relaxed</span>
           </div>
         </div>
       </div>

@@ -11,10 +11,11 @@ export function useUserHandlers() {
 
   const addUser = () => {
     const currentUserCount = recoilState.userShiftData?.length || 0;
+    const userName = `New User ${currentUserCount + 1}`;
     const newUser: UserShiftData = {
       user: {
         id: `worker-${currentUserCount + 1}`,
-        name: `New User ${currentUserCount + 1}`,
+        name: userName,
       },
       constraints: getDefaultConstraints(
         recoilState.posts || [],
@@ -28,6 +29,8 @@ export function useUserHandlers() {
       manuallyEditedSlots: prev.manuallyEditedSlots || {},
       customCellDisplayNames: prev.customCellDisplayNames || {},
     }));
+
+    return userName; // Return the user name for toast notification
   };
 
   const updateUserConstraints = (

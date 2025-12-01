@@ -125,11 +125,16 @@ export function WorkerListActions({
             <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setIsDeleteDialogOpen(false)}
               >
                 No
               </Button>
-              <Button variant="destructive" onClick={handleConfirmDelete}>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleConfirmDelete}
+              >
                 Yes, please!
               </Button>
             </div>
@@ -153,11 +158,16 @@ export function WorkerListActions({
             <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setIsResetAvailabilityDialogOpen(false)}
               >
                 Cancel
               </Button>
-              <Button variant="default" onClick={handleResetAvailability}>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleResetAvailability}
+              >
                 Reset All Availability
               </Button>
             </div>

@@ -4,29 +4,22 @@ import { shiftState } from "../stores/shiftStore";
 import { optimizeShift } from "../service/shiftOptimizedService";
 import { defaultHours } from "../constants/shiftManagerConstants";
 
-export interface OptimizationDialog {
-  isOpen: boolean;
-  title: string;
-  message: string;
-  type: "success" | "error" | "warning";
-}
-
 export function useShiftOptimization(
   isEditing: boolean,
-  lastAppliedConstraintsSignature: React.MutableRefObject<string | null>
+  lastAppliedConstraintsSignature: React.MutableRefObject<string | null>,
+  showSuccess: (
+    message: string,
+    duration?: number,
+    highlightText?: string
+  ) => void,
+  showError: (message: string, duration?: number) => void,
+  showInfo: (message: string, duration?: number) => void
 ) {
   const [recoilState, setRecoilState] = useRecoilState(shiftState);
   const [isOptimizeDisabled, setIsOptimizeDisabled] = useState(true);
   const [optimizeButtonTitle, setOptimizeButtonTitle] = useState(
     "Optimize shift assignments"
   );
-  const [optimizationDialog, setOptimizationDialog] =
-    useState<OptimizationDialog>({
-      isOpen: false,
-      title: "",
-      message: "",
-      type: "success",
-    });
 
   // Update optimization button state based on conditions
   useEffect(() => {
@@ -37,6 +30,7 @@ export function useShiftOptimization(
 
     // Condition 1: Edit mode is active
     if (isEditing) {
+      console.log("🚫 [useShiftOptimization] Disabled: Edit mode active");
       setIsOptimizeDisabled(true);
       newTitle = "Cannot optimize: Currently in edit mode.";
       setOptimizeButtonTitle(newTitle);
@@ -48,6 +42,10 @@ export function useShiftOptimization(
       currentSyncStatus === "syncing" ||
       currentSyncStatus === "out-of-sync"
     ) {
+      console.log(
+        "🚫 [useShiftOptimization] Disabled: Sync status problematic:",
+        currentSyncStatus
+      );
       setIsOptimizeDisabled(true);
       newTitle =
         currentSyncStatus === "syncing"
@@ -61,11 +59,24 @@ export function useShiftOptimization(
     const hasAnyActualAssignments =
       currentAssignments &&
       currentAssignments.flat().some((userId) => userId !== null);
+
+    console.log("🔍 [useShiftOptimization] Assignment check:", {
+      hasAnyActualAssignments,
+      currentAssignments: currentAssignments?.map((arr) => arr.slice(0, 3)), // Show first 3 items
+      flatAssignments: currentAssignments?.flat().slice(0, 10), // Show first 10 items
+    });
+
     if (!hasAnyActualAssignments) {
       if (currentUserShiftData && currentUserShiftData.length > 0) {
+        console.log(
+          "✅ [useShiftOptimization] Enabled: No assignments, but has user data - can generate initial"
+        );
         setIsOptimizeDisabled(false);
         newTitle = "Generate initial shift assignments.";
       } else {
+        console.log(
+          "🚫 [useShiftOptimization] Disabled: No assignments and no user data"
+        );
         setIsOptimizeDisabled(true);
         newTitle = "Cannot optimize: No users or constraints available.";
       }
@@ -95,8 +106,7 @@ export function useShiftOptimization(
       currentConstraintsSignature === lastAppliedConstraintsSignature.current
     ) {
       setIsOptimizeDisabled(true);
-      newTitle =
-        "Cannot optimize: Constraints have not changed since last optimization.";
+      newTitle = "Already Optimized";
     } else {
       setIsOptimizeDisabled(false);
       newTitle = "Optimize with updated constraints.";
@@ -116,6 +126,7 @@ export function useShiftOptimization(
     console.log("Optimization process started.");
     if (isOptimizeDisabled) {
       console.log("Optimization skipped: button is disabled.");
+      showInfo("Optimization skipped: Already Optimized");
       return;
     }
 
@@ -192,13 +203,7 @@ export function useShiftOptimization(
           detailedMessage += `\n\nTo fix this, please ensure at least one user is available for each of these time slots in the Availability tab.`;
         }
 
-        // Show user-friendly feedback
-        setOptimizationDialog({
-          isOpen: true,
-          title: "Optimization Not Possible",
-          message: detailedMessage,
-          type: "warning",
-        });
+        showError(detailedMessage);
         return; // Early return for infeasible problems
       }
 
@@ -257,12 +262,7 @@ export function useShiftOptimization(
       console.log("Optimization successful, new assignments applied.");
 
       // Show success feedback
-      setOptimizationDialog({
-        isOpen: true,
-        title: "Optimization Successful",
-        message: "Shift assignments have been optimized successfully.",
-        type: "success",
-      });
+      showSuccess("Shift assignments have been optimized successfully");
     } catch (error) {
       console.error("Error during optimization:", error);
       setRecoilState((prev) => ({
@@ -275,21 +275,15 @@ export function useShiftOptimization(
       }));
 
       // Show error feedback
-      setOptimizationDialog({
-        isOpen: true,
-        title: "Optimization Error",
-        message:
-          "An unexpected error occurred during optimization. Please try again.",
-        type: "error",
-      });
+      showError(
+        "An unexpected error occurred during optimization. Please try again."
+      );
     }
   };
 
   return {
     isOptimizeDisabled,
     optimizeButtonTitle,
-    optimizationDialog,
-    setOptimizationDialog,
     handleOptimize,
   };
 }

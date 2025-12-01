@@ -56,7 +56,7 @@ export function ShiftsRange({
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
             <span className="font-medium text-gray-700 text-sm">
-              Shifts Range:
+              Shift Input:
             </span>
             <span
               className={`text-sm font-medium ${

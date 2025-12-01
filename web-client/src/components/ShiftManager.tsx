@@ -1,11 +1,5 @@
 import { Button } from "@/components/elements/button";
 import { Card, CardContent } from "@/components/elements/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/elements/dialog";
 import { useMemo, useState } from "react";
 import { useRecoilState } from "recoil";
 import tumbleweedIcon from "../../assets/tumbleweed.svg";
@@ -24,24 +18,31 @@ import { useShiftOptimization } from "../hooks/useShiftOptimization";
 import { useUserHandlers } from "../hooks/useUserHandlers";
 import { usePostHandlers } from "../hooks/usePostHandlers";
 import { useAssignmentHandlers } from "../hooks/useAssignmentHandlers";
+import { useToast } from "../hooks/useToast";
+import { ToastManager } from "./Toast";
 import { defaultHours } from "../constants/shiftManagerConstants";
 
 export function ShiftManager() {
   const [recoilState] = useRecoilState(shiftState);
   const [isEditing, setIsEditing] = useState(false);
   const [checkedUserIds, setCheckedUserIds] = useState<string[]>([]);
+  const [showShiftSettings, setShowShiftSettings] = useState(false);
 
   // Initialize the component and get the constraints signature ref
   const { lastAppliedConstraintsSignature } = useShiftManagerInitialization();
 
+  // Use toast system
+  const { toasts, removeToast, showSuccess, showError, showInfo } = useToast();
+
   // Use optimization hook
-  const {
-    isOptimizeDisabled,
-    optimizeButtonTitle,
-    optimizationDialog,
-    setOptimizationDialog,
-    handleOptimize,
-  } = useShiftOptimization(isEditing, lastAppliedConstraintsSignature);
+  const { isOptimizeDisabled, optimizeButtonTitle, handleOptimize } =
+    useShiftOptimization(
+      isEditing,
+      lastAppliedConstraintsSignature,
+      showSuccess,
+      showError,
+      showInfo
+    );
 
   // Use user handlers
   const {
@@ -66,7 +67,30 @@ export function ShiftManager() {
   } = usePostHandlers();
 
   // Use assignment handlers
-  const { handleAssignmentNameUpdate } = useAssignmentHandlers();
+  const { handleAssignmentNameUpdate, handleClearAllAssignments } =
+    useAssignmentHandlers();
+
+  // Handle shift settings toggle
+  const handleToggleShiftSettings = () => {
+    setShowShiftSettings(!showShiftSettings);
+  };
+
+  const handleCloseShiftSettings = () => {
+    console.log("🔄 [ShiftManager] Closing shift settings");
+    setShowShiftSettings(false);
+  };
+
+  // Enhanced addPost with toast notification
+  const handleAddPost = () => {
+    const postName = addPost();
+    showSuccess(`${postName} was added`, 3000, postName);
+  };
+
+  // Enhanced addUser with toast notification
+  const handleAddUser = () => {
+    const userName = addUser();
+    showSuccess(`${userName} was added to staff list`, 3000, userName);
+  };
 
   const assignments =
     recoilState.assignments ||
@@ -75,15 +99,9 @@ export function ShiftManager() {
     );
 
   const syncStatus = recoilState.syncStatus;
-  console.log(
-    "[ShiftManager Render] Current syncStatus:",
-    syncStatus,
-    "Full recoilState:",
-    recoilState
-  );
 
   // Debug shift settings sync
-  console.log("🚀 [ShiftManager] Shift Settings Debug:", {
+  console.log("🚀 [ShiftManager] Shift Adjustment Debug:", {
     "recoilState.startTime": recoilState.startTime,
     "recoilState.endTime": recoilState.endTime,
     "recoilState.restTime": recoilState.restTime,
@@ -131,7 +149,7 @@ export function ShiftManager() {
             {/* Shift Assignments - 50% */}
             <div
               className="flex flex-col min-h-0 overflow-hidden mb-2"
-              style={{ height: "50%" }}
+              style={{ height: "65%" }}
               id="assignments-table"
             >
               <div className="flex items-center gap-2 mb-2 flex-none">
@@ -141,10 +159,12 @@ export function ShiftManager() {
                 </h3>
                 <PostListActions
                   isEditing={isEditing}
-                  onAddPost={addPost}
+                  onAddPost={handleAddPost}
                   onRemovePosts={handleRemovePosts}
                   checkedPostIds={checkedPostIds}
                   onCheckAll={handlePostCheckAll}
+                  onToggleShiftSettings={handleToggleShiftSettings}
+                  showShiftSettings={showShiftSettings}
                 />
               </div>
               <div className="flex-1 border-primary-rounded-lg overflow-hidden relative">
@@ -162,6 +182,7 @@ export function ShiftManager() {
                     className="h-full"
                     posts={recoilState.posts}
                     hours={recoilState.hours || defaultHours}
+                    endTime={recoilState.endTime}
                     users={
                       recoilState.userShiftData?.map(
                         (userData) => userData.user
@@ -187,59 +208,82 @@ export function ShiftManager() {
                 {/* Glass overlay for Post column header and content */}
                 <div
                   className={`absolute top-0 left-0 w-[200px] bottom-0 backdrop-blur-sm bg-white/20 transition-all duration-300 ${
-                    isEditing ? "visible opacity-100" : "invisible opacity-0"
+                    showShiftSettings
+                      ? "visible opacity-100"
+                      : "invisible opacity-0"
                   }`}
+                  onClick={() => handleCloseShiftSettings()}
                 ></div>
 
                 {/* Glass overlay for assignment content area */}
                 <div
                   className={`absolute top-[3rem] left-[200px] right-0 bottom-0 backdrop-blur-sm bg-white/20 transition-all duration-300 ${
-                    isEditing ? "visible opacity-100" : "invisible opacity-0"
+                    showShiftSettings
+                      ? "visible opacity-100"
+                      : "invisible opacity-0"
                   }`}
+                  onClick={() => handleCloseShiftSettings()}
                 ></div>
 
-                {/* Shift Settings - positioned below hours headers */}
+                {/* Shift Adjustment - positioned below hours headers */}
                 <div
                   className={`flex justify-center items-start w-full h-full transition-all duration-300 relative z-10 ${
-                    isEditing ? "visible opacity-100" : "invisible opacity-0"
+                    showShiftSettings
+                      ? "visible opacity-100"
+                      : "invisible opacity-0"
                   }`}
+                  onClick={() => handleCloseShiftSettings()}
                   style={{ paddingTop: "2rem" }}
                 >
-                  <div className="w-[40rem] max-w-[calc(100%-4rem)]">
+                  <div
+                    className="w-[40rem] max-w-[calc(100%-4rem)]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <ShiftInfoSettingsView
                       restTime={recoilState.restTime ?? 2}
                       startHour={recoilState.startTime ?? "08:00"}
                       endHour={recoilState.endTime ?? "16:00"}
                       posts={recoilState.posts || []}
+                      onClose={handleCloseShiftSettings}
                     />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Optimize Button - 10% */}
+            {/* Optimize and Clear Buttons - 10% */}
             <div
-              className="flex items-center justify-center mb-2 flex-none"
-              style={{ height: "10%" }}
+              id="buttons"
+              className="flex self-center items-center justify-center flex-none gap-2"
+              style={{ height: "10%", width: "15%" }}
             >
               <Button
                 id="optimize-button"
                 onClick={handleOptimize}
                 variant="default"
-                className="w-full disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={isOptimizeDisabled}
+                className="flex-1 disabled:cursor-not-allowed disabled:opacity-80 rounded-lg"
                 title={optimizeButtonTitle}
               >
                 Optimize
+              </Button>
+              <Button
+                id="clear-button"
+                onClick={handleClearAllAssignments}
+                variant="outline"
+                className="flex-1 bg-white border-black text-black hover:bg-gray-50 rounded-lg"
+                title="Clear all assignments"
+              >
+                Clear
               </Button>
             </div>
 
             {/* Staff Section - 40% */}
             <div
-              className="flex flex-col min-h-0 overflow-hidden"
+              id="staff_section"
+              className="flex flex-col min-h-0 overflow-hidden -mt-7"
               style={{ height: "40%" }}
             >
-              <div className="flex items-center gap-2 mb-2 flex-none">
+              <div className="flex items-center gap-2 flex-none mb-2">
                 <h3 className="text-lg font-semibold">
                   Staff ({recoilState.userShiftData?.length || 0}
                   {checkedUserIds.length > 0 &&
@@ -248,7 +292,7 @@ export function ShiftManager() {
                 </h3>
                 <WorkerListActions
                   isEditing={isEditing}
-                  onAddUser={addUser}
+                  onAddUser={handleAddUser}
                   onRemoveUsers={removeUsers}
                   onCheckAll={(allWasClicked) => {
                     setCheckedUserIds(
@@ -309,6 +353,7 @@ export function ShiftManager() {
                       availabilityConstraints={selectedUser?.constraints}
                       posts={recoilState.posts}
                       hours={recoilState.hours || defaultHours}
+                      endTime={recoilState.endTime}
                       userShiftData={recoilState.userShiftData || []}
                       mode="availability"
                       onConstraintsChange={(newConstraints) => {
@@ -339,30 +384,8 @@ export function ShiftManager() {
         </Card>
       </div>
 
-      {/* Optimization Feedback Dialog */}
-      <Dialog
-        open={optimizationDialog.isOpen}
-        onOpenChange={(open) =>
-          setOptimizationDialog((prev) => ({ ...prev, isOpen: open }))
-        }
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle
-              className={
-                optimizationDialog.type === "success"
-                  ? "text-green-600"
-                  : optimizationDialog.type === "warning"
-                  ? "text-yellow-600"
-                  : "text-red-600"
-              }
-            >
-              {optimizationDialog.title}
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-gray-700">{optimizationDialog.message}</p>
-        </DialogContent>
-      </Dialog>
+      {/* Toast Notifications */}
+      <ToastManager toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 }

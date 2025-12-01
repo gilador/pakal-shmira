@@ -16,8 +16,8 @@ export const colors = {
   },
   // Selected user cells
   selected: {
-    default: "bg-gray-300",
-    hover: "hover:bg-blue-200",
+    default: "bg-black text-white",
+    hover: "hover:bg-gray-800",
   },
   // Text colors
   text: {
@@ -31,5 +31,9 @@ export const colors = {
     default: "bg-primary/5",
     hover: `hover:bg-[#9dffbf]/80`,
     hover_negative: `hover:bg-[#ff9d9d]/80`,
+  },
+  highlightText: {
+    default: `text-[#9dffbf]`,
+    hover: `hover:text-[#9dffbf]/50`,
   },
 } as const;

@@ -2,115 +2,70 @@
 globs: *.ts,*.tsx,*.spec.ts,*.test.ts,tests/**/*
 ---
 
-# UI Design Standards - chadcn/ui New York Style
+# UI Design Standards
 
-## Design System Guidelines
+## Color Priority
 
-- **Primary Framework**: Use chadcn/ui components with the "New York" style variant
-- **Style Configuration**: Ensure `components.json` is set to `"style": "new-york"`
-- **Base Color Palette**: Use neutral base colors for consistency
-- **CSS Variables**: Leverage CSS custom properties for theming flexibility
-- **Component Library**: Prioritize chadcn/ui components before creating custom ones
+- **ALWAYS use colors from `src/constants/colors.ts` first**
+- Import: `import { colors } from '@/constants/colors'`
+- Use predefined color classes: `colors.available.default`, `colors.selected.hover`, etc.
+- Only use custom colors when not available in constants
 
-## Visual Design Principles
+### Color Usage Examples
 
-### Component Aesthetics
-- **Modern & Clean**: Embrace the contemporary aesthetic of the New York style
-- **Subtle Shadows**: Apply delicate shadow effects to buttons, inputs, selects, and date pickers
-- **Compact Sizing**: Use smaller, more refined component dimensions
-- **Refined Borders**: Implement distinctive border radii that align with the New York style
-- **Focused States**: Use consistent focus state implementations across all interactive elements
+#### ✅ Correct Usage
 
-### Layout & Spacing
-- **Consistent Spacing**: Follow Tailwind CSS spacing scale for consistent margins and padding
-- **Grid Systems**: Use CSS Grid and Flexbox for responsive layouts
-- **Typography Scale**: Maintain visual hierarchy with consistent font sizes and weights
-- **White Space**: Use generous white space to create breathing room and improve readability
+```tsx
+// Import colors from constants
+import { colors } from "@/constants/colors";
+
+// Use colors in className with template literals
+<span className={`${colors.highlightText.default} font-semibold`}>
+  Highlighted text
+</span>
+
+// Use colors in conditional styling
+<button className={`${colors.button.default} ${colors.button.hover}`}>
+  Click me
+</button>
+
+// Use colors with additional classes
+<div className={`${colors.available.default} ${colors.available.hover} rounded-lg`}>
+  Available cell
+</div>
+```
+
+#### ❌ Incorrect Usage
+
+```tsx
+// Don't hardcode colors
+<span className="text-[#9dffbf] font-semibold">  // ❌ Hardcoded hex
+<span className="text-green-500 font-semibold">  // ❌ Tailwind color
+
+// Don't use colors without template literals
+<span className={colors.highlightText.default}>  // ❌ Missing template literal
+
+// Don't mix hardcoded and palette colors
+<div className={`${colors.available.default} bg-red-200`}>  // ❌ Mixed approaches
+```
+
+#### Key Principles
+
+1. **Always import colors**: `import { colors } from "@/constants/colors"`
+2. **Use template literals**: `${colors.propertyName.variant}`
+3. **Combine with other classes**: `${colors.button.default} ${colors.button.hover} rounded-lg`
+4. **Follow the palette**: Use predefined colors instead of hardcoded values
+5. **Maintain consistency**: All components should use the same color palette
 
 ## Component Standards
 
-### Button Components
-- Use chadcn/ui Button component with New York styling
-- Apply appropriate variants: default, destructive, outline, secondary, ghost, link
-- Ensure proper sizing: default, sm, lg, icon
-- Include subtle shadow effects as per New York style
+- **Use chadcn/ui components with New York style** (subtle shadows, compact sizing)
+- Prefer Tailwind classes over custom CSS
+- Mobile-first responsive design
+- Maintain accessibility (ARIA, contrast, keyboard nav)
 
-### Form Elements
-- Implement Input, Select, Checkbox, and other form components with New York styling
-- Maintain consistent border treatments and focus states
-- Use proper validation states and error messaging
-- Apply compact sizing for better space utilization
+## File Structure
 
-### Navigation & Layout
-- Use Card components for content grouping with appropriate shadows
-- Implement Dialog/Modal components following New York conventions
-- Apply consistent separator and divider styling
-- Use ScrollArea for contained scrollable content
-
-## Implementation Standards
-
-### Component Usage
-- **Prefer chadcn/ui**: Always use chadcn/ui components when available
-- **Consistent Imports**: Use proper component imports from the established alias structure
-- **Variant Selection**: Choose appropriate component variants that align with New York style
-- **Customization**: Only customize components when necessary, maintaining style consistency
-
-### Styling Approach
-- **Tailwind-First**: Use Tailwind CSS classes for styling
-- **CSS Variables**: Leverage the established CSS custom property system
-- **Theme Integration**: Ensure all components respect light/dark mode switching
-- **Responsive Design**: Implement mobile-first responsive design patterns
-
-### Color System
-- **Neutral Base**: Use the neutral color palette as the foundation
-- **Semantic Colors**: Apply semantic colors (success, warning, error) consistently
-- **Accessibility**: Ensure proper contrast ratios for WCAG compliance
-- **Brand Integration**: Incorporate brand colors while maintaining New York style integrity
-
-## File Organization
-
-### Component Structure
-- Store UI components in `src/components/ui/` following chadcn/ui conventions
-- Place custom components in `src/components/` with clear naming
-- Group related components in logical subdirectories
-- Maintain separate files for complex component variants
-
-### Style Management
-- Central theming through `src/index.css` with CSS variables
-- Component-specific styles should extend the base New York theme
-- Avoid inline styles; prefer Tailwind classes or styled components
-- Document custom styling decisions for team consistency
-
-## Best Practices
-
-### Development Workflow
-- **Design Tokens**: Use established design tokens for spacing, colors, and typography
-- **Component Library**: Build a cohesive component library following New York patterns
-- **Documentation**: Document component usage and styling decisions
-- **Testing**: Ensure components work across different screen sizes and themes
-
-### Maintenance
-- **Consistency Audits**: Regularly review components for New York style compliance
-- **Updates**: Stay current with chadcn/ui updates while maintaining local customizations
-- **Performance**: Optimize component bundle size and rendering performance
-- **Accessibility**: Maintain ARIA compliance and keyboard navigation support
-
-## Quality Checklist
-
-Before implementing or modifying UI components:
-- [ ] Component follows New York style aesthetic (subtle shadows, compact sizing)
-- [ ] Proper variant usage and consistent styling applied
-- [ ] Responsive design implemented with mobile-first approach
-- [ ] Accessibility standards met (ARIA, keyboard navigation, contrast)
-- [ ] Theme compatibility (light/dark mode support)
-- [ ] Performance optimized (bundle size, rendering)
-- [ ] Documentation updated for any custom modifications
-- [ ] Cross-browser compatibility verified
-
-## Configuration Requirements
-
-Ensure your project is properly configured for New York style:
-- `components.json` set to `"style": "new-york"` ✅ (already updated)
-- `baseColor` configured appropriately (recommend "neutral") ✅ (already updated)
-- CSS variables enabled for theme flexibility
-- Proper alias configuration for component imports
+- UI components: `src/components/ui/`
+- Custom components: `src/components/`
+- Colors: `src/constants/colors.ts` (primary source)

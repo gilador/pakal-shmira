@@ -151,8 +151,30 @@ export function useAssignmentHandlers() {
     }
   };
 
+  const handleClearAllAssignments = () => {
+    setRecoilState((prevState) => {
+      const newAssignments = (prevState.assignments || []).map((row) =>
+        row.map(() => null)
+      );
+
+      // Clear all manually edited slots and custom display names
+      const newManuallyEditedSlots = {};
+      const newCustomCellDisplayNames = {};
+
+      console.log("All assignments cleared");
+
+      return {
+        ...prevState,
+        assignments: newAssignments,
+        manuallyEditedSlots: newManuallyEditedSlots,
+        customCellDisplayNames: newCustomCellDisplayNames,
+      };
+    });
+  };
+
   return {
     handleAssignmentChange,
     handleAssignmentNameUpdate,
+    handleClearAllAssignments,
   };
 }

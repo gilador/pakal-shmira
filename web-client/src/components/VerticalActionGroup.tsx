@@ -89,11 +89,14 @@ export function ActionableText({
           <Checkbox
             className="flex-shrink-0 w-4 h-4"
             checked={isChecked}
+            disabled={!isEditing}
             onCheckedChange={(checked) => {
-              if (checked) {
-                onCheck();
-              } else {
-                onUncheck();
+              if (isEditing) {
+                if (checked) {
+                  onCheck();
+                } else {
+                  onUncheck();
+                }
               }
             }}
             onClick={(e) => {
@@ -104,21 +107,24 @@ export function ActionableText({
           <EditButton
             isEditing={isEditMode}
             onToggle={() => {
-              if (isEditMode) {
-                // Exiting edit mode - save the value
-                onUpdate(id, tempValue.trim());
-                setIsEditMode(false);
-              } else {
-                // Entering edit mode - reset temp value
-                setTempValue(value);
-                setIsEditMode(true);
+              if (isEditing) {
+                if (isEditMode) {
+                  // Exiting edit mode - save the value
+                  onUpdate(id, tempValue.trim());
+                  setIsEditMode(false);
+                } else {
+                  // Entering edit mode - reset temp value
+                  setTempValue(value);
+                  setIsEditMode(true);
+                }
               }
             }}
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
             }}
-            className="flex-shrink-0"
+            className={`flex-shrink-0 }`}
+            disabled={!isEditing}
           />
         </div>
       </div>
@@ -146,7 +152,7 @@ export function ActionableText({
           />
         ) : (
           <span
-            className={`truncate text-gray-900 ${
+            className={`truncate text-gray-900 select-none ${
               isSelected ? "font-semibold" : ""
             } ${className}`}
           >

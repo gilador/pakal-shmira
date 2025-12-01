@@ -7,6 +7,7 @@ interface EditButtonProps {
   onToggle: () => void;
   className?: string;
   onClick?: (e: React.MouseEvent) => void;
+  disabled?: boolean;
 }
 
 export function EditButton({
@@ -14,8 +15,10 @@ export function EditButton({
   onToggle,
   className = "",
   onClick,
+  disabled = false,
 }: EditButtonProps) {
   const handleClick = (e: React.MouseEvent) => {
+    if (disabled) return;
     onClick?.(e);
     onToggle();
   };
@@ -25,6 +28,7 @@ export function EditButton({
       variant="ghost"
       size="icon"
       onClick={handleClick}
+      disabled={disabled}
       data-testid="edit-toggle-button"
       aria-label={isEditing ? "Exit edit mode" : "Enter edit mode"}
       className={` ease-in-out transform hover:scale-100 ${
@@ -34,7 +38,7 @@ export function EditButton({
       } ${className}`}
     >
       <Pencil
-        className={`h-4 w-4 transition-transform duration-100 animate-in slide-in-from-left-2 duration-200 ${
+        className={`h-4 w-4 transition-transform duration-200 animate-in slide-in-from-left-2 ${
           isEditing
             ? "-rotate-90 text-primary-foreground"
             : "hover:text-foreground/80"
