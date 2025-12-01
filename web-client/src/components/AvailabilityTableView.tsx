@@ -1,6 +1,6 @@
 import { colors } from "@/constants/colors";
 import React, { useEffect, useState, useRef } from "react";
-import { IconRotateClockwise2 } from "@tabler/icons-react";
+import { IconRotateClockwise2, IconCheck, IconX } from "@tabler/icons-react";
 import tumbleweedAnimation from "../../assets/tumbleweed-anim.gif";
 import { Constraint, User, UserShiftData } from "../models";
 import { UniqueString } from "../models/index";
@@ -341,9 +341,13 @@ export function AvailabilityTableView({
                         >
                           <div className="w-4 h-4 flex items-center justify-center">
                             {isAvailable ? (
-                              <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                              <div className="w-4 h-4 bg-black rounded-full flex items-center justify-center">
+                                <IconCheck className="w-3 h-3 text-white" stroke={3} />
+                              </div>
                             ) : (
-                              <IconRotateClockwise2 className="w-3 h-3 text-red-600" />
+                              <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                                <IconX className="w-3 h-3 text-black" stroke={3} />
+                              </div>
                             )}
                           </div>
                         </div>
@@ -443,64 +447,7 @@ export function AvailabilityTableView({
               </div>
             </div>
           )}
-          {/* Normal table view for availability mode */}
-          {mode === "availability" && (
-            <div className="p-2">
-              <div
-                className="grid gap-1 w-full grid-cols-[repeat(var(--hours),1fr)]"
-                style={{ "--hours": hours.length } as React.CSSProperties}
-              >
-                {hours.map((hour) => (
-                  <div
-                    key={hour.id}
-                    className={`font-semibold p-2 text-center ${colors.text.default}`}
-                  >
-                    {hour.value}
-                  </div>
-                ))}
 
-                {/* Availability mode cells */}
-                {posts.map((post, postIndex) => (
-                  <React.Fragment key={post.id}>
-                    {hours.map((hour, hourIndex) => {
-                      if (!effectiveAvailabilityConstraints) return null;
-                      const currentCellConstraint =
-                        effectiveAvailabilityConstraints[postIndex]?.[
-                          hourIndex
-                        ];
-                      const isAvailable =
-                        currentCellConstraint?.availability ?? true;
-                      return (
-                        <div
-                          key={`${post.id}-${hour.id}`}
-                          className={`p-2 cursor-pointer flex items-center justify-center ${
-                            isAvailable
-                              ? `${colors.available.default} ${colors.available.hover}`
-                              : `${colors.unavailable.default} ${colors.unavailable.hover}`
-                          } rounded-md transition-opacity duration-200`}
-                          style={{
-                            opacity: isEditing ? 0.2 : 1,
-                            pointerEvents: isEditing ? "none" : "auto",
-                          }}
-                          onClick={() =>
-                            toggleAvailability(postIndex, hourIndex)
-                          }
-                        >
-                          <div className="w-4 h-4 flex items-center justify-center">
-                            {isAvailable ? (
-                              <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                            ) : (
-                              <IconRotateClockwise2 className="w-3 h-3 text-red-600" />
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>
