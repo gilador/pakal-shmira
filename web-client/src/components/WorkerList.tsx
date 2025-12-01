@@ -13,6 +13,7 @@ export interface WorkerListProps {
   checkedUserIds: string[];
   onCheckUser: (userId: string) => void;
   onUncheckUser: (userId: string) => void;
+  assignments?: (string | null)[][];
 }
 
 export function WorkerList({
@@ -25,6 +26,7 @@ export function WorkerList({
   checkedUserIds,
   onCheckUser,
   onUncheckUser,
+  assignments,
 }: WorkerListProps) {
   const handleUserClick = (userId: string) => {
     console.log("handleUserClick called with userId:", userId);
@@ -32,6 +34,33 @@ export function WorkerList({
     const newSelectedUserId = selectedUserId === userId ? null : userId;
     console.log("Calling onSelectUser with:", newSelectedUserId);
     onSelectUser(newSelectedUserId);
+  };
+
+  // Helper to check if any assignments exist
+  const hasAnyAssignments = () => {
+    if (!assignments) return false;
+    for (const postAssignments of assignments) {
+      for (const assignedUserId of postAssignments) {
+        if (assignedUserId !== null) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  // Helper to count assignments for a user
+  const getAssignmentCount = (userId: string) => {
+    if (!assignments) return 0;
+    let count = 0;
+    for (const postAssignments of assignments) {
+      for (const assignedUserId of postAssignments) {
+        if (assignedUserId === userId) {
+          count++;
+        }
+      }
+    }
+    return count;
   };
 
   return (
@@ -50,6 +79,7 @@ export function WorkerList({
             </div>
           ) : (
             users.map((user) => {
+              const assignmentCount = getAssignmentCount(user.id);
               return (
                 <div
                   key={user.id}
@@ -60,18 +90,33 @@ export function WorkerList({
                       : "hover:bg-gray-50"
                   }`}
                 >
-                  <ActionableText
-                    id={user.id}
-                    value={user.name}
-                    isSelected={selectedUserId === user.id}
-                    isEditing={isEditing}
-                    isChecked={checkedUserIds.includes(user.id)}
-                    onCheck={() => onCheckUser(user.id)}
-                    onUncheck={() => onUncheckUser(user.id)}
-                    onUpdate={onUpdateUserName}
-                    onClick={() => handleUserClick(user.id)}
-                    allowClickWhenNotEditing={true}
-                  />
+                  <div className="flex items-center w-full">
+                    {assignments && hasAnyAssignments() && (
+                      <div
+                        className={`mr-2 min-w-[1.5rem] text-center text-xs font-semibold rounded-full px-1 py-0.5 ${
+                          selectedUserId === user.id
+                            ? "bg-white text-black"
+                            : "bg-black text-white"
+                        }`}
+                      >
+                        {assignmentCount}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <ActionableText
+                        id={user.id}
+                        value={user.name}
+                        isSelected={selectedUserId === user.id}
+                        isEditing={isEditing}
+                        isChecked={checkedUserIds.includes(user.id)}
+                        onCheck={() => onCheckUser(user.id)}
+                        onUncheck={() => onUncheckUser(user.id)}
+                        onUpdate={onUpdateUserName}
+                        onClick={() => handleUserClick(user.id)}
+                        allowClickWhenNotEditing={true}
+                      />
+                    </div>
+                  </div>
                 </div>
               );
             })

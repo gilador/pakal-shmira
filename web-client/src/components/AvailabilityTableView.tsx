@@ -1,6 +1,6 @@
 import { colors } from "@/constants/colors";
 import React, { useEffect, useState, useRef } from "react";
-import { IconRotateClockwise2, IconCheck, IconX } from "@tabler/icons-react";
+import { IconCheck, IconX } from "@tabler/icons-react";
 import tumbleweedAnimation from "../../assets/tumbleweed-anim.gif";
 import { Constraint, User, UserShiftData } from "../models";
 import { UniqueString } from "../models/index";

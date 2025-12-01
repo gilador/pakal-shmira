@@ -521,7 +521,7 @@ export function ShiftInfoSettingsView({
 
   return (
     <div
-      className={`w-full h-full pt-2 p-1 rounded-lg flex flex-col bg-white/90 backdrop-blur-md shadow-xl min-h-0 max-w-full overflow-hidden ${className}`}
+      className={`w-full h-full pt-2 p-1 rounded-lg flex flex-col bg-white/90 backdrop-blur-md shadow-xl min-h-0 max-w-full overflow-hidden border-2 border-black ${className}`}
     >
       <div className="flex justify-between items-center mb-1">
         <h4 className="text-base font-semibold text-left">Shift Adjustment</h4>

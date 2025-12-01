@@ -12,6 +12,7 @@ export interface ToastProps {
 
 export function Toast({
   message,
+  type,
   duration = 3000,
   onClose,
   highlightText,
@@ -60,6 +61,9 @@ export function Toast({
   };
 
   const getTypeStyles = () => {
+    if (type === "error") {
+      return colors.cell.error;
+    }
     return "bg-black text-white";
   };
 

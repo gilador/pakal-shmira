@@ -128,18 +128,46 @@ function convertToLPFormat(availabilityMatrix: boolean[][][]): string {
     }
   }
 
-  // 2. No consecutive shifts for same user
+  // 2. One user can only be assigned to ONE post per time slot
   for (let user = 0; user < num_users; user++) {
-    for (let shift = 0; shift < num_shifts - 1; shift++) {
-      for (let time_slot = 0; time_slot < num_time_slots; time_slot++) {
-        if (
-          availabilityMatrix[user][shift][time_slot] &&
-          availabilityMatrix[user][shift + 1][time_slot]
-        ) {
-          lp += ` c${constraintId++}: x_${user}_${shift}_${time_slot} + x_${user}_${
-            shift + 1
-          }_${time_slot} <= 1\n`;
+    for (let time_slot = 0; time_slot < num_time_slots; time_slot++) {
+      let constraintParts: string[] = [];
+      
+      for (let shift = 0; shift < num_shifts; shift++) {
+        if (availabilityMatrix[user][shift][time_slot]) {
+          constraintParts.push(`x_${user}_${shift}_${time_slot}`);
         }
+      }
+
+      // Only add constraint if user is available for at least 2 posts in this time slot
+      if (constraintParts.length > 1) {
+        lp += ` c${constraintId++}: ${constraintParts.join(" + ")} <= 1\n`;
+      }
+    }
+  }
+
+  // 3. No consecutive time slots for same user
+  for (let user = 0; user < num_users; user++) {
+    for (let time_slot = 0; time_slot < num_time_slots - 1; time_slot++) {
+      let constraintParts: string[] = [];
+
+      // Add all assignments for current time slot
+      for (let shift = 0; shift < num_shifts; shift++) {
+        if (availabilityMatrix[user][shift][time_slot]) {
+          constraintParts.push(`x_${user}_${shift}_${time_slot}`);
+        }
+      }
+
+      // Add all assignments for next time slot
+      for (let shift = 0; shift < num_shifts; shift++) {
+        if (availabilityMatrix[user][shift][time_slot + 1]) {
+          constraintParts.push(`x_${user}_${shift}_${time_slot + 1}`);
+        }
+      }
+
+      // Only add constraint if there are variables involved
+      if (constraintParts.length > 0) {
+        lp += ` c${constraintId++}: ${constraintParts.join(" + ")} <= 1\n`;
       }
     }
   }
@@ -480,6 +508,16 @@ export async function optimizeShift(
         availabilityMatrix[0].length,
         availabilityMatrix[0][0].length
       );
+
+      // Check if the solver actually found a solution
+      if (result.Status !== "Optimal") {
+        console.warn("Solver returned non-optimal status:", result.Status);
+        return {
+          result: createEmptySolution(numPosts, numTimeSlots, numUsers),
+          isOptim: false,
+          error: `Optimization failed: The solver could not find a valid solution (Status: ${result.Status}). This usually means there are not enough available workers to cover all shifts under the current constraints.`,
+        };
+      }
 
       // Validate and return the solution
       const validatedSolution = validateSolution(

@@ -24,10 +24,11 @@ export const colors = {
     default: "bg-[#d1d5db]",
     selected: "bg-black text-white",
     dim: "bg-[#d1d5db]/30",
+    error: "bg-red-600 text-white",
   },
   // Text colors
   text: {
-    default: "text-gray-600",
+    default: "bg-white text-gray-600",    
   },
   subtitle: {
     default: "text-gray-400",
