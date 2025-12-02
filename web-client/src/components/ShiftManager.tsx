@@ -285,12 +285,30 @@ export function ShiftManager() {
               style={{ height: "40%" }}
             >
               <div className="flex items-center gap-2 flex-none mb-2">
-                <h3 className="text-lg font-semibold">
-                  Staff ({recoilState.userShiftData?.length || 0}
-                  {checkedUserIds.length > 0 &&
-                    `, ${checkedUserIds.length} selected`}
-                  )
-                </h3>
+                <h3 className="text-lg font-semibold">Staff</h3>
+                <div className="flex items-center gap-3 text-sm bg-gray-100 px-3 py-1 rounded-md">
+                  <span className="font-medium">
+                    {recoilState.userShiftData?.length || 0} staff
+                  </span>
+                  <span className="text-gray-400">|</span>
+                  <span className="font-medium">
+                    {(() => {
+                      const staffCount = recoilState.userShiftData?.length || 0;
+                      if (staffCount === 0) return "0 avg shifts";
+                      
+                      let totalAssignments = 0;
+                      for (const postAssignments of assignments) {
+                        for (const assignedUserId of postAssignments) {
+                          if (assignedUserId !== null) {
+                            totalAssignments++;
+                          }
+                        }
+                      }
+                      const avgShifts = (totalAssignments / staffCount).toFixed(1);
+                      return `${avgShifts} avg shifts`;
+                    })()}
+                  </span>
+                </div>
                 <WorkerListActions
                   isEditing={isEditing}
                   onAddUser={handleAddUser}
@@ -335,7 +353,6 @@ export function ShiftManager() {
                           checkedUserIds.filter((id) => id !== userId)
                         )
                       }
-                      assignments={assignments}
                     />
                   }
                   rightPanel={
