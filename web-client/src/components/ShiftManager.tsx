@@ -383,6 +383,7 @@ export function ShiftManager() {
                           checkedUserIds.filter((id) => id !== userId)
                         )
                       }
+                      assignments={assignments}
                     />
                   }
                   rightPanel={

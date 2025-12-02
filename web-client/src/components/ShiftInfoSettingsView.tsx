@@ -656,6 +656,15 @@ export function ShiftInfoSettingsView({
           </div>
         </div>
       </div>
+
+      {/* Info Section */}
+      <div className="flex-shrink-0 mt-2">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
+          <p className="text-xs text-gray-700 text-left">
+            <span className="font-semibold">How it works:</span> {posts.length} posts × {staffCount} staff members = {shiftStartTimes.length} shifts with {shiftDuration.toFixed(1)}h duration (rounded to hour/half-hour).
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
