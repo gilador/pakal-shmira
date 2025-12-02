@@ -21,6 +21,7 @@ import { useAssignmentHandlers } from "../hooks/useAssignmentHandlers";
 import { useToast } from "../hooks/useToast";
 import { ToastManager } from "./Toast";
 import { defaultHours } from "../constants/shiftManagerConstants";
+import { getOptimalShiftDuration } from "../service/shiftHourHelperService";
 
 export function ShiftManager() {
   const [recoilState] = useRecoilState(shiftState);
@@ -153,10 +154,39 @@ export function ShiftManager() {
               id="assignments-table"
             >
               <div className="flex items-center gap-2 mb-2 flex-none">
-                <h3 className="text-lg font-semibold">
-                  Shift Assignments ({recoilState.posts?.length || 0}
-                  {checkedPostIds.length > 0 && ` / ${checkedPostIds.length}`})
-                </h3>
+                <h3 className="text-lg font-semibold">Shift Assignments</h3>
+                <div className="flex items-center gap-3 text-sm bg-gray-100 px-3 py-1 rounded-md">
+                  <span className="font-medium">
+                    {recoilState.posts?.length || 0} posts
+                  </span>
+                  <span className="text-gray-400">|</span>
+                  <span className="font-medium">
+                    {(() => {
+                      let totalShifts = 0;
+                      for (const postAssignments of assignments) {
+                        for (const assignedUserId of postAssignments) {
+                          if (assignedUserId !== null) {
+                            totalShifts++;
+                          }
+                        }
+                      }
+                      return `${totalShifts} shifts`;
+                    })()}
+                  </span>
+                  <span className="text-gray-400">|</span>
+                  <span className="font-medium">
+                    {(() => {
+                      const shiftDuration = getOptimalShiftDuration(
+                        recoilState.startTime || "08:00",
+                        recoilState.endTime || "16:00",
+                        recoilState.posts?.length || 0,
+                        recoilState.userShiftData?.length || 0,
+                        recoilState.restTime || 2
+                      );
+                      return `${shiftDuration.toFixed(1)}h shift duration`;
+                    })()}
+                  </span>
+                </div>
                 <PostListActions
                   isEditing={isEditing}
                   onAddPost={handleAddPost}
