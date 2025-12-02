@@ -65,7 +65,7 @@ export function WorkerList({
 
   return (
     <div className="flex flex-col h-full border-primary-rounded-lg overflow-hidden bg-white">
-      <div className="flex-1 overflow-y-auto bg-white">
+      <div className="flex-1 overflow-y-auto bg-white justify-items-center">
         <div className="flex flex-col">
           {users.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center p-4 h-full">
@@ -84,7 +84,7 @@ export function WorkerList({
                 <div
                   key={user.id}
                   data-testid="staff-member"
-                  className={`px-2 pb-1 pt-1 gap-1 rounded-md ${
+                  className={`px-2 pb-1 pt-1 gap-1 rounded-md  ${
                     selectedUserId === user.id
                       ? colors.cell.selected
                       : "hover:bg-gray-50"
@@ -114,6 +114,7 @@ export function WorkerList({
                         onUpdate={onUpdateUserName}
                         onClick={() => handleUserClick(user.id)}
                         allowClickWhenNotEditing={true}
+                        className="text-left"
                       />
                     </div>
                   </div>

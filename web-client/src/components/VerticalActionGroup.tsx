@@ -76,16 +76,14 @@ export function ActionableText({
           : undefined
       }
     >
-      {/* Editing controls - always reserve space but hide when not editing */}
+      {/* Editing controls - slide in when editing */}
       <div
-        className="flex items-center gap-1  flex-shrink-0"
+        className={`flex items-center gap-1 flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
+          isEditing ? "max-w-[100px] opacity-100 mr-2" : "max-w-0 opacity-0 mr-0"
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div
-          className={`flex items-center gap-2 transition-opacity duration-100 ease-in-out ${
-            isEditing ? "opacity-100" : "opacity-0"
-          }`}
-        >
+        <div className="flex items-center gap-2 min-w-max">
           <Checkbox
             className="flex-shrink-0 w-4 h-4"
             checked={isChecked}
@@ -152,7 +150,7 @@ export function ActionableText({
           />
         ) : (
           <span
-            className={`truncate select-none ${
+            className={`truncate  select-none block w-full ${
               isSelected ? "font-semibold" : ""
             } ${className}`}
           >

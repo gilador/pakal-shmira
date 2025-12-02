@@ -1,3 +1,4 @@
+import { Button } from "@/components/elements/button";
 import { colors } from "@/constants/colors";
 import React, { useEffect, useState, useRef } from "react";
 import { IconCheck, IconX } from "@tabler/icons-react";
@@ -254,6 +255,29 @@ export function AvailabilityTableView({
     onConstraintsChange(newConstraints); // Notify parent
   };
 
+  const handleReset = () => {
+    if (
+      mode !== "availability" ||
+      !onConstraintsChange ||
+      !availabilityConstraints
+    )
+      return;
+
+    const baseConstraints =
+      optimisticLocalConstraints || availabilityConstraints;
+    if (!baseConstraints) return;
+
+    const newConstraints = baseConstraints.map((postCons) =>
+      postCons.map((constraint) => ({
+        ...constraint,
+        availability: true,
+      }))
+    );
+
+    setOptimisticLocalConstraints(newConstraints);
+    onConstraintsChange(newConstraints);
+  };
+
   // Reset optimistic state when props change
   useEffect(() => {
     setOptimisticLocalConstraints(null);
@@ -269,7 +293,7 @@ export function AvailabilityTableView({
       } overflow-hidden ${className}`}
     >
       {mode === "availability" && (
-        <div className="h-10 flex items-center px-2 flex-none">
+        <div className="h-10 flex items-center justify-between px-2 flex-none">
           <h3 className="text-lg font-semibold">
             {/* Show user name if user and availabilityConstraints are present, else show generic or nothing */}
             {user && availabilityConstraints
@@ -278,6 +302,15 @@ export function AvailabilityTableView({
               ? `Availability`
               : "\b"}
           </h3>
+          {availabilityConstraints && (
+            <Button
+              onClick={handleReset}
+              variant="outline"
+              className="bg-white border-black text-black hover:bg-gray-50 rounded-lg h-8 text-xs px-3"
+            >
+              Reset
+            </Button>
+          )}
         </div>
       )}
       {/* Show empty state with GIF only if mode is availability AND no availabilityConstraints are passed (i.e., no user selected) */}
@@ -400,6 +433,7 @@ export function AvailabilityTableView({
                         onUpdate={(id, newValue) =>
                           handlePostNameChange(id, newValue)
                         }
+                        className="text-center"
                       />
                     </div>
                     {hours.map((hour, hourIndex) => {
