@@ -8,6 +8,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/elements/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useMemo, useState } from "react";
 import { useRecoilState } from "recoil";
 import tumbleweedIcon from "../../assets/tumbleweed.svg";
@@ -298,16 +303,24 @@ export function ShiftManager() {
               className="flex self-center items-center justify-center flex-none gap-2"
               style={{ height: "10%", width: "15%" }}
             >
-              <Button
-                id="optimize-button"
-                onClick={handleOptimize}
-                variant="default"
-                className="flex-1 disabled:cursor-not-allowed disabled:opacity-80 rounded-lg"
-                title={optimizeButtonTitle}
-                disabled={isOptimizeDisabled}
-              >
-                Optimize
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex-1">
+                    <Button
+                      id="optimize-button"
+                      onClick={handleOptimize}
+                      variant="default"
+                      className="w-full disabled:cursor-not-allowed disabled:opacity-80 rounded-lg"
+                      disabled={isOptimizeDisabled}
+                    >
+                      Optimize
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{optimizeButtonTitle}</p>
+                </TooltipContent>
+              </Tooltip>
               <Button
                 id="clear-button"
                 onClick={() => setIsClearDialogOpen(true)}
