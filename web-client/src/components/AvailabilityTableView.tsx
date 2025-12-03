@@ -255,6 +255,49 @@ export function AvailabilityTableView({
     onConstraintsChange(newConstraints); // Notify parent
   };
 
+  const togglePostRowAvailability = (postIndex: number) => {
+    if (
+      mode !== "availability" ||
+      !onConstraintsChange ||
+      !availabilityConstraints
+    )
+      return;
+
+    const baseConstraints =
+      optimisticLocalConstraints || availabilityConstraints;
+    if (!baseConstraints || !availabilityConstraints) return;
+
+    if (postIndex < 0 || postIndex >= baseConstraints.length) return;
+
+    // Check if all slots in this post row are currently available
+    const postConstraints = baseConstraints[postIndex] || [];
+    const allAvailable = postConstraints.every(
+      (constraint) => constraint.availability !== false
+    );
+
+    const newConstraints = baseConstraints.map((postCons, pIndex) => {
+      if (pIndex === postIndex) {
+        const updatedPostCons = [...postCons];
+        while (updatedPostCons.length < hours.length) {
+          updatedPostCons.push({
+            availability: true,
+            postID: posts[pIndex]?.id || "",
+            hourID: hours[updatedPostCons.length]?.id || "",
+          });
+        }
+        // Toggle: if all are available, make all unavailable; otherwise make all available
+        return updatedPostCons.map((constraint) => ({
+          ...constraint,
+          availability: !allAvailable,
+        }));
+      }
+      return postCons;
+    });
+
+    setOptimisticLocalConstraints(newConstraints);
+    onConstraintsChange(newConstraints);
+  };
+
   const handleReset = () => {
     if (
       mode !== "availability" ||
@@ -334,9 +377,13 @@ export function AvailabilityTableView({
           {mode === "availability" && (
             <div className="p-2 relative">
               <div
-                className={`grid gap-1 w-full grid-cols-[repeat(var(--hours),1fr)]`}
+                className="grid gap-1 w-full grid-cols-[auto_repeat(var(--hours),1fr)]"
                 style={{ "--hours": hours.length } as React.CSSProperties}
               >
+                {/* Header Row */}
+                <div className="py-2 pr-2 pl-2 overflow-x-auto min-w-[11rem] flex justify-center items-center">
+                  <div className={colors.text.default}>Post</div>
+                </div>
                 {hours.map((hour) => (
                   <div
                     key={hour.id}
@@ -346,8 +393,44 @@ export function AvailabilityTableView({
                   </div>
                 ))}
 
-                {posts.map((post, postIndex) => (
-                  <React.Fragment key={post.id}>
+                {/* Data Rows */}
+                {posts.map((post, postIndex) => {
+                  // Check if all slots in this post row are currently available
+                  const postConstraints = effectiveAvailabilityConstraints?.[postIndex] || [];
+                  const allAvailable = postConstraints.every(
+                    (constraint) => constraint.availability !== false
+                  );
+
+                  return (
+                    <React.Fragment key={post.id}>
+                      <div className="py-2 pr-2 flex items-center justify-center relative group">
+                        <div className="text-center font-medium">{post.value}</div>
+                        {/* Hover button to toggle entire post row availability */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            togglePostRowAvailability(postIndex);
+                          }}
+                          className={`absolute right-4 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 border-2 ${
+                            allAvailable
+                              ? 'bg-black border-white hover:bg-gray-800'
+                              : 'bg-white border-black hover:bg-gray-100'
+                          }`}
+                          title="Toggle entire post availability"
+                        >
+                          {allAvailable ? (
+                            <IconX 
+                              className="w-4 h-4 text-white" 
+                              stroke={3} 
+                            />
+                          ) : (
+                            <IconCheck 
+                              className="w-4 h-4 text-black" 
+                              stroke={3} 
+                            />
+                          )}
+                        </button>
+                      </div>
                     {hours.map((hour, hourIndex) => {
                       if (!effectiveAvailabilityConstraints) return null;
                       const currentCellConstraint =
@@ -387,7 +470,8 @@ export function AvailabilityTableView({
                       );
                     })}
                   </React.Fragment>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
