@@ -34,18 +34,18 @@ export interface AvailabilityTableViewProps {
     newUserName: string
   ) => void;
   customCellDisplayNames?: { [slotKey: string]: string };
+  onShowToast?: (message: string, type?: "success" | "error" | "info") => void;
 }
 
 const AssignmentCell = ({
   name,
-  isAssigned,
   isShiftEditing,
   onSaveName,
 }: {
   name: string;
-  isAssigned: boolean;
   isShiftEditing: boolean;
   onSaveName: (newName: string) => void;
+  isAssigned: boolean;
 }) => {
   const [isEditingLocal, setIsEditingLocal] = useState(false);
   const [optimisticName, setOptimisticName] = useState<string | null>(null);
@@ -87,14 +87,6 @@ const AssignmentCell = ({
     setIsEditingLocal(false);
   };
 
-  if (!isAssigned) {
-    return (
-      <div className={`flex items-center w-full h-[32px]`}>
-        <span className={` w-full truncate cursor-default`}>-</span>
-      </div>
-    );
-  }
-
   return (
     <div className={`flex items-center w-full h-[32px] relative`}>
       <EditableText
@@ -112,9 +104,21 @@ const AssignmentCell = ({
         {(displayName, editing) => (
           <span
             className={`w-full truncate ${
-              editing ? "cursor-text" : "cursor-pointer"
+              editing
+                ? "cursor-text"
+                : isShiftEditing
+                ? "cursor-pointer"
+                : "cursor-default"
             }`}
-            onClick={editing ? undefined : () => setIsEditingLocal(true)}
+            onClick={
+              editing
+                ? undefined
+                : () => {
+                    if (isShiftEditing) {
+                      setIsEditingLocal(true);
+                    }
+                  }
+            }
           >
             {displayName}
           </span>
@@ -151,6 +155,7 @@ export function AvailabilityTableView({
   onPostUncheck,
   onAssignmentEdit,
   customCellDisplayNames = {},
+  onShowToast,
 }: AvailabilityTableViewProps) {
   const [optimisticLocalConstraints, setOptimisticLocalConstraints] = useState<
     Constraint[][] | null
@@ -365,6 +370,32 @@ export function AvailabilityTableView({
 
     setOptimisticLocalConstraints(newConstraints);
     onConstraintsChange(newConstraints);
+    onShowToast?.("Availability reset to all available", "success");
+    onShowToast?.("Availability reset to all available", "success");
+  };
+
+  const handleSetAllUnavailable = () => {
+    if (
+      mode !== "availability" ||
+      !onConstraintsChange ||
+      !availabilityConstraints
+    )
+      return;
+
+    const baseConstraints =
+      optimisticLocalConstraints || availabilityConstraints;
+    if (!baseConstraints) return;
+
+    const newConstraints = baseConstraints.map((postCons) =>
+      postCons.map((constraint) => ({
+        ...constraint,
+        availability: false,
+      }))
+    );
+
+    setOptimisticLocalConstraints(newConstraints);
+    onConstraintsChange(newConstraints);
+    onShowToast?.("Availability set to all unavailable", "success");
   };
 
   // Reset optimistic state when props change
@@ -392,13 +423,22 @@ export function AvailabilityTableView({
               : "\b"}
           </h3>
           {availabilityConstraints && (
-            <Button
-              onClick={handleReset}
-              variant="outline"
-              className="bg-white border-black text-black hover:bg-gray-50 rounded-lg h-8 text-xs px-3"
-            >
-              Reset
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleReset}
+                variant="outline"
+                className="bg-white border-black text-black hover:bg-gray-50 rounded-lg h-8 text-xs px-3"
+              >
+                All Available
+              </Button>
+              <Button
+                onClick={handleSetAllUnavailable}
+                variant="outline"
+                className="bg-white border-black text-black hover:bg-gray-50 rounded-lg h-8 text-xs px-3"
+              >
+                Unavailable
+              </Button>
+            </div>
           )}
         </div>
       )}

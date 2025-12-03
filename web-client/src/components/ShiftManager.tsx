@@ -1,5 +1,13 @@
 import { Button } from "@/components/elements/button";
 import { Card, CardContent } from "@/components/elements/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/elements/dialog";
 import { useMemo, useState } from "react";
 import { useRecoilState } from "recoil";
 import tumbleweedIcon from "../../assets/tumbleweed.svg";
@@ -29,6 +37,7 @@ export function ShiftManager() {
   const [isEditing, setIsEditing] = useState(false);
   const [checkedUserIds, setCheckedUserIds] = useState<string[]>([]);
   const [showShiftSettings, setShowShiftSettings] = useState(false);
+  const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
 
   // Initialize the component and get the constraints signature ref
   const { lastAppliedConstraintsSignature } = useShiftManagerInitialization();
@@ -301,13 +310,44 @@ export function ShiftManager() {
               </Button>
               <Button
                 id="clear-button"
-                onClick={handleClearAllAssignments}
+                onClick={() => setIsClearDialogOpen(true)}
                 variant="outline"
                 className="flex-1 bg-white border-black text-black hover:bg-gray-50 rounded-lg"
                 title="Clear all assignments"
               >
                 Clear
               </Button>
+
+              <Dialog open={isClearDialogOpen} onOpenChange={setIsClearDialogOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Clear All Assignments?</DialogTitle>
+                    <DialogDescription>
+                      This action cannot be undone. This will permanently delete all
+                      shift assignments.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter className="gap-2 sm:space-x-0">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsClearDialogOpen(false)}
+                      size="sm"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        handleClearAllAssignments();
+                        setIsClearDialogOpen(false);
+                      }}
+                      size="sm"
+                    >
+                      Clear
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
 
             {/* Staff Section - 40% */}
@@ -424,9 +464,13 @@ export function ShiftManager() {
                           (userData) => userData.user
                         ) || []
                       }
-                      checkedPostIds={checkedPostIds}
                       onPostCheck={handlePostCheck}
                       onPostUncheck={handlePostUncheck}
+                      onShowToast={(message, type) => {
+                        if (type === "success") showSuccess(message);
+                        else if (type === "error") showError(message);
+                        else showInfo(message);
+                      }}
                     />
                   }
                 />

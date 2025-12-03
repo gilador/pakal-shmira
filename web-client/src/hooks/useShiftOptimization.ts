@@ -73,6 +73,12 @@ export function useShiftOptimization(
         );
         setIsOptimizeDisabled(false);
         newTitle = "Generate initial shift assignments.";
+        
+        // Set sync status to "no-optimised" as default when no assignments exist
+        setRecoilState((prev) => ({
+          ...prev,
+          syncStatus: "no-optimised",
+        }));
       } else {
         console.log(
           "🚫 [useShiftOptimization] Disabled: No assignments and no user data"
