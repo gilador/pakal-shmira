@@ -298,6 +298,52 @@ export function AvailabilityTableView({
     onConstraintsChange(newConstraints);
   };
 
+  const toggleHourColumnAvailability = (hourIndex: number) => {
+    if (
+      mode !== "availability" ||
+      !onConstraintsChange ||
+      !availabilityConstraints
+    )
+      return;
+
+    const baseConstraints =
+      optimisticLocalConstraints || availabilityConstraints;
+    if (!baseConstraints || !availabilityConstraints) return;
+
+    if (hourIndex < 0 || hourIndex >= hours.length) return;
+
+    // Check if all slots in this hour column are currently available
+    const allAvailable = baseConstraints.every((postCons) => {
+      const constraint = postCons[hourIndex];
+      return constraint?.availability !== false;
+    });
+
+    const newConstraints = baseConstraints.map((postCons) => {
+      const updatedPostCons = [...postCons];
+      while (updatedPostCons.length < hours.length) {
+        const pIndex = baseConstraints.indexOf(postCons);
+        updatedPostCons.push({
+          availability: true,
+          postID: posts[pIndex]?.id || "",
+          hourID: hours[updatedPostCons.length]?.id || "",
+        });
+      }
+      // Toggle the specific hour in this post
+      return updatedPostCons.map((constraint, hIndex) => {
+        if (hIndex === hourIndex) {
+          return {
+            ...constraint,
+            availability: !allAvailable,
+          };
+        }
+        return constraint;
+      });
+    });
+
+    setOptimisticLocalConstraints(newConstraints);
+    onConstraintsChange(newConstraints);
+  };
+
   const handleReset = () => {
     if (
       mode !== "availability" ||
@@ -384,14 +430,49 @@ export function AvailabilityTableView({
                 <div className="py-2 pr-2 pl-2 overflow-x-auto min-w-[11rem] flex justify-center items-center">
                   <div className={colors.text.default}>Post</div>
                 </div>
-                {hours.map((hour) => (
-                  <div
-                    key={hour.id}
-                    className={`font-semibold p-2 text-center ${colors.text.default}`}
-                  >
-                    {hour.value}
-                  </div>
-                ))}
+                {hours.map((hour, hourIndex) => {
+                  // Check if all slots in this hour column are currently available
+                  const columnConstraints = effectiveAvailabilityConstraints?.map(
+                    (postCons) => postCons[hourIndex]
+                  ) || [];
+                  const allAvailable = columnConstraints.every(
+                    (constraint) => constraint?.availability !== false
+                  );
+
+                  return (
+                    <div
+                      key={hour.id}
+                      className={`font-semibold p-2 text-center relative group ${colors.text.default}`}
+                    >
+                      {hour.value}
+                      {/* Hover button to toggle entire hour column availability */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleHourColumnAvailability(hourIndex);
+                        }}
+                        className={`absolute right-1 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 border-2 ${
+                          allAvailable
+                            ? 'bg-black border-white hover:bg-gray-800'
+                            : 'bg-white border-black hover:bg-gray-100'
+                        }`}
+                        title="Toggle entire hour column availability"
+                      >
+                        {allAvailable ? (
+                          <IconX 
+                            className="w-3 h-3 text-white" 
+                            stroke={3} 
+                          />
+                        ) : (
+                          <IconCheck 
+                            className="w-3 h-3 text-black" 
+                            stroke={3} 
+                          />
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
 
                 {/* Data Rows */}
                 {posts.map((post, postIndex) => {

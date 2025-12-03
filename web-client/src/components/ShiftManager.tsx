@@ -20,6 +20,7 @@ import { usePostHandlers } from "../hooks/usePostHandlers";
 import { useAssignmentHandlers } from "../hooks/useAssignmentHandlers";
 import { useToast } from "../hooks/useToast";
 import { ToastManager } from "./Toast";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { defaultHours } from "../constants/shiftManagerConstants";
 import { getOptimalShiftDuration } from "../service/shiftHourHelperService";
 
@@ -120,7 +121,8 @@ export function ShiftManager() {
   }, [selectedUserId, recoilState.userShiftData]);
 
   return (
-    <div className="flex flex-col h-full">
+    <TooltipProvider delayDuration={0}>
+      <div className="flex flex-col h-full">
       <div
         id="header"
         className="grid grid-cols-[auto_1fr] gap-x-4 items-start mb-4 flex-none"
@@ -436,6 +438,7 @@ export function ShiftManager() {
 
       {/* Toast Notifications */}
       <ToastManager toasts={toasts} onRemoveToast={removeToast} />
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }

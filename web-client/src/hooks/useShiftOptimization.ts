@@ -110,6 +110,11 @@ export function useShiftOptimization(
     } else {
       setIsOptimizeDisabled(false);
       newTitle = "Optimize with updated constraints.";
+      // Set sync status to "no-optimised" when constraints have changed
+      setRecoilState((prev) => ({
+        ...prev,
+        syncStatus: "no-optimised",
+      }));
     }
     setOptimizeButtonTitle(newTitle);
   }, [
