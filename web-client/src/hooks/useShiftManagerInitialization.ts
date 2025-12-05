@@ -166,62 +166,12 @@ export function useShiftManagerInitialization() {
           // 3. No saved data, so set default workers and initial assignments
           const defaultWorkers: UserShiftData[] = [
             {
-              user: { id: "worker-1", name: "John Doe" },
+              user: { id: "worker-1", name: "ישראל מזרחי" },
               constraints: getDefaultConstraints(defaultPosts, dynamicHours),
               totalAssignments: 0,
             },
             {
-              user: { id: "worker-2", name: "Jane Smith" },
-              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
-              totalAssignments: 0,
-            },
-            {
-              user: { id: "worker-3", name: "Bob Johnson" },
-              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
-              totalAssignments: 0,
-            },
-            {
-              user: { id: "worker-4", name: "Alice Brown" },
-              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
-              totalAssignments: 0,
-            },
-            {
-              user: { id: "worker-5", name: "Charlie Wilson" },
-              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
-              totalAssignments: 0,
-            },
-            {
-              user: { id: "worker-6", name: "David Miller" },
-              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
-              totalAssignments: 0,
-            },
-            {
-              user: { id: "worker-7", name: "Emma Davis" },
-              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
-              totalAssignments: 0,
-            },
-            {
-              user: { id: "worker-8", name: "Frank Wilson" },
-              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
-              totalAssignments: 0,
-            },
-            {
-              user: { id: "worker-9", name: "Grace Taylor" },
-              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
-              totalAssignments: 0,
-            },
-            {
-              user: { id: "worker-10", name: "Henry Anderson" },
-              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
-              totalAssignments: 0,
-            },
-            {
-              user: { id: "worker-11", name: "Isabella Martinez" },
-              constraints: getDefaultConstraints(defaultPosts, dynamicHours),
-              totalAssignments: 0,
-            },
-            {
-              user: { id: "worker-12", name: "Jack Thompson" },
+              user: { id: "worker-2", name: "ישראל אשכנזי" },
               constraints: getDefaultConstraints(defaultPosts, dynamicHours),
               totalAssignments: 0,
             },

@@ -1,4 +1,5 @@
 import { Button } from "@/components/elements/button";
+import { IconBrandGithub } from "@tabler/icons-react";
 import { Card, CardContent } from "@/components/elements/card";
 import {
   Dialog,
@@ -139,7 +140,7 @@ export function ShiftManager() {
       <div className="flex flex-col h-full">
       <div
         id="header"
-        className="grid grid-cols-[auto_1fr] gap-x-4 items-start mb-4 flex-none"
+        className="grid grid-cols-[auto_1fr_auto] gap-x-4 items-start mb-4 flex-none"
       >
         <img
           src={tumbleweedIcon}
@@ -150,6 +151,15 @@ export function ShiftManager() {
           <h1 className="text-2xl font-bold">Tumbleweed</h1>
           <h2 className="text-md text-gray-400">Shift Manager</h2>
         </div>
+        <a
+          href="https://github.com/gilador/pakal-shmira"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-gray-500 hover:text-black transition-colors"
+          title="View on GitHub"
+        >
+          <IconBrandGithub size={24} />
+        </a>
       </div>
       <div id="content" className="flex-1 min-h-0">
         <Card className="flex flex-row h-full overflow-hidden">

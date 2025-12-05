@@ -6,9 +6,8 @@ export const OPERATION_END_TIME = "18:00";
 export const MINIMUM_REST_TIME = 4; // hours - default middle option
 
 export const defaultPosts: UniqueString[] = [
-  { id: "post-1", value: "Post 1" },
-  { id: "post-2", value: "Post 2" },
-  { id: "post-3", value: "Post 3" },
+  { id: "post-1", value: "עמדה 1" },
+  { id: "post-2", value: "עמדה 2" },
 ];
 
 // Fallback hours for when dynamic calculation is not available
