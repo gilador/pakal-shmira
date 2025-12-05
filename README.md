@@ -18,14 +18,13 @@ This repository contains the evolution of the project from a Python prototype to
 
 ## Screenshots
 
-### Initial Prototype
-
-<img width="1440" alt="Initial Prototype" src="assets/initial-state.png">
-
 ### Current Web App
 
 <img width="1440" alt="Current State" src="assets/current-state.png">
 
+### Initial Prototype
+
+<img width="1440" alt="Initial Prototype" src="assets/initial-state.png">
 ## Tech Stack
 
 - **Core**: React, TypeScript, Vite
