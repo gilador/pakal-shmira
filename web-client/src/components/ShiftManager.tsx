@@ -158,7 +158,13 @@ export function ShiftManager() {
               <SyncStatusIcon status={syncStatus} size={18} />
               <EditButton
                 isEditing={isEditing}
-                onToggle={() => setIsEditing(!isEditing)}
+                onToggle={() => {
+                  const newIsEditing = !isEditing;
+                  setIsEditing(newIsEditing);
+                  if (newIsEditing) {
+                    handleUserSelect(null);
+                  }
+                }}
               />
             </VerticalActionGroup>
           </div>

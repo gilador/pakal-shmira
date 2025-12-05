@@ -29,6 +29,8 @@ export function WorkerList({
   assignments,
 }: WorkerListProps) {
   const handleUserClick = (userId: string) => {
+    if (isEditing) return;
+    
     console.log("handleUserClick called with userId:", userId);
     console.log("Current selectedUserId:", selectedUserId);
     const newSelectedUserId = selectedUserId === userId ? null : userId;

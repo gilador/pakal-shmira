@@ -10,6 +10,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  base: "/pakal-shmira/",
   server: {
     port: 5273,
     host: true,
