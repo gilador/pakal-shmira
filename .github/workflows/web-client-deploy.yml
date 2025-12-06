@@ -1,0 +1,54 @@
+name: Bump and Deploy Web Client
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'web-client/**'
+
+permissions:
+  contents: write
+
+jobs:
+  bump-and-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web-client
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: web-client/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Configure Git User
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump Version
+        run: |
+          npm version patch -m "chore(release): %s [skip ci]"
+          git push origin HEAD:main
+          git push origin --tags
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: web-client/dist
+          branch: gh-pages
