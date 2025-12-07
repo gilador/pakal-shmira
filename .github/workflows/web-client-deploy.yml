@@ -7,6 +7,10 @@ on:
     paths:
       - 'web-client/**'
 
+concurrency:
+  group: production
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -46,9 +50,22 @@ jobs:
 
       - name: Bump Version
         run: |
-          npm version patch -m "chore(release): %s [skip ci]"
+          # Get current version details
+          current_version=$(npm pkg get version | tr -d '"')
+          echo "Current Version: $current_version"
+          
+          # Calculate next version using semver
+          next_version=$(npx semver $current_version -i patch)
+          echo "Next Version: $next_version"
+          
+          # Update version (skip git tag because we handle it manually or let npm version do it without pushing yet)
+          npm version $next_version --no-git-tag-version --force
+          
+          # Commit and Push
+          git commit -am "chore(release): $next_version [skip ci]"
+          git tag "v$next_version"
           git push origin HEAD:main
-          git push origin --tags
+          git push origin "v$next_version"
 
       - name: Build
         run: npm run build
